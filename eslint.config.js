@@ -52,10 +52,6 @@ export default defineConfig([
           varsIgnorePattern: "^_",
         },
       ],
-      "@typescript-eslint/restrict-template-expressions": [
-        "error",
-        { allowNumber: true },
-      ],
       "@typescript-eslint/no-empty-object-type": [
         "error",
         { allowInterfaces: "with-single-extends" },
