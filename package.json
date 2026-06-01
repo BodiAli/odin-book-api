@@ -20,13 +20,15 @@
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "passport": "^0.7.0",
-    "pg": "^8.21.0"
+    "pg": "^8.21.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.9.1",
+    "@types/swagger-ui-express": "^4.1.8",
     "@vitest/eslint-plugin": "^1.6.18",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
