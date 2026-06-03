@@ -2,13 +2,18 @@
   "name": "odin-book-api",
   "version": "1.0.0",
   "description": "RESTful API for Odin Book website.",
-  "main": "app.ts",
+  "main": "./dist/app.ts",
   "type": "module",
+  "imports": {
+    "#src/*": "./dist/*"
+  },
   "scripts": {
     "test": "NODE_ENV=test vitest",
-    "dev": "NODE_ENV=development node --watch ./app.ts"
+    "dev": "NODE_ENV=development tsx --watch ./src/app.ts",
+    "build": "tsc",
+    "start": "NODE_ENV=production node ./dist/app.js",
+    "generate:openapi": "tsx ./src/lib/openapi/generate/generate-document.ts"
   },
-  "keywords": [],
   "author": "Abdulrahman Ali",
   "license": "MIT",
   "dependencies": {
@@ -40,6 +45,7 @@
     "prettier": "^3.8.3",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0",
     "vitest": "^4.1.7"
