@@ -9,10 +9,10 @@
   },
   "scripts": {
     "test": "NODE_ENV=test vitest",
-    "dev": "NODE_ENV=development tsx --watch ./src/app.ts",
+    "dev": "NODE_ENV=development tsx --watch --tsconfig ./tsconfig.app.json ./src/app.ts",
     "build": "tsc -b",
     "start": "NODE_ENV=production node ./dist/app.js",
-    "generate:openapi": "tsx ./src/lib/openapi/generate/generate-document.ts"
+    "generate:openapi": "tsx --tsconfig ./tsconfig.app.json ./src/openapi/generate.ts"
   },
   "author": "Abdulrahman Ali",
   "license": "MIT",
