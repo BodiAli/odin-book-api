@@ -12,6 +12,7 @@
     "dev": "NODE_ENV=development tsx --watch --tsconfig ./tsconfig.app.json ./src/app.ts",
     "build": "tsc -b",
     "start": "NODE_ENV=production node ./dist/app.js",
+    "generate:prisma": "prisma generate --sql",
     "generate:openapi": "tsx --tsconfig ./tsconfig.app.json ./src/openapi/generate.ts"
   },
   "author": "Abdulrahman Ali",
