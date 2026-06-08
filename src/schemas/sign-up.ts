@@ -25,12 +25,9 @@ export const RequestBody = z
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
     error: "Passwords do not match.",
-  })
-  .openapi("SignUpRequestBody");
+  });
 
-export const ResponseBody = z
-  .object({
-    token: z.jwt(),
-    user: UserSchema,
-  })
-  .openapi("SignUpResponseBody");
+export const ResponseBody = z.object({
+  token: z.jwt(),
+  user: UserSchema,
+});
