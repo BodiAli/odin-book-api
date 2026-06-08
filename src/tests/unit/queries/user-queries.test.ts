@@ -20,6 +20,8 @@ describe("user-queries", () => {
         data: {
           email: "test-email",
           password: "test-password",
+          fullName: "test: full name",
+          username: "test-username",
         },
       });
       const user = await userQueries.getUserWithPasswordByEmail("test-email");
@@ -27,11 +29,15 @@ describe("user-queries", () => {
       expect(user).toStrictEqual<{
         id: string;
         email: string;
+        fullName: string;
+        username: string;
         password: string;
       }>({
         email: "test-email",
         id: expect.any(String) as string,
         password: "test-password",
+        fullName: "test: full name",
+        username: "test-username",
       });
     });
   });
