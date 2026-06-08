@@ -1,7 +1,7 @@
 import supertest from "supertest";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import errorHandler from "#src/middlewares/catch-all-error.js";
+import catchAllErrorHandler from "#src/middlewares/catch-all-error.js";
 import * as errorSchemas from "#src/schemas/error-schemas.js";
 import type { z } from "zod";
 
@@ -12,7 +12,7 @@ describe("catch all error handler", () => {
     app.get("/test", (_req, _res, next) => {
       next(new Error("test: error thrown"));
     });
-    app.use(errorHandler);
+    app.use(catchAllErrorHandler);
     vi.spyOn(console, "error").mockImplementation(() => null);
   });
 
