@@ -1,11 +1,11 @@
 import { z } from "zod";
 import type { UserModel } from "#src/generated/prisma/models.js";
 
-const UserSchema: z.ZodType<UserModel> = z
+export const UserSchema: z.ZodType<Omit<UserModel, "password">> = z
   .object({
     id: z.uuid(),
     email: z.email(),
+    username: z.string(),
+    fullName: z.string(),
   })
   .openapi("UserSchema");
-
-export { UserSchema };
