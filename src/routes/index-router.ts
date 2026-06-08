@@ -1,9 +1,8 @@
 import { Router } from "express";
+import authRouter from "./auth-router.js";
 
 const indexRouter = Router();
 
-indexRouter.get("/", (_req, res) => {
-  res.send("HII");
-});
+indexRouter.use("/auth", authRouter);
 
 export default indexRouter;
