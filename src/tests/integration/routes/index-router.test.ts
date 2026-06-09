@@ -1,10 +1,10 @@
 import supertest from "supertest";
-import express, { Router } from "express";
+import express from "express";
 import { describe, expect, it, vi } from "vitest";
 import indexRouter from "#src/routes/index-router.js";
 
 vi.mock(import("#src/routes/auth-router.js"), () => {
-  const router = Router();
+  const router = express.Router();
   router.post("/sign-up", (_req, res) => {
     res.json({ mocked: true });
   });
