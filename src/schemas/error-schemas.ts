@@ -1,13 +1,15 @@
 import { z } from "zod";
 
-export const ClientError = z.object({
+export const clientError = z.object({
   errors: z.array(
     z.object({
       message: z.string(),
     }),
   ),
 });
-
-export const ServerError = z.object({
+export const serverError = z.object({
   error: z.string(),
 });
+
+export type ClientError = z.infer<typeof clientError>;
+export type ServerError = z.infer<typeof serverError>;
