@@ -1,14 +1,12 @@
-import * as errorSchemas from "#src/schemas/error-schemas.js";
-import type { Request, Response } from "express";
+import type { ClientError } from "#src/schemas/error-schemas.js";
+import type { NextFunction, Request, Response } from "express";
 import type { z } from "zod";
 
 export default function validateBody(zodSchema: z.ZodType) {
-  return (req: Request, res: Response) => {
-    console.log(req.body);
-
+  return (req: Request, res: Response, next: NextFunction) => {
     const result = zodSchema.safeParse(req.body);
     if (result.error) {
-      const errorObject: z.infer<(typeof errorSchemas)["ClientError"]> = {
+      const errorObject: ClientError = {
         errors: result.error.issues.map((error) => {
           return {
             message: error.message,
@@ -16,8 +14,9 @@ export default function validateBody(zodSchema: z.ZodType) {
         }),
       };
       res.status(400).json(errorObject);
+      return;
     }
 
-    res.sendStatus(400);
+    next();
   };
 }
