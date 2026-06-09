@@ -6,6 +6,7 @@ import openapiDocument from "#src/generated/openapi/openapi.json" with { type: "
 const openapiRouter = Router();
 
 openapiRouter.use("/", swaggerUi.serve);
+
 openapiRouter.get("/", swaggerUi.setup(openapiDocument));
 openapiRouter.get("/openapi.json", (_req, res) => {
   res.sendFile(
