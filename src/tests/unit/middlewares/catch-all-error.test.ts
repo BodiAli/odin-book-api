@@ -2,8 +2,7 @@ import request from "supertest";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import catchAllErrorHandler from "#src/middlewares/catch-all-error.js";
-import * as errorSchemas from "#src/schemas/error-schemas.js";
-import type { z } from "zod";
+import type { ServerError } from "#src/schemas/error-schemas.js";
 
 const app = express();
 
@@ -44,11 +43,8 @@ describe("catch all error handler", () => {
     expect.hasAssertions();
 
     const response = await request(app).get("/test");
-    const typedResponseBody = response.body as z.infer<
-      (typeof errorSchemas)["ServerError"]
-    >;
 
-    expect(typedResponseBody).toStrictEqual<typeof typedResponseBody>({
+    expect(response.body).toStrictEqual<ServerError>({
       error: "test: error thrown",
     });
   });
