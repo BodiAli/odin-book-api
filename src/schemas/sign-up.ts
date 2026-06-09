@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { UserSchema } from "./user-schema.js";
+import { user } from "./user-schema.js";
 
-export const RequestBody = z
+export const signUpRequestBody = z
   .object({
     email: z
       .email("Please provide a valid Email.")
@@ -26,8 +26,10 @@ export const RequestBody = z
     path: ["confirmPassword"],
     error: "Passwords do not match.",
   });
-
-export const ResponseBody = z.object({
+export const signUpResponseBody = z.object({
   token: z.jwt(),
-  user: UserSchema,
+  user: user,
 });
+
+export type SignUpRequestBody = z.infer<typeof signUpRequestBody>;
+export type SignUpResponseBody = z.infer<typeof signUpResponseBody>;
