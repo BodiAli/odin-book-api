@@ -1,5 +1,5 @@
-import * as errorSchemas from "#src/schemas/error-schemas.js";
-import * as signUp from "#src/schemas/sign-up.js";
+import { clientError, serverError } from "#src/schemas/error-schemas.js";
+import { signUpRequestBody, signUpResponseBody } from "#src/schemas/sign-up.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -10,7 +10,7 @@ registry.registerPath({
     body: {
       content: {
         "application/json": {
-          schema: signUp.RequestBody,
+          schema: signUpRequestBody,
           example: {
             email: "user@example.com",
             username: "username-no-whitespace",
@@ -28,7 +28,7 @@ registry.registerPath({
       description: "User signed up and created an account successfully",
       content: {
         "application/json": {
-          schema: signUp.ResponseBody,
+          schema: signUpResponseBody,
         },
       },
     },
@@ -37,7 +37,7 @@ registry.registerPath({
       description: "User entered invalid inputs",
       content: {
         "application/json": {
-          schema: errorSchemas.ClientError,
+          schema: clientError,
         },
       },
     },
@@ -46,7 +46,7 @@ registry.registerPath({
       description: "User entered an existing username or email",
       content: {
         "application/json": {
-          schema: errorSchemas.ClientError,
+          schema: clientError,
         },
       },
     },
@@ -55,7 +55,7 @@ registry.registerPath({
       description: "Unexpected error occurred",
       content: {
         "application/json": {
-          schema: errorSchemas.ServerError,
+          schema: serverError,
         },
       },
     },
