@@ -1,4 +1,4 @@
-import supertest from "supertest";
+import request from "supertest";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import catchAllErrorHandler from "#src/middlewares/catch-all-error.js";
@@ -25,7 +25,7 @@ describe("catch all error handler", () => {
 
     const spyConsoleError = vi.spyOn(console, "error");
 
-    await supertest(app).get("/test");
+    await request(app).get("/test");
 
     expect(spyConsoleError).toHaveBeenCalledExactlyOnceWith(
       new Error("test: error thrown"),
@@ -35,7 +35,7 @@ describe("catch all error handler", () => {
   it("should return a 500 status code", async () => {
     expect.hasAssertions();
 
-    const response = await supertest(app).get("/test");
+    const response = await request(app).get("/test");
 
     expect(response.statusCode).toBe(500);
   });
@@ -43,7 +43,7 @@ describe("catch all error handler", () => {
   it("should return a response body with the error message", async () => {
     expect.hasAssertions();
 
-    const response = await supertest(app).get("/test");
+    const response = await request(app).get("/test");
     const typedResponseBody = response.body as z.infer<
       (typeof errorSchemas)["ServerError"]
     >;
