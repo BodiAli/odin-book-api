@@ -2,7 +2,7 @@ import * as bcrypt from "bcrypt";
 import prisma from "#src/lib/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { SignUpRequestBody } from "#src/schemas/sign-up.js";
+import type { SignUpRequestBody } from "#src/schemas/auth/sign-up.js";
 
 export async function getUserWithPasswordByEmail(email: string) {
   const user = await prisma.user.findUnique({

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { user } from "./user-schema.js";
+import { user } from "../users/user-schema.js";
 
 export const signUpRequestBody = z
   .object({

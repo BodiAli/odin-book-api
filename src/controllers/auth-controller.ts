@@ -4,7 +4,7 @@ import issueJwt from "#src/utils/issue-jwt.js";
 import type {
   SignUpRequestBody,
   SignUpResponseBody,
-} from "#src/schemas/sign-up.js";
+} from "#src/schemas/auth/sign-up.js";
 import type { Request, Response } from "express";
 import type { ClientError } from "#src/schemas/errors/error-schemas.js";
 

@@ -1,5 +1,8 @@
 import { clientError, serverError } from "#src/schemas/errors/error-schemas.js";
-import { signUpRequestBody, signUpResponseBody } from "#src/schemas/sign-up.js";
+import {
+  signUpRequestBody,
+  signUpResponseBody,
+} from "#src/schemas/auth/sign-up.js";
 import registry from "../registry.js";
 
 registry.registerPath({
