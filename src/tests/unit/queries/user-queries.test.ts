@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, assert } from "vitest";
+import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
 import prisma from "#src/lib/prisma-client.js";
+import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import type { UserModel } from "#src/generated/prisma/models.js";
 
 describe("user-queries", () => {
   describe(userQueries.getUserWithPasswordByEmail, () => {
@@ -37,6 +40,111 @@ describe("user-queries", () => {
         id: expect.any(String) as string,
         password: "test-password",
         fullName: "test: full name",
+        username: "test-username",
+      });
+    });
+  });
+
+  describe(userQueries.createUser, () => {
+    it("should hash the password before storing it", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUser({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test: password",
+        username: "test-username",
+      });
+
+      const userWithPassword = await userQueries.getUserWithPasswordByEmail(
+        user.email,
+      );
+      assert(userWithPassword);
+      const doesPasswordMatch = await bcrypt.compare(
+        "test: password",
+        userWithPassword.password,
+      );
+
+      expect(userWithPassword.password).not.toBe("test: password");
+      expect(doesPasswordMatch).toBe(true);
+    });
+
+    it("should throw error when creating user with already existing email", async () => {
+      expect.hasAssertions();
+
+      const { email, fullName, password }: Omit<UserModel, "id" | "username"> =
+        {
+          fullName: "test: full name",
+          password: "test: password",
+          email: "test-email-exists@test.com",
+        };
+
+      await prisma.user.create({
+        data: {
+          email,
+          fullName,
+          password,
+          username: "test-username",
+        },
+      });
+
+      await expect(
+        userQueries.createUser({
+          email,
+          fullName,
+          password,
+          username: "test-username2",
+        }),
+      ).rejects.toStrictEqual(
+        new CustomHttpStatusError(409, "Email already exists."),
+      );
+    });
+
+    it("should throw error when creating user with already existing username", async () => {
+      expect.hasAssertions();
+
+      const { username, fullName, password }: Omit<UserModel, "id"> = {
+        fullName: "test: full name",
+        password: "test: password",
+        email: "test-email-exists@test.com",
+        username: "test-username-exists",
+      };
+
+      await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName,
+          password,
+          username,
+        },
+      });
+
+      await expect(
+        userQueries.createUser({
+          email: "test-email2@test.com",
+          fullName,
+          password,
+          username,
+        }),
+      ).rejects.toStrictEqual(
+        new CustomHttpStatusError(409, "Username already exists."),
+      );
+    });
+
+    it("should return new user record", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUser({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test: password",
+        username: "test-username",
+      });
+
+      expect(user).toStrictEqual<Omit<UserModel, "password">>({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        id: user.id,
         username: "test-username",
       });
     });
