@@ -1,5 +1,5 @@
 import { ZodError, type z } from "zod";
-import type { ClientError } from "#src/schemas/error-schemas.js";
+import type { ClientError } from "#src/schemas/errors/error-schemas.js";
 import type { NextFunction, Request, Response } from "express";
 
 export default function validateBody(zodSchema: z.ZodType) {

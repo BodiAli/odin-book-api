@@ -6,7 +6,7 @@ import type {
   SignUpResponseBody,
 } from "#src/schemas/sign-up.js";
 import type { Request, Response } from "express";
-import type { ClientError } from "#src/schemas/error-schemas.js";
+import type { ClientError } from "#src/schemas/errors/error-schemas.js";
 
 export async function createUser(
   req: Request<unknown, unknown, SignUpRequestBody>,

@@ -7,7 +7,7 @@ import type {
   SignUpRequestBody,
   SignUpResponseBody,
 } from "#src/schemas/sign-up.js";
-import type { ClientError } from "#src/schemas/error-schemas.js";
+import type { ClientError } from "#src/schemas/errors/error-schemas.js";
 
 describe("auth-router endpoints", () => {
   const app = express();
@@ -115,6 +115,16 @@ describe("auth-router endpoints", () => {
             username: "test-username",
           },
         });
+      });
+    });
+  });
+
+  describe("authenticate user POST /auth/log-in", () => {
+    describe("given invalid data", () => {
+      it("should return 400 status with error messages", async () => {
+        expect.hasAssertions();
+
+        // const response
       });
     });
   });
