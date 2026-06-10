@@ -37,6 +37,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
     "@types/passport": "^1.0.17",
     "@types/passport-local": "^1.0.38",
