@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import request from "supertest";
 import express from "express";
 import authRouter from "#src/routes/auth-router.js";
+import prisma from "#src/lib/prisma-client.js";
 import type {
   SignUpRequestBody,
   SignUpResponseBody,
@@ -49,7 +50,7 @@ describe("auth-router endpoints", () => {
       });
     });
 
-    describe("given already existing email", () => {
+    describe("given already existing email or username", () => {
       it("should return 409 status with error message", async () => {
         expect.hasAssertions();
 
@@ -60,6 +61,14 @@ describe("auth-router endpoints", () => {
           password: "test: password",
           confirmPassword: "test: password",
         };
+        await prisma.user.create({
+          data: {
+            email: requestBody.email,
+            username: "test-username2",
+            fullName: "test: full name",
+            password: "test: password",
+          },
+        });
 
         const response = await request(app)
           .post("/auth/sign-up")
@@ -74,6 +83,37 @@ describe("auth-router endpoints", () => {
               message: "Email already exists.",
             },
           ],
+        });
+      });
+    });
+
+    describe("given valid data", () => {
+      it("should return 200 status with JWT and user object", async () => {
+        expect.hasAssertions();
+
+        const requestBody: SignUpRequestBody = {
+          email: "test-email@test.com",
+          username: "test-username",
+          fullName: "test: full name",
+          password: "test: password",
+          confirmPassword: "test: password",
+        };
+
+        const response = await request(app)
+          .post("/auth/sign-up")
+          .type("json")
+          .send(requestBody)
+          .expect("Content-type", /json/)
+          .expect(200);
+
+        expect(response.body).toStrictEqual<SignUpResponseBody>({
+          token: expect.any(String) as string,
+          user: {
+            email: "test-email@test.com",
+            fullName: "test: full name",
+            id: expect.any(String) as string,
+            username: "test-username",
+          },
         });
       });
     });
