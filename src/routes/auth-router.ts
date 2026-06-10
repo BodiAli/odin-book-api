@@ -5,8 +5,10 @@ import * as authController from "#src/controllers/auth-controller.js";
 
 const authRouter = Router();
 
-authRouter.post("/sign-up", validateBody(signUpRequestBody), (_req, res) => {
-  res.json("HII");
-});
+authRouter.post(
+  "/sign-up",
+  validateBody(signUpRequestBody),
+  authController.createUser,
+);
 
 export default authRouter;
