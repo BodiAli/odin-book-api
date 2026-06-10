@@ -1,5 +1,7 @@
 import * as bcrypt from "bcrypt";
 import prisma from "#src/lib/prisma-client.js";
+import { Prisma } from "#src/generated/prisma/client.js";
+import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { SignUpRequestBody } from "#src/schemas/sign-up.js";
 
 export async function getUserWithPasswordByEmail(email: string) {
@@ -21,14 +23,40 @@ export async function createUser({
 }: Omit<SignUpRequestBody, "confirmPassword">) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      username,
-      fullName,
-      password: hashedPassword,
-    },
-  });
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        fullName,
+        password: hashedPassword,
+      },
+    });
 
-  return user;
+    return user;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        const field = (
+          error.meta?.["driverAdapterError"] as {
+            cause: {
+              constraint: {
+                fields: string[];
+              };
+            };
+          }
+        ).cause.constraint.fields["0"];
+
+        if (field === "email") {
+          throw new CustomHttpStatusError(409, "Email already exists.");
+        }
+
+        if (field === "username") {
+          throw new CustomHttpStatusError(409, "Username already exists.");
+        }
+      }
+    }
+
+    throw error;
+  }
 }
