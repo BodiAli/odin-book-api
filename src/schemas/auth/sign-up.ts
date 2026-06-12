@@ -3,9 +3,6 @@ import { user } from "../users/user-schema.js";
 
 export const signUpRequestBody = z
   .object({
-    email: z
-      .email("Please provide a valid Email.")
-      .max(254, "Email cannot exceed 254 characters."),
     username: z
       .string("Please provide a string Username.")
       .trim()
