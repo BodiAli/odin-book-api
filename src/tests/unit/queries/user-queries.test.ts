@@ -6,12 +6,13 @@ import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { UserModel } from "#src/generated/prisma/models.js";
 
 describe("user-queries", () => {
-  describe(userQueries.getUserWithPasswordByEmail, () => {
+  describe(userQueries.getUserWithPasswordByUsername, () => {
     it("should return null when no user is found", async () => {
       expect.hasAssertions();
 
-      const user =
-        await userQueries.getUserWithPasswordByEmail("non-existing-email");
+      const user = await userQueries.getUserWithPasswordByUsername(
+        "non-existing-username",
+      );
 
       expect(user).toBeNull();
     });
@@ -21,22 +22,20 @@ describe("user-queries", () => {
 
       await prisma.user.create({
         data: {
-          email: "test-email",
           password: "test-password",
           fullName: "test: full name",
           username: "test-username",
         },
       });
-      const user = await userQueries.getUserWithPasswordByEmail("test-email");
+      const user =
+        await userQueries.getUserWithPasswordByUsername("test-username");
 
       expect(user).toStrictEqual<{
         id: string;
-        email: string;
         fullName: string;
         username: string;
         password: string;
       }>({
-        email: "test-email",
         id: expect.any(String) as string,
         password: "test-password",
         fullName: "test: full name",
@@ -50,14 +49,13 @@ describe("user-queries", () => {
       expect.hasAssertions();
 
       const user = await userQueries.createUser({
-        email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
         username: "test-username",
       });
 
-      const userWithPassword = await userQueries.getUserWithPasswordByEmail(
-        user.email,
+      const userWithPassword = await userQueries.getUserWithPasswordByUsername(
+        user.username,
       );
       assert(userWithPassword);
       const doesPasswordMatch = await bcrypt.compare(
@@ -69,50 +67,17 @@ describe("user-queries", () => {
       expect(doesPasswordMatch).toBe(true);
     });
 
-    it("should throw error when creating user with already existing email", async () => {
-      expect.hasAssertions();
-
-      const { email, fullName, password }: Omit<UserModel, "id" | "username"> =
-        {
-          fullName: "test: full name",
-          password: "test: password",
-          email: "test-email-exists@test.com",
-        };
-
-      await prisma.user.create({
-        data: {
-          email,
-          fullName,
-          password,
-          username: "test-username",
-        },
-      });
-
-      await expect(
-        userQueries.createUser({
-          email,
-          fullName,
-          password,
-          username: "test-username2",
-        }),
-      ).rejects.toStrictEqual(
-        new CustomHttpStatusError(409, "Email already exists."),
-      );
-    });
-
     it("should throw error when creating user with already existing username", async () => {
       expect.hasAssertions();
 
       const { username, fullName, password }: Omit<UserModel, "id"> = {
         fullName: "test: full name",
         password: "test: password",
-        email: "test-email-exists@test.com",
         username: "test-username-exists",
       };
 
       await prisma.user.create({
         data: {
-          email: "test-email@test.com",
           fullName,
           password,
           username,
@@ -121,7 +86,6 @@ describe("user-queries", () => {
 
       await expect(
         userQueries.createUser({
-          email: "test-email2@test.com",
           fullName,
           password,
           username,
@@ -135,14 +99,12 @@ describe("user-queries", () => {
       expect.hasAssertions();
 
       const user = await userQueries.createUser({
-        email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
         username: "test-username",
       });
 
       expect(user).toStrictEqual<Omit<UserModel, "password">>({
-        email: "test-email@test.com",
         fullName: "test: full name",
         id: user.id,
         username: "test-username",
