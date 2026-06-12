@@ -3,6 +3,10 @@ import {
   signUpRequestBody,
   signUpResponseBody,
 } from "#src/schemas/auth/sign-up.js";
+import {
+  logInRequestBody,
+  logInResponseBody,
+} from "#src/schemas/auth/log-in.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -27,26 +31,26 @@ registry.registerPath({
   },
   responses: {
     "201": {
-      summary: "Account created",
-      description: "User signed up and created an account successfully",
+      summary: "Account created.",
+      description: "User signed up and created an account successfully.",
       content: {
         "application/json": {
           schema: signUpResponseBody,
         },
       },
     },
-    "400": {
-      summary: "Invalid inputs",
-      description: "User entered invalid inputs",
+    "409": {
+      summary: "Conflict with existing data.",
+      description: "User entered an existing username or email.",
       content: {
         "application/json": {
           schema: clientError,
         },
       },
     },
-    "409": {
-      summary: "Conflict with existing data",
-      description: "User entered an existing username or email",
+    "400": {
+      summary: "Invalid inputs.",
+      description: "User entered invalid inputs.",
       content: {
         "application/json": {
           schema: clientError,
@@ -54,8 +58,63 @@ registry.registerPath({
       },
     },
     "500": {
-      summary: "Internal server error",
-      description: "Unexpected error occurred",
+      summary: "Internal server error.",
+      description: "Unexpected error occurred.",
+      content: {
+        "application/json": {
+          schema: serverError,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/auth/log-in",
+  tags: ["auth"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: logInRequestBody,
+        },
+      },
+    },
+  },
+  responses: {
+    "200": {
+      summary: "User authenticated.",
+      description:
+        "User entered valid inputs and is successfully authenticated.",
+      content: {
+        "application/json": {
+          schema: logInResponseBody,
+        },
+      },
+    },
+    "401": {
+      summary: "Invalid credentials.",
+      description:
+        "User entered credentials with the correct format but incorrect username or password.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    "400": {
+      summary: "Invalid inputs.",
+      description: "User entered invalid inputs.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    "500": {
+      summary: "Internal server error.",
+      description: "Unexpected error occurred.",
       content: {
         "application/json": {
           schema: serverError,
