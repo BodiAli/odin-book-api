@@ -8,6 +8,8 @@ import type {
   SignUpResponseBody,
 } from "#src/schemas/auth/sign-up.js";
 import type { ClientError } from "#src/schemas/errors/error-schemas.js";
+import type { LogInRequestBody } from "#src/schemas/auth/log-in.js";
+import "#src/config/passport.js";
 
 describe("auth-router endpoints", () => {
   const app = express();
@@ -20,7 +22,6 @@ describe("auth-router endpoints", () => {
         expect.hasAssertions();
 
         const requestBody: Partial<SignUpRequestBody> = {
-          email: "test-invalid-email",
           username: "test: invalid username",
           password: "test: valid password",
           confirmPassword: "test: invalid confirm password",
@@ -37,9 +38,6 @@ describe("auth-router endpoints", () => {
         expect(response.body).toStrictEqual<ClientError>({
           errors: [
             {
-              message: "Please provide a valid Email.",
-            },
-            {
               message: "Username cannot include space.",
             },
             {
@@ -50,12 +48,11 @@ describe("auth-router endpoints", () => {
       });
     });
 
-    describe("given already existing email or username", () => {
+    describe("given already existing username", () => {
       it("should return 409 status with error message", async () => {
         expect.hasAssertions();
 
         const requestBody: SignUpRequestBody = {
-          email: "test-email-exists@test.com",
           username: "test-username",
           fullName: "test: full name",
           password: "test: password",
@@ -63,8 +60,7 @@ describe("auth-router endpoints", () => {
         };
         await prisma.user.create({
           data: {
-            email: requestBody.email,
-            username: "test-username2",
+            username: "test-username",
             fullName: "test: full name",
             password: "test: password",
           },
@@ -80,7 +76,7 @@ describe("auth-router endpoints", () => {
         expect(response.body).toStrictEqual<ClientError>({
           errors: [
             {
-              message: "Email already exists.",
+              message: "Username already exists.",
             },
           ],
         });
@@ -92,7 +88,6 @@ describe("auth-router endpoints", () => {
         expect.hasAssertions();
 
         const requestBody: SignUpRequestBody = {
-          email: "test-email@test.com",
           username: "test-username",
           fullName: "test: full name",
           password: "test: password",
@@ -109,7 +104,6 @@ describe("auth-router endpoints", () => {
         expect(response.body).toStrictEqual<SignUpResponseBody>({
           token: expect.any(String) as string,
           user: {
-            email: "test-email@test.com",
             fullName: "test: full name",
             id: expect.any(String) as string,
             username: "test-username",
@@ -124,8 +118,57 @@ describe("auth-router endpoints", () => {
       it("should return 400 status with error messages", async () => {
         expect.hasAssertions();
 
-        // const response
+        const requestBody: LogInRequestBody = {
+          username: "test: invalid username",
+          password: "",
+        };
+
+        const response = await request(app)
+          .post("/auth/log-in")
+          .type("json")
+          .send(requestBody)
+          .expect("Content-type", /json/)
+          .expect(400);
+
+        expect(response.body).toStrictEqual<ClientError>({
+          errors: [
+            {
+              message: "Username cannot include space.",
+            },
+            {
+              message: "Password cannot be empty.",
+            },
+          ],
+        });
       });
+    });
+
+    describe("given invalid credentials with correct format", () => {
+      it("should return 401 status with error message", async () => {
+        expect.hasAssertions();
+
+        const requestBody: LogInRequestBody = {
+          password: "test: password",
+          username: "test-username",
+        };
+
+        const response = await request(app)
+          .post("/auth/log-in")
+          .type("json")
+          .send(requestBody)
+          .expect("Content-type", /json/)
+          .expect(401);
+
+        console.log(response.text);
+
+        expect(response.body).toStrictEqual<ClientError>({
+          errors: [{ message: "Incorrect username or password." }],
+        });
+      });
+    });
+
+    describe("given valid data and correct credentials", () => {
+      it.todo("should return 200 status with token and user object");
     });
   });
 });
