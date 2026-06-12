@@ -3,12 +3,16 @@ import request from "supertest";
 import express from "express";
 import authRouter from "#src/routes/auth-router.js";
 import prisma from "#src/lib/prisma-client.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import type {
   SignUpRequestBody,
   SignUpResponseBody,
 } from "#src/schemas/auth/sign-up.js";
 import type { ClientError } from "#src/schemas/errors/error-schemas.js";
-import type { LogInRequestBody } from "#src/schemas/auth/log-in.js";
+import type {
+  LogInRequestBody,
+  LogInResponseBody,
+} from "#src/schemas/auth/log-in.js";
 import "#src/config/passport.js";
 
 describe("auth-router endpoints", () => {
@@ -159,8 +163,6 @@ describe("auth-router endpoints", () => {
           .expect("Content-type", /json/)
           .expect(401);
 
-        console.log(response.text);
-
         expect(response.body).toStrictEqual<ClientError>({
           errors: [{ message: "Incorrect username or password." }],
         });
@@ -168,7 +170,35 @@ describe("auth-router endpoints", () => {
     });
 
     describe("given valid data and correct credentials", () => {
-      it.todo("should return 200 status with token and user object");
+      it("should return 200 status with token and user object", async () => {
+        expect.hasAssertions();
+
+        const requestBody: LogInRequestBody = {
+          username: "test-username",
+          password: "test: password",
+        };
+        const user = await userQueries.createUser({
+          fullName: "test: full name",
+          password: "test: password",
+          username: "test-username",
+        });
+
+        const response = await request(app)
+          .post("/auth/log-in")
+          .type("json")
+          .send(requestBody)
+          .expect("Content-type", /json/)
+          .expect(200);
+
+        expect(response.body).toStrictEqual<LogInResponseBody>({
+          token: expect.any(String) as string,
+          user: {
+            fullName: "test: full name",
+            id: user.id,
+            username: "test-username",
+          },
+        });
+      });
     });
   });
 });
