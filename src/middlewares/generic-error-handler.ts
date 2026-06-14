@@ -1,10 +1,10 @@
 import type { ErrorRequestHandler } from "express";
 
-const catchAllErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+const genericErrorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   console.error(err);
 
   res.status(500);
   res.json({ error: Error.isError(err) ? err.message : String(err) });
 };
 
-export default catchAllErrorHandler;
+export default genericErrorHandler;
