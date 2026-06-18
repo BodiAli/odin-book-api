@@ -9,9 +9,15 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  username String  @unique @db.VarChar(100)
-  email    String  @unique @db.VarChar(254)
-  fullName String  @db.VarChar(100)
+  id       String   @id @default(uuid())
+  email    String   @unique @db.VarChar(254)
+  fullName String   @db.VarChar(100)
   password String?
+  provider Provider @default(local)
+}
+
+enum Provider {
+  google
+  github
+  local
 }
