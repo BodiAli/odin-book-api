@@ -5,7 +5,6 @@ import * as bcrypt from "bcrypt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/schemas/users/user-schema.js";
-import type { CreateUserArguments } from "#src/queries/user-queries/user-queries-types.js";
 
 passport.use(
   new LocalStrategy(
@@ -68,7 +67,7 @@ passport.use(
             assert(profile._json.email, "_json.email is undefined");
             assert(profile._json.name, "_json.name is undefined");
 
-            const userData: CreateUserArguments = {
+            const userData: userQueries.CreateUserArguments = {
               email: profile._json.email,
               fullName: profile._json.name,
               provider: "google",
