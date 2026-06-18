@@ -118,3 +118,22 @@ registry.registerPath({
     },
   },
 });
+
+registry.registerPath({
+  method: "get",
+  path: "/auth/google",
+  tags: ["auth"],
+  responses: {
+    302: {
+      description: "Redirect",
+      headers: {
+        Location: {
+          description: "Google oauth2 authorization endpoint",
+          schema: {
+            type: "string",
+          },
+        },
+      },
+    },
+  },
+});
