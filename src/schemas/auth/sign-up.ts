@@ -5,12 +5,6 @@ export const signUpRequestBody = z
     email: z
       .email("Please provide a valid Email.")
       .max(254, "Email cannot exceed 254 characters."),
-    username: z
-      .string("Please provide a string Username.")
-      .trim()
-      .nonempty("Username cannot be empty.")
-      .regex(/^\S+$/, "Username cannot include space.")
-      .max(100, "Username cannot exceed 100 characters."),
     fullName: z
       .string("Please provide a string Full Name.")
       .trim()
