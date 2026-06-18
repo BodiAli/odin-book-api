@@ -4,7 +4,6 @@ import * as userQueries from "#src/queries/user-queries.js";
 import prisma from "#src/lib/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { User } from "#src/schemas/users/user-schema.js";
-import type { CreateUserArguments } from "#src/queries/user-queries/user-queries-types.js";
 
 describe("user-queries", () => {
   describe(userQueries.getUserWithPasswordByEmail, () => {
@@ -71,7 +70,7 @@ describe("user-queries", () => {
     it("should throw error when creating user with already existing email", async () => {
       expect.hasAssertions();
 
-      const { email, fullName, password }: CreateUserArguments = {
+      const { email, fullName, password }: userQueries.CreateUserArguments = {
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
