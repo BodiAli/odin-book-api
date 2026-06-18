@@ -7,7 +7,7 @@ import genericErrorHandler from "./middlewares/generic-error-handler.js";
 
 const app = express();
 
-app.use("/", indexRouter);
+app.use(indexRouter);
 app.use("/api-docs", openapiRouter);
 
 app.use(resourceNotFound);
