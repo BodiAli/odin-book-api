@@ -4,10 +4,10 @@ import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { SignUpRequestBody } from "#src/schemas/auth/sign-up.js";
 
-export async function getUserWithPasswordByUsername(username: string) {
+export async function getUserWithPasswordByEmail(email: string) {
   const user = await prisma.user.findUnique({
     where: {
-      username,
+      email,
     },
     omit: { password: false },
   });
@@ -16,6 +16,7 @@ export async function getUserWithPasswordByUsername(username: string) {
 }
 
 export async function createUser({
+  email,
   username,
   fullName,
   password,
@@ -25,6 +26,7 @@ export async function createUser({
   try {
     const user = await prisma.user.create({
       data: {
+        email,
         username,
         fullName,
         password: hashedPassword,
@@ -45,6 +47,9 @@ export async function createUser({
           }
         ).cause.constraint.fields["0"];
 
+        if (field === "email") {
+          throw new CustomHttpStatusError(409, "Email already exists.");
+        }
         if (field === "username") {
           throw new CustomHttpStatusError(409, "Username already exists.");
         }
