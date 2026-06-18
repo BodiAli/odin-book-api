@@ -1,5 +1,4 @@
 import { Router } from "express";
-import passport from "passport";
 import validateBody from "#src/middlewares/validate-body.js";
 import { signUpRequestBody } from "#src/schemas/auth/sign-up.js";
 import * as authController from "#src/controllers/auth-controller.js";
@@ -15,17 +14,10 @@ authRouter.post(
 authRouter.post(
   "/log-in",
   validateBody(logInRequestBody),
-  authController.authenticateUser,
+  authController.authenticateWithLocal,
 );
 
-authRouter.get("/google", passport.authenticate("google"));
-
-authRouter.get(
-  "/google/callback",
-  passport.authenticate("google", { session: false }),
-  (req, res) => {
-    res.json({ token: "JWT-TOKEN", user: req.user });
-  },
-);
+authRouter.get("/google", authController.googleConsentScreen);
+authRouter.get("/google/callback", authController.authenticateWithGoogle);
 
 export default authRouter;
