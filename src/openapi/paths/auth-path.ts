@@ -1,12 +1,7 @@
 import { clientError, serverError } from "#src/schemas/errors/error-schemas.js";
-import {
-  signUpRequestBody,
-  signUpResponseBody,
-} from "#src/schemas/auth/sign-up.js";
-import {
-  logInRequestBody,
-  logInResponseBody,
-} from "#src/schemas/auth/log-in.js";
+import { signUpRequestBody } from "#src/schemas/auth/sign-up.js";
+import { logInRequestBody } from "#src/schemas/auth/log-in.js";
+import { authenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -35,7 +30,7 @@ registry.registerPath({
       description: "User signed up and created an account successfully.",
       content: {
         "application/json": {
-          schema: signUpResponseBody,
+          schema: authenticatedResponse,
         },
       },
     },
@@ -89,7 +84,7 @@ registry.registerPath({
         "User entered valid inputs and is successfully authenticated.",
       content: {
         "application/json": {
-          schema: logInResponseBody,
+          schema: authenticatedResponse,
         },
       },
     },
