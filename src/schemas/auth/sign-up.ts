@@ -1,8 +1,10 @@
 import { z } from "zod";
-import { user } from "../users/user-schema.js";
 
 export const signUpRequestBody = z
   .object({
+    email: z
+      .email("Please provide a valid Email.")
+      .max(254, "Email cannot exceed 254 characters."),
     username: z
       .string("Please provide a string Username.")
       .trim()
@@ -23,10 +25,5 @@ export const signUpRequestBody = z
     path: ["confirmPassword"],
     error: "Passwords do not match.",
   });
-export const signUpResponseBody = z.object({
-  token: z.jwt(),
-  user: user,
-});
 
 export type SignUpRequestBody = z.infer<typeof signUpRequestBody>;
-export type SignUpResponseBody = z.infer<typeof signUpResponseBody>;
