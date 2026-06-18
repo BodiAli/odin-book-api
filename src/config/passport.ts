@@ -6,34 +6,41 @@ import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/schemas/users/user-schema.js";
 
 passport.use(
-  new LocalStrategy({ session: false }, (username, password, done) => {
-    const asyncHandler = async () => {
-      try {
-        const user = await userQueries.getUserWithPasswordByUsername(username);
-        if (!user) {
-          done(null, false, { message: "Incorrect username or password." });
-          return;
+  new LocalStrategy(
+    { session: false, usernameField: "email" },
+    (email, password, done) => {
+      const asyncHandler = async () => {
+        try {
+          const user = await userQueries.getUserWithPasswordByEmail(email);
+          if (!user) {
+            done(null, false, { message: "Incorrect email or password." });
+            return;
+          }
+
+          const isPasswordCorrect = await bcrypt.compare(
+            password,
+            user.password,
+          );
+          if (!isPasswordCorrect) {
+            done(null, false, { message: "Incorrect email or password." });
+            return;
+          }
+
+          const authenticatedUser: User = {
+            email: user.email,
+            fullName: user.fullName,
+            username: user.username,
+            id: user.id,
+          };
+          done(null, authenticatedUser);
+        } catch (error) {
+          done(error);
         }
+      };
 
-        const isPasswordCorrect = await bcrypt.compare(password, user.password);
-        if (!isPasswordCorrect) {
-          done(null, false, { message: "Incorrect username or password." });
-          return;
-        }
-
-        const authenticatedUser: User = {
-          fullName: user.fullName,
-          username: user.username,
-          id: user.id,
-        };
-        done(null, authenticatedUser);
-      } catch (error) {
-        done(error);
-      }
-    };
-
-    void asyncHandler();
-  }),
+      void asyncHandler();
+    },
+  ),
 );
 
 passport.use(
@@ -45,10 +52,7 @@ passport.use(
       scope: ["email", "profile"],
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log("ACCESS TOKEN", accessToken);
-      console.log("REFRESH TOKEN", refreshToken);
-      console.log("PROFILE", profile);
-      console.log("DONE", done);
+      done(null, { id: profile.id });
     },
   ),
 );
