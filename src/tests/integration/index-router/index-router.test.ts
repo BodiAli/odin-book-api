@@ -13,7 +13,7 @@ vi.mock(import("#src/routes/auth-router.js"), () => {
   };
 });
 
-describe("index-router routes", () => {
+describe("index-router mount endpoints", () => {
   const app = express();
   app.use("/", indexRouter);
 
