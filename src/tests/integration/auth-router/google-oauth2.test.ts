@@ -31,7 +31,7 @@ describe("google oauth2 endpoints", () => {
 
   describe("google callback url GET /auth/google/callback", () => {
     describe("given a valid consent", () => {
-      it("should return a jwt and a user object", async () => {
+      it("should return a JWT and a user object with the provider field value being 'google'", async () => {
         expect.hasAssertions();
 
         vi.spyOn(passport, "authenticate").mockReturnValue(
@@ -40,7 +40,7 @@ describe("google oauth2 endpoints", () => {
               id: "test-userId",
               email: "test-email@test.com",
               fullName: "test: full name",
-              password: null,
+              provider: "google",
             };
             next();
           },
@@ -59,7 +59,7 @@ describe("google oauth2 endpoints", () => {
             id: "test-userId",
             email: "test-email@test.com",
             fullName: "test: full name",
-            password: null,
+            provider: "google",
           },
         });
       });
