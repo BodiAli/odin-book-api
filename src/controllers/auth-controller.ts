@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import passport from "passport";
-import * as userQueries from "#src/queries/user-queries/user-queries.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import type { SignUpRequestBody } from "#src/schemas/auth/sign-up.js";

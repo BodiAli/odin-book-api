@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import request from "supertest";
 import express from "express";
 import indexRouter from "#src/routes/index-router.js";
-import * as userQueries from "#src/queries/user-queries/user-queries.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import type { LogInRequestBody } from "#src/schemas/auth/log-in.js";
 import type { ClientError } from "#src/schemas/errors/error-schemas.js";
 import type { AuthenticatedResponse } from "#src/schemas/auth/authenticated-response.js";

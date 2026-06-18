@@ -3,7 +3,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as bcrypt from "bcrypt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import * as userQueries from "#src/queries/user-queries/user-queries.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/schemas/users/user-schema.js";
 import type { CreateUserArguments } from "#src/queries/user-queries/user-queries-types.js";
 
