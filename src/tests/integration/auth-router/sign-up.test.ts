@@ -18,7 +18,6 @@ describe("signing up endpoints", () => {
 
         const requestBody: Partial<SignUpRequestBody> = {
           email: "test-invalid-email",
-          username: "test: invalid username",
           password: "test: valid password",
           confirmPassword: "test: invalid confirm password",
           fullName: "test: valid full name",
@@ -37,47 +36,7 @@ describe("signing up endpoints", () => {
               message: "Please provide a valid Email.",
             },
             {
-              message: "Username cannot include space.",
-            },
-            {
               message: "Passwords do not match.",
-            },
-          ],
-        });
-      });
-    });
-
-    describe("given already existing username", () => {
-      it("should return 409 status with error message", async () => {
-        expect.hasAssertions();
-
-        const requestBody: SignUpRequestBody = {
-          email: "test-email1@test.com",
-          username: "test-username",
-          fullName: "test: full name",
-          password: "test: password",
-          confirmPassword: "test: password",
-        };
-        await prisma.user.create({
-          data: {
-            email: "test-email2@test.com",
-            username: "test-username",
-            fullName: "test: full name",
-            password: "test: password",
-          },
-        });
-
-        const response = await request(app)
-          .post("/auth/sign-up")
-          .type("json")
-          .send(requestBody)
-          .expect("Content-type", /json/)
-          .expect(409);
-
-        expect(response.body).toStrictEqual<ClientError>({
-          errors: [
-            {
-              message: "Username already exists.",
             },
           ],
         });
@@ -90,7 +49,6 @@ describe("signing up endpoints", () => {
 
         const requestBody: SignUpRequestBody = {
           email: "test-email@test.com",
-          username: "test-username1",
           fullName: "test: full name",
           password: "test: password",
           confirmPassword: "test: password",
@@ -98,7 +56,6 @@ describe("signing up endpoints", () => {
         await prisma.user.create({
           data: {
             email: "test-email@test.com",
-            username: "test-username2",
             fullName: "test: full name",
             password: "test: password",
           },
@@ -127,7 +84,6 @@ describe("signing up endpoints", () => {
 
         const requestBody: SignUpRequestBody = {
           email: "test-email@test.com",
-          username: "test-username",
           fullName: "test: full name",
           password: "test: password",
           confirmPassword: "test: password",
@@ -146,7 +102,7 @@ describe("signing up endpoints", () => {
             email: "test-email@test.com",
             fullName: "test: full name",
             id: expect.any(String) as string,
-            username: "test-username",
+            provider: "local",
           },
         });
       });
