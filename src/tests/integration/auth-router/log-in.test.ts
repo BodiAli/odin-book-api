@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import request from "supertest";
 import express from "express";
 import indexRouter from "#src/routes/index-router.js";
-import * as userQueries from "#src/queries/user-queries.js";
+import * as userQueries from "#src/queries/user-queries/user-queries.js";
 import type { LogInRequestBody } from "#src/schemas/auth/log-in.js";
 import type { ClientError } from "#src/schemas/errors/error-schemas.js";
 import type { AuthenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
@@ -75,7 +75,7 @@ describe("logging in endpoints", () => {
           email: "test-email@test.com",
           fullName: "test: full name",
           password: "test: password",
-          username: "test-username",
+          provider: "local",
         });
 
         const response = await request(app)
@@ -91,12 +91,38 @@ describe("logging in endpoints", () => {
             email: "test-email@test.com",
             fullName: "test: full name",
             id: user.id,
-            username: "test-username",
+            provider: "local",
           },
         });
       });
     });
 
-    describe.todo("given provider");
+    describe("given user doesn't have a password", () => {
+      it("should return an error", async () => {
+        expect.hasAssertions();
+
+        await userQueries.createUser({
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          password: null,
+          provider: "google",
+        });
+        const requestBody: LogInRequestBody = {
+          email: "test-email@test.com",
+          password: "test: password",
+        };
+
+        const response = await request(app)
+          .post("/auth/log-in")
+          .type("json")
+          .send(requestBody)
+          .expect("Content-type", /json/)
+          .expect(401);
+
+        expect(response.body).toStrictEqual<ClientError>({
+          errors: [{ message: "Incorrect email or password." }],
+        });
+      });
+    });
   });
 });
