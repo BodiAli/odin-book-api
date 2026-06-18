@@ -1,5 +1,6 @@
+import assert from "node:assert";
 import passport from "passport";
-import * as userQueries from "#src/queries/user-queries.js";
+import * as userQueries from "#src/queries/user-queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import type { SignUpRequestBody } from "#src/schemas/auth/sign-up.js";
@@ -16,17 +17,18 @@ export async function createUser(
 
   try {
     const user = await userQueries.createUser(userData);
-    const jwtToken = issueJwt(user.id);
-    res.json({ token: jwtToken, user });
+    const jwt = issueJwt(user.id);
+    res.json({ token: jwt, user });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
     }
     throw error;
   }
 }
 
-export function authenticateUser(
+export function authenticateWithLocal(
   req: Request,
   res: Response<AuthenticatedResponse | ClientError>,
   next: NextFunction,
@@ -45,9 +47,23 @@ export function authenticateUser(
           return;
         }
 
-        const token = issueJwt(user.id, "2w");
-        res.json({ token, user });
+        const jwt = issueJwt(user.id, "2w");
+        res.json({ token: jwt, user });
       },
     ) as RequestHandler
   )(req, res, next);
 }
+
+export const authenticateWithGoogle: RequestHandler[] = [
+  passport.authenticate("google", { session: false }) as RequestHandler,
+  (req, res: Response<AuthenticatedResponse>) => {
+    assert(req.user, "User is not defined");
+
+    const jwt = issueJwt(req.user.id, "2w");
+    res.json({ token: jwt, user: req.user });
+  },
+];
+
+export const googleConsentScreen = passport.authenticate(
+  "google",
+) as RequestHandler;
