@@ -14,6 +14,15 @@ model User {
   fullName String   @db.VarChar(100)
   password String?
   provider Provider @default(local)
+  profile  Profile?
+}
+
+model Profile {
+  id          String  @id @default(uuid())
+  description String?
+  imageUrl    String?
+  user        User    @relation(references: [id], fields: [userId])
+  userId      String  @unique
 }
 
 enum Provider {
