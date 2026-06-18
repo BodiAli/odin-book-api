@@ -1,1 +1,1 @@
-TRUNCATE "User";
+TRUNCATE "User" CASCADE;
