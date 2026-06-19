@@ -2,7 +2,6 @@ import * as bcrypt from "bcrypt";
 import prisma from "#src/lib/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Provider } from "#src/generated/prisma/enums.js";
 
 export async function getUserWithPasswordByEmail(email: string) {
   const user = await prisma.user.findUnique({
@@ -25,20 +24,18 @@ export async function getUserById(id: string) {
   return user;
 }
 
-export async function createUser({
+export async function createUserLocal({
   email,
   fullName,
   password,
-  provider = "local",
-}: CreateUserArguments) {
-  const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+}: CreateUserLocalArguments) {
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     const user = await prisma.user.create({
       data: {
         email,
         fullName,
-        provider,
         password: hashedPassword,
       },
     });
@@ -70,9 +67,31 @@ export async function createUser({
   }
 }
 
-export interface CreateUserArguments {
+export async function createUserGoogle({
+  email,
+  fullName,
+  id,
+}: CreateUserGoogleArguments) {
+  const user = await prisma.user.create({
+    data: {
+      email,
+      fullName,
+      id,
+      password: null,
+      provider: "google",
+    },
+  });
+
+  return user;
+}
+
+export interface CreateUserLocalArguments {
   email: string;
   fullName: string;
-  password: string | null;
-  provider?: Provider;
+  password: string;
+}
+export interface CreateUserGoogleArguments {
+  id: string;
+  email: string;
+  fullName: string;
 }
