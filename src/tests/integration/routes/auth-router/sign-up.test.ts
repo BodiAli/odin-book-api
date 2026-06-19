@@ -103,6 +103,7 @@ describe("signing up endpoints", () => {
             fullName: "test: full name",
             id: expect.any(String) as string,
             provider: "local",
+            picture: null,
           },
         });
       });

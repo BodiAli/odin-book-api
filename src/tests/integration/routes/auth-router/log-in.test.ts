@@ -92,6 +92,7 @@ describe("logging in endpoints", () => {
             fullName: "test: full name",
             id: user.id,
             provider: "local",
+            picture: null,
           },
         });
       });
