@@ -1,9 +1,8 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, describe, expect, it, vi } from "vitest";
 import { googleOauth2Verify } from "#src/services/auth-service.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { Profile, VerifyCallback } from "passport-google-oauth20";
-import type { User } from "#src/schemas/users/user-schema.js";
 
 describe("auth-service", () => {
   interface ProfileData {
@@ -22,6 +21,17 @@ describe("auth-service", () => {
     },
   };
 
+  const doneMock = vi.fn<VerifyCallback>(() => {
+    // empty
+  });
+
+  const googleOauth2VerifyArguments = [
+    "accessToken",
+    "refreshToken",
+    profileData as Profile,
+    doneMock,
+  ] as const;
+
   afterEach(() => {
     vi.resetAllMocks();
   });
@@ -30,21 +40,13 @@ describe("auth-service", () => {
     it("should create a new user and call the done function with expected arguments", async () => {
       expect.hasAssertions();
 
-      const doneMock = vi.fn<VerifyCallback>(() => {
-        // empty
-      });
       const userNotExists = await prisma.user.findUnique({
         where: {
           id: "test-userId",
         },
       });
 
-      await googleOauth2Verify(
-        "accessToken",
-        "refreshToken",
-        profileData as Profile,
-        doneMock,
-      );
+      await googleOauth2Verify(...googleOauth2VerifyArguments);
       const userExists = await prisma.user.findUnique({
         where: {
           id: "test-userId",
@@ -52,16 +54,12 @@ describe("auth-service", () => {
       });
 
       expect(userNotExists).toBeNull();
-      expect(userExists).toStrictEqual<User>({
-        email: profileData._json.email,
-        fullName: profileData._json.name,
-        id: profileData._json.sub,
-        provider: "google",
+      expect(userExists).not.toBeNull();
+      expect(doneMock).toHaveBeenCalledExactlyOnceWith(null, {
+        ...userExists,
+        picture: "test-image-url",
       });
-      expect(doneMock).toHaveBeenCalledExactlyOnceWith(null, userExists);
     });
-
-    it.todo("should update their profile picture");
   });
 
   describe("given an already existing user", () => {
@@ -69,9 +67,6 @@ describe("auth-service", () => {
       expect.hasAssertions();
 
       const createUserGoogleMock = vi.spyOn(userQueries, "createUserGoogle");
-      const doneMock = vi.fn<VerifyCallback>(() => {
-        // empty
-      });
       const existingUser = await prisma.user.create({
         data: {
           email: profileData._json.email,
@@ -82,15 +77,66 @@ describe("auth-service", () => {
         },
       });
 
-      await googleOauth2Verify(
-        "accessToken",
-        "refreshToken",
-        profileData as Profile,
-        doneMock,
-      );
+      await googleOauth2Verify(...googleOauth2VerifyArguments);
 
-      expect(doneMock).toHaveBeenCalledExactlyOnceWith(null, existingUser);
+      expect(doneMock).toHaveBeenCalledExactlyOnceWith(null, {
+        ...existingUser,
+        picture: "test-image-url",
+      });
       expect(createUserGoogleMock).not.toHaveBeenCalled();
+    });
+
+    it("should update the existing user profile picture", async () => {
+      expect.hasAssertions();
+
+      const createdUser = await prisma.user.create({
+        data: {
+          email: profileData._json.email,
+          fullName: profileData._json.name,
+          id: profileData._json.sub,
+          password: null,
+          provider: "google",
+          profile: {
+            create: {
+              imageUrl: "test-image-url-1",
+            },
+          },
+        },
+      });
+
+      await googleOauth2Verify(...googleOauth2VerifyArguments);
+      const user = await prisma.user.findUnique({
+        where: {
+          id: createdUser.id,
+        },
+        select: {
+          profile: {
+            select: {
+              imageUrl: true,
+            },
+          },
+        },
+      });
+      assert(user?.profile);
+
+      expect(user.profile.imageUrl).toBe(profileData._json.picture);
+    });
+  });
+
+  describe("given an error is thrown", () => {
+    it("should call done with that error", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(userQueries, "getUserById").mockImplementation(() => {
+        throw new Error("test: error");
+      });
+
+      await googleOauth2Verify(...googleOauth2VerifyArguments);
+
+      expect(doneMock).toHaveBeenCalledExactlyOnceWith(
+        new Error("test: error"),
+        false,
+      );
     });
   });
 });
