@@ -29,4 +29,51 @@ describe("profile-queries", () => {
       });
     });
   });
+
+  describe(profileQueries.createOrUpdateProfilePicture, () => {
+    it("should create a new profile with a profile picture if no profile is found", async () => {
+      expect.hasAssertions();
+
+      const createdUser = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          id: "test-userId",
+          password: null,
+          provider: "google",
+        },
+      });
+      const profilePicture = await profileQueries.createOrUpdateProfilePicture(
+        createdUser.id,
+        "test-image-url",
+      );
+
+      expect(profilePicture).toBe("test-image-url");
+    });
+
+    it("should update user profile with the provided imageUrl when user profile exists", async () => {
+      expect.hasAssertions();
+
+      const createdUser = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          id: "test-userId",
+          password: null,
+          provider: "google",
+          profile: {
+            create: {
+              imageUrl: "test-image-url-1",
+            },
+          },
+        },
+      });
+      const profilePicture = await profileQueries.createOrUpdateProfilePicture(
+        createdUser.id,
+        "test-image-url",
+      );
+
+      expect(profilePicture).toBe("test-image-url");
+    });
+  });
 });
