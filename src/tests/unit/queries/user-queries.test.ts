@@ -39,6 +39,7 @@ describe("user-queries", () => {
         password: "test-password",
         fullName: "test: full name",
         provider: "local",
+        picture: null,
       });
     });
   });
@@ -113,6 +114,7 @@ describe("user-queries", () => {
         fullName: "test: full name",
         id: user.id,
         provider: "local",
+        picture: null,
       });
     });
   });
@@ -136,6 +138,7 @@ describe("user-queries", () => {
         fullName: "test: full name",
         provider: "local",
         id: createdUser.id,
+        picture: null,
       });
     });
   });
@@ -153,12 +156,13 @@ describe("user-queries", () => {
         "test-email@test.com",
       );
 
-      expect(createdUser).toStrictEqual<typeof createdUser>({
+      expect(createdUser).toStrictEqual<User & { password: string | null }>({
         email: "test-email@test.com",
         fullName: "test: full name",
         id: "test-userId",
         provider: "google",
         password: null,
+        picture: null,
       });
     });
   });
