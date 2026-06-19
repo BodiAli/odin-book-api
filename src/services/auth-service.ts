@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import * as userQueries from "#src/queries/user-queries.js";
+import * as profileQueries from "#src/queries/profile-queries.js";
 import type { Profile, VerifyCallback } from "passport-google-oauth20";
 
 export async function googleOauth2Verify(
@@ -20,13 +21,35 @@ export async function googleOauth2Verify(
         fullName: profile._json.name,
         id: profile._json.sub,
       };
-      const createdUser = await userQueries.createUserGoogle(userData);
 
-      done(null, createdUser);
+      const createdUser = await userQueries.createUserGoogle(userData);
+      const imageUrl = await profileQueries.createOrUpdateProfilePicture(
+        createdUser.id,
+        profile._json.picture ?? null,
+      );
+
+      done(null, {
+        id: createdUser.id,
+        email: createdUser.email,
+        fullName: createdUser.fullName,
+        provider: createdUser.provider,
+        picture: imageUrl,
+      });
       return;
     }
 
-    done(null, user);
+    const imageUrl = await profileQueries.createOrUpdateProfilePicture(
+      user.id,
+      profile._json.picture ?? null,
+    );
+
+    done(null, {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      provider: user.provider,
+      picture: imageUrl,
+    });
   } catch (error) {
     done(error, false);
   }
