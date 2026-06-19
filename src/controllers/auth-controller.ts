@@ -13,10 +13,10 @@ export async function createUser(
   req: Request<unknown, unknown, SignUpRequestBody>,
   res: Response<AuthenticatedResponse | ClientError>,
 ) {
-  const { confirmPassword: _, ...userData } = req.body;
+  const { confirmPassword: _confirmPassword, ...userData } = req.body;
 
   try {
-    const user = await userQueries.createUser(userData);
+    const user = await userQueries.createUserLocal(userData);
     const jwt = issueJwt(user.id);
     res.json({ token: jwt, user });
   } catch (error) {
