@@ -38,6 +38,7 @@ passport.use(
             fullName: user.fullName,
             provider: user.provider,
             id: user.id,
+            picture: user.picture,
           };
           done(null, authenticatedUser);
         } catch (error) {
