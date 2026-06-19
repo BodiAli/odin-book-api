@@ -1,9 +1,9 @@
-import assert from "node:assert";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as bcrypt from "bcrypt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as userQueries from "#src/queries/user-queries.js";
+import { googleOauth2Verify } from "#src/services/auth-service.js";
 import type { User } from "#src/schemas/users/user-schema.js";
 
 passport.use(
@@ -60,31 +60,8 @@ passport.use(
     },
     (_accessToken, _refreshToken, profile, done) => {
       const asyncHandler = async () => {
-        try {
-          const user = await userQueries.getUserById(profile.id);
-
-          if (!user) {
-            assert(profile._json.email, "_json.email is undefined");
-            assert(profile._json.name, "_json.name is undefined");
-
-            const userData: userQueries.CreateUserArguments = {
-              email: profile._json.email,
-              fullName: profile._json.name,
-              provider: "google",
-              password: null,
-            };
-            const createdUser = await userQueries.createUser(userData);
-
-            done(null, createdUser);
-            return;
-          }
-
-          done(null, user);
-        } catch (error) {
-          done(error, false);
-        }
+        await googleOauth2Verify(_accessToken, _refreshToken, profile, done);
       };
-
       void asyncHandler();
     },
   ),
