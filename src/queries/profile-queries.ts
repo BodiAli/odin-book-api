@@ -16,6 +16,26 @@ export async function createProfile({
   return profile;
 }
 
+export async function createOrUpdateProfilePicture(
+  userId: string,
+  imageUrl: string | null,
+) {
+  const profile = await prisma.profile.upsert({
+    create: {
+      userId,
+      imageUrl,
+    },
+    update: {
+      imageUrl,
+    },
+    where: {
+      userId,
+    },
+  });
+
+  return profile.imageUrl;
+}
+
 export interface CreateProfileArguments {
   userId: string;
   imageUrl: string | null;
