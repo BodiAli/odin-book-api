@@ -43,11 +43,11 @@ describe("user-queries", () => {
     });
   });
 
-  describe(userQueries.createUser, () => {
+  describe(userQueries.createUserLocal, () => {
     it("should hash the password before storing it", async () => {
       expect.hasAssertions();
 
-      const user = await userQueries.createUser({
+      const user = await userQueries.createUserLocal({
         fullName: "test: full name",
         email: "test-email@test.com",
         password: "test: password",
@@ -70,7 +70,11 @@ describe("user-queries", () => {
     it("should throw error when creating user with already existing email", async () => {
       expect.hasAssertions();
 
-      const { email, fullName, password }: userQueries.CreateUserArguments = {
+      const {
+        email,
+        fullName,
+        password,
+      }: userQueries.CreateUserLocalArguments = {
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
@@ -85,7 +89,7 @@ describe("user-queries", () => {
       });
 
       await expect(
-        userQueries.createUser({
+        userQueries.createUserLocal({
           email,
           fullName,
           password,
@@ -95,10 +99,10 @@ describe("user-queries", () => {
       );
     });
 
-    it("should return new user record", async () => {
+    it("should create new user record with 'local' provider field", async () => {
       expect.hasAssertions();
 
-      const user = await userQueries.createUser({
+      const user = await userQueries.createUserLocal({
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
@@ -132,6 +136,29 @@ describe("user-queries", () => {
         fullName: "test: full name",
         provider: "local",
         id: createdUser.id,
+      });
+    });
+  });
+
+  describe(userQueries.createUserGoogle, () => {
+    it("should create user field with 'google' provide field", async () => {
+      expect.hasAssertions();
+
+      await userQueries.createUserGoogle({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        id: "test-userId",
+      });
+      const createdUser = await userQueries.getUserWithPasswordByEmail(
+        "test-email@test.com",
+      );
+
+      expect(createdUser).toStrictEqual<typeof createdUser>({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        id: "test-userId",
+        provider: "google",
+        password: null,
       });
     });
   });
