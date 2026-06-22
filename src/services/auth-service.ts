@@ -10,12 +10,13 @@ export async function googleOauth2Verify(
   done: VerifyCallback,
 ) {
   try {
-    const user = await userQueries.getUserById(profile._json.sub);
+    assert(profile._json.email, "_json.email is undefined");
+    assert(profile._json.name, "_json.name is undefined");
 
+    const user = await userQueries.getUserWithPasswordByEmail(
+      profile._json.email,
+    );
     if (!user) {
-      assert(profile._json.email, "_json.email is undefined");
-      assert(profile._json.name, "_json.name is undefined");
-
       const userData: userQueries.CreateUserGoogleArguments = {
         email: profile._json.email,
         fullName: profile._json.name,
