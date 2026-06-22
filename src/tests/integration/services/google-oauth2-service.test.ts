@@ -1,5 +1,5 @@
 import { afterEach, assert, describe, expect, it, vi } from "vitest";
-import { googleOauth2Verify } from "#src/services/auth-service.js";
+import { googleOauth2Verify } from "#src/services/google-oauth2-service.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { Profile, VerifyCallback } from "passport-google-oauth20";

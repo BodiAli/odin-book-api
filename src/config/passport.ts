@@ -3,7 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import * as bcrypt from "bcrypt";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as userQueries from "#src/queries/user-queries.js";
-import { googleOauth2Verify } from "#src/services/auth-service.js";
+import { googleOauth2Verify } from "#src/services/google-oauth2-service.js";
 import type { User } from "#src/schemas/users/user-schema.js";
 
 passport.use(
