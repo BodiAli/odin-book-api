@@ -3,6 +3,7 @@ import { googleOauth2Verify } from "#src/services/auth-service.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { Profile, VerifyCallback } from "passport-google-oauth20";
+import type { User } from "#src/schemas/users/user-schema.js";
 
 describe("auth-service", () => {
   interface ProfileData {
@@ -121,15 +122,37 @@ describe("auth-service", () => {
 
       expect(user.profile.imageUrl).toBe(profileData._json.picture);
     });
+
+    it("should authenticate user even when user has not signed up using oauth", async () => {
+      expect.hasAssertions();
+
+      const createdUser = await userQueries.createUserLocal({
+        email: profileData._json.email,
+        fullName: profileData._json.name,
+        password: "test: password",
+      });
+
+      await googleOauth2Verify(...googleOauth2VerifyArguments);
+
+      expect(doneMock).toHaveBeenCalledExactlyOnceWith<[null, User]>(null, {
+        email: createdUser.email,
+        fullName: createdUser.fullName,
+        id: createdUser.id,
+        provider: "local",
+        picture: "test-image-url",
+      });
+    });
   });
 
   describe("given an error is thrown", () => {
     it("should call done with that error", async () => {
       expect.hasAssertions();
 
-      vi.spyOn(userQueries, "getUserById").mockImplementation(() => {
-        throw new Error("test: error");
-      });
+      vi.spyOn(userQueries, "getUserWithPasswordByEmail").mockImplementation(
+        () => {
+          throw new Error("test: error");
+        },
+      );
 
       await googleOauth2Verify(...googleOauth2VerifyArguments);
 
