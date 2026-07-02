@@ -4,9 +4,11 @@ namespace NodeJS {
     TEST_DATABASE_URL: string;
     PORT: string;
     NODE_ENV: string;
+    JWT_SECRET: string;
     GOOGLE_CLIENT_ID: string;
     GOOGLE_CLIENT_SECRET: string;
     GOOGLE_CALLBACK_URL: string;
-    JWT_SECRET: string;
+    GITHUB_CLIENT_ID: string;
+    GITHUB_CLIENT_SECRET: string;
   }
 }
