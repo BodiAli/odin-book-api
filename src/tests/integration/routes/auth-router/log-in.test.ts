@@ -4,9 +4,11 @@ import express from "express";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
-import type { LogInRequestBody } from "#src/schemas/auth/log-in.js";
-import type { ClientError } from "#src/schemas/errors/error-schemas.js";
-import type { AuthenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
+import type {
+  LogInRequestBody,
+  AuthenticatedResponse,
+} from "#src/types/auth.js";
+import type { ClientError } from "#src/types/errors.js";
 
 describe("logging in endpoints", () => {
   const app = express();
