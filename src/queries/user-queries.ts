@@ -136,7 +136,7 @@ export async function createUserGoogle({
   email,
   fullName,
   id,
-}: CreateUserGoogleArguments): Promise<User> {
+}: CreateUserGoogleArguments) {
   const user = await prisma.user.create({
     data: {
       email,
@@ -145,16 +145,9 @@ export async function createUserGoogle({
       password: null,
       provider: "google",
     },
-    include: {
-      profile: {
-        select: {
-          imageUrl: true,
-        },
-      },
-    },
   });
 
-  return { ...user, picture: user.profile?.imageUrl ?? null };
+  return user;
 }
 
 export interface CreateUserLocalArguments {
