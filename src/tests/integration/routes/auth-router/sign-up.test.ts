@@ -3,9 +3,11 @@ import request from "supertest";
 import express from "express";
 import prisma from "#src/lib/prisma-client.js";
 import indexRouter from "#src/routes/index-router.js";
-import type { SignUpRequestBody } from "#src/schemas/auth/sign-up.js";
-import type { ClientError } from "#src/schemas/errors/error-schemas.js";
-import type { AuthenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
+import type {
+  SignUpRequestBody,
+  AuthenticatedResponse,
+} from "#src/types/auth.js";
+import type { ClientError } from "#src/types/errors.js";
 
 describe("signing up endpoints", () => {
   const app = express();
