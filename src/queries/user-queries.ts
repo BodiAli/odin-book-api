@@ -2,7 +2,7 @@ import * as bcrypt from "bcrypt";
 import prisma from "#src/lib/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { User } from "#src/schemas/users/user-schema.js";
+import type { User } from "#src/types/current-user.js";
 
 export async function getUserWithPasswordByEmail(
   email: string,
@@ -27,6 +27,30 @@ export async function getUserWithPasswordByEmail(
         email: user.email,
         fullName: user.fullName,
         password: user.password,
+        picture: user.profile?.imageUrl ?? null,
+        provider: user.provider,
+      }
+    : null;
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+    include: {
+      profile: {
+        select: {
+          imageUrl: true,
+        },
+      },
+    },
+  });
+  return user
+    ? {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
       }
