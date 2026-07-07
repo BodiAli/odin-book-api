@@ -12,13 +12,13 @@ export async function googleOauth2(userInfo: Oauth2UserInfo): Promise<User> {
       fullName: userInfo.name,
       id: userInfo.sub,
     });
-    await profileQueries.createProfile({
+    const profile = await profileQueries.createProfile({
       userId: createdUser.id,
-      imageUrl: null,
+      imageUrl: userInfo.picture,
       description: null,
     });
 
-    return createdUser;
+    return { ...createdUser, picture: profile.imageUrl };
   }
 
   await profileQueries.createOrUpdateProfilePicture(user.id, userInfo.picture);
