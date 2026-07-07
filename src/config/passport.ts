@@ -1,10 +1,8 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as bcrypt from "bcrypt";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import * as userQueries from "#src/queries/user-queries.js";
-import { googleOauth2Verify } from "#src/services/google-oauth2-service.js";
-import type { User } from "#src/schemas/users/user-schema.js";
+import type { User } from "#src/types/current-user.js";
 
 passport.use(
   new LocalStrategy(
@@ -46,23 +44,6 @@ passport.use(
         }
       };
 
-      void asyncHandler();
-    },
-  ),
-);
-
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      scope: ["email", "profile"],
-    },
-    (_accessToken, _refreshToken, profile, done) => {
-      const asyncHandler = async () => {
-        await googleOauth2Verify(_accessToken, _refreshToken, profile, done);
-      };
       void asyncHandler();
     },
   ),
