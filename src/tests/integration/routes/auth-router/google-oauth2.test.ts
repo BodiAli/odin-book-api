@@ -1,68 +1,101 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import express from "express";
 import request from "supertest";
-import passport from "passport";
-import type { NextFunction, Request, Response } from "express";
-import type { AuthenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
+import jwt from "jsonwebtoken";
+import indexRouter from "#src/routes/index-router.js";
+import prisma from "#src/lib/prisma-client.js";
+import type {
+  Oauth2RequestBody,
+  AuthenticatedResponse,
+} from "#src/types/auth.js";
+import type { ClientError } from "#src/types/errors.js";
 
 describe("google oauth2 endpoints", () => {
-  afterEach(() => {
-    vi.resetModules();
-  });
+  const app = express();
+  app.use(indexRouter);
 
-  describe("redirect to google consent screen GET /auth/google", () => {
-    describe("given a valid request", () => {
-      it("should return 302 status with a location header that links to google oauth2 authorization endpoint", async () => {
+  describe("authenticate with google POST /auth/google", () => {
+    describe("given missing credentials", () => {
+      it("should return 400 status with error messages", async () => {
         expect.hasAssertions();
 
-        const { default: indexRouter } =
-          await import("#src/routes/index-router.js");
-        const app = express();
-        app.use(indexRouter);
-        const response = await request(app).get("/auth/google");
+        const response = await request(app)
+          .post("/auth/google")
+          .type("json")
+          .send({})
+          .expect("Content-type", /json/)
+          .expect(400);
 
-        expect(response.statusCode).toBe(302);
-        expect(response.header["location"]).toMatch(
-          "https://accounts.google.com/o/oauth2/v2/auth",
-        );
+        expect(response.body).toStrictEqual<ClientError>({
+          errors: [
+            {
+              message: "Please provide an authorization code",
+            },
+            {
+              message: "Please provide a code verifier",
+            },
+          ],
+        });
       });
     });
-  });
 
-  describe("google callback url GET /auth/google/callback", () => {
-    describe("given a valid consent", () => {
-      it("should return a JWT and a user object with the provider field value being 'google'", async () => {
+    describe("given non existing user", () => {
+      it("should return create user and return JWT with user object", async () => {
         expect.hasAssertions();
 
-        vi.spyOn(passport, "authenticate").mockReturnValue(
-          (req: Request, _res: Response, next: NextFunction) => {
-            req.user = {
-              id: "test-userId",
-              email: "test-email@test.com",
-              fullName: "test: full name",
-              provider: "google",
-            };
-            next();
+        const userGoogle = {
+          sub: "test-userId",
+          email: "test-email@test.com",
+          name: "test: full name",
+          picture: "test-image-url",
+        };
+        const nonExistingUser = await prisma.user.findUnique({
+          where: {
+            id: userGoogle.sub,
           },
+        });
+        const idToken = jwt.sign(userGoogle, "secret-key");
+        vi.spyOn(globalThis, "fetch").mockResolvedValue(
+          new Response(JSON.stringify({ id_token: idToken }), {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }),
         );
-        const { default: indexRouter } =
-          await import("#src/routes/index-router.js");
-        const app = express();
-        app.use(indexRouter);
+        const requestBody: Oauth2RequestBody = {
+          code: "test-authorization-code",
+          codeVerifier: "test-code-verifier",
+        };
 
-        const response = await request(app).get("/auth/google/callback");
+        const response = await request(app)
+          .post("/auth/google")
+          .type("json")
+          .send(requestBody)
+          .expect("Content-type", /json/)
+          .expect(200);
+        const existingUser = await prisma.user.findUnique({
+          where: {
+            id: userGoogle.sub,
+          },
+        });
 
-        expect(response.statusCode).toBe(200);
+        expect(nonExistingUser).toBeNull();
+        expect(existingUser).not.toBeNull();
         expect(response.body).toStrictEqual<AuthenticatedResponse>({
           token: expect.any(String) as string,
           user: {
-            id: "test-userId",
-            email: "test-email@test.com",
-            fullName: "test: full name",
+            email: userGoogle.email,
+            fullName: userGoogle.name,
+            id: userGoogle.sub,
+            picture: userGoogle.picture,
             provider: "google",
           },
         });
       });
+    });
+
+    describe("given existing user", () => {
+      it.todo("test");
     });
   });
 });
