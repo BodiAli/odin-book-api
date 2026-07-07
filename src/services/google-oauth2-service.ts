@@ -1,57 +1,26 @@
-import assert from "node:assert";
 import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
-import type { Profile, VerifyCallback } from "passport-google-oauth20";
+import type { Oauth2UserInfo } from "#src/types/auth.js";
+import type { User } from "#src/types/current-user.js";
 
-export async function googleOauth2Verify(
-  _accessToken: string,
-  _refreshToken: string,
-  profile: Profile,
-  done: VerifyCallback,
-) {
-  try {
-    assert(profile._json.email, "_json.email is undefined");
-    assert(profile._json.name, "_json.name is undefined");
+export async function googleOauth2(userInfo: Oauth2UserInfo): Promise<User> {
+  const user = await userQueries.getUserByEmail(userInfo.email);
 
-    const user = await userQueries.getUserWithPasswordByEmail(
-      profile._json.email,
-    );
-    if (!user) {
-      const userData: userQueries.CreateUserGoogleArguments = {
-        email: profile._json.email,
-        fullName: profile._json.name,
-        id: profile._json.sub,
-      };
-
-      const createdUser = await userQueries.createUserGoogle(userData);
-      const imageUrl = await profileQueries.createOrUpdateProfilePicture(
-        createdUser.id,
-        profile._json.picture ?? null,
-      );
-
-      done(null, {
-        id: createdUser.id,
-        email: createdUser.email,
-        fullName: createdUser.fullName,
-        provider: createdUser.provider,
-        picture: imageUrl,
-      });
-      return;
-    }
-
-    const imageUrl = await profileQueries.createOrUpdateProfilePicture(
-      user.id,
-      profile._json.picture ?? null,
-    );
-
-    done(null, {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      provider: user.provider,
-      picture: imageUrl,
+  if (!user) {
+    const createdUser = await userQueries.createUserGoogle({
+      email: userInfo.email,
+      fullName: userInfo.name,
+      id: userInfo.sub,
     });
-  } catch (error) {
-    done(error, false);
+    await profileQueries.createProfile({
+      userId: createdUser.id,
+      imageUrl: null,
+      description: null,
+    });
+
+    return createdUser;
   }
+
+  await profileQueries.createOrUpdateProfilePicture(user.id, userInfo.picture);
+  return user;
 }
