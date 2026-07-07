@@ -53,6 +53,7 @@ export default defineConfig([
           varsIgnorePattern: "^_",
         },
       ],
+      "import-x/default": "off",
       "@typescript-eslint/no-empty-object-type": [
         "error",
         { allowInterfaces: "with-single-extends" },
