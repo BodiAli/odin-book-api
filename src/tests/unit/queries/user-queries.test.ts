@@ -3,7 +3,7 @@ import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
 import prisma from "#src/lib/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { User } from "#src/schemas/users/user-schema.js";
+import type { User } from "#src/types/current-user.js";
 
 describe("user-queries", () => {
   describe(userQueries.getUserWithPasswordByEmail, () => {
@@ -37,6 +37,40 @@ describe("user-queries", () => {
         id: expect.any(String) as string,
         email: "test-email@test.com",
         password: "test-password",
+        fullName: "test: full name",
+        provider: "local",
+        picture: null,
+      });
+    });
+  });
+
+  describe(userQueries.getUserByEmail, () => {
+    it("should return null when no user is found", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.getUserByEmail(
+        "non-existing-email@test.com",
+      );
+
+      expect(user).toBeNull();
+    });
+
+    it("should return the user object without password", async () => {
+      expect.hasAssertions();
+
+      await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          password: "test-password",
+          fullName: "test: full name",
+        },
+      });
+
+      const user = await userQueries.getUserByEmail("test-email@test.com");
+
+      expect(user).toStrictEqual<User>({
+        id: expect.any(String) as string,
+        email: "test-email@test.com",
         fullName: "test: full name",
         provider: "local",
         picture: null,
@@ -144,7 +178,7 @@ describe("user-queries", () => {
   });
 
   describe(userQueries.createUserGoogle, () => {
-    it("should create user field with 'google' provide field", async () => {
+    it("should create user field with 'google' as the provider field", async () => {
       expect.hasAssertions();
 
       await userQueries.createUserGoogle({
