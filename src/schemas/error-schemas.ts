@@ -10,6 +10,3 @@ export const clientError = z.object({
 export const serverError = z.object({
   error: z.string(),
 });
-
-export type ClientError = z.infer<typeof clientError>;
-export type ServerError = z.infer<typeof serverError>;

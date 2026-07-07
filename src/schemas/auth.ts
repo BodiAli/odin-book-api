@@ -1,4 +1,24 @@
 import { z } from "zod";
+import { user } from "./user-schema.js";
+
+export const authenticatedResponse = z.object({
+  token: z.string(),
+  user: user,
+});
+
+export const logInRequestBody = z.object({
+  email: z
+    .email("Please provide a valid Email.")
+    .max(254, "Email cannot exceed 254 characters."),
+  password: z
+    .string("Please provide a string Password.")
+    .nonempty("Password cannot be empty."),
+});
+
+export const oauth2RequestBody = z.object({
+  code: z.string("Please provide an authorization code"),
+  codeVerifier: z.string("Please provide a code verifier"),
+});
 
 export const signUpRequestBody = z
   .object({
@@ -19,5 +39,3 @@ export const signUpRequestBody = z
     path: ["confirmPassword"],
     error: "Passwords do not match.",
   });
-
-export type SignUpRequestBody = z.infer<typeof signUpRequestBody>;

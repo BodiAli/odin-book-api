@@ -12,5 +12,3 @@ export const user: z.ZodType<
   provider: z.enum(Provider),
   picture: z.string(),
 });
-
-export type User = z.infer<typeof user>;
