@@ -1,8 +1,11 @@
 import { Router } from "express";
 import validateBody from "#src/middlewares/validate-body.js";
-import { signUpRequestBody } from "#src/schemas/auth/sign-up.js";
+import {
+  signUpRequestBody,
+  logInRequestBody,
+  oauth2RequestBody,
+} from "#src/schemas/auth.js";
 import * as authController from "#src/controllers/auth-controller.js";
-import { logInRequestBody } from "#src/schemas/auth/log-in.js";
 
 const authRouter = Router();
 
@@ -17,7 +20,10 @@ authRouter.post(
   authController.authenticateWithLocal,
 );
 
-authRouter.get("/google", authController.googleConsentScreen);
-authRouter.get("/google/callback", authController.authenticateWithGoogle);
+authRouter.post(
+  "/google",
+  validateBody(oauth2RequestBody),
+  authController.authenticateWithGoogle,
+);
 
 export default authRouter;
