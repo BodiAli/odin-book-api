@@ -1,13 +1,18 @@
-import assert from "node:assert";
 import passport from "passport";
+import jwt from "jsonwebtoken";
 import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import type { SignUpRequestBody } from "#src/schemas/auth/sign-up.js";
+import { googleOauth2 } from "#src/services/google-oauth2-service.js";
+import type {
+  SignUpRequestBody,
+  AuthenticatedResponse,
+  Oauth2RequestBody,
+  Oauth2UserInfo,
+} from "#src/types/auth.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import type { ClientError } from "#src/schemas/errors/error-schemas.js";
-import type { User } from "#src/schemas/users/user-schema.js";
-import type { AuthenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
+import type { ClientError } from "#src/types/errors.js";
+import type { User } from "#src/types/current-user.js";
 
 export async function createUser(
   req: Request<unknown, unknown, SignUpRequestBody>,
@@ -54,16 +59,38 @@ export function authenticateWithLocal(
   )(req, res, next);
 }
 
-export const authenticateWithGoogle: RequestHandler[] = [
-  passport.authenticate("google", { session: false }) as RequestHandler,
-  (req, res: Response<AuthenticatedResponse>) => {
-    assert(req.user, "User is not defined");
+export async function authenticateWithGoogle(
+  req: Request<unknown, unknown, Oauth2RequestBody>,
+  res: Response<AuthenticatedResponse>,
+) {
+  const { code, codeVerifier } = req.body;
 
-    const jwt = issueJwt(req.user.id, "2w");
-    res.json({ token: jwt, user: req.user });
-  },
-];
+  try {
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      body: JSON.stringify({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+        grant_type: "authorization_code",
+        code_verifier: codeVerifier,
+      }),
+    });
+    console.log("RES", response);
+    const data = (await response.json()) as { id_token: string };
+    console.log("DATA", data);
 
-export const googleConsentScreen = passport.authenticate(
-  "google",
-) as RequestHandler;
+    const payload = jwt.decode(data.id_token) as Oauth2UserInfo;
+    const user = await googleOauth2(payload);
+    const jwtToken = issueJwt(payload.sub);
+
+    res.json({
+      token: jwtToken,
+      user,
+    });
+  } catch (error) {
+    console.error("ERROR", error);
+    res.status(500).json("ERROR");
+  }
+}
