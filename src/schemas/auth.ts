@@ -15,10 +15,20 @@ export const logInRequestBody = z.object({
     .nonempty("Password cannot be empty."),
 });
 
-export const oauth2RequestBody = z.object({
-  code: z.string("Please provide an authorization code"),
-  codeVerifier: z.string("Please provide a code verifier"),
-});
+export const oauth2RequestBody = z.xor(
+  [
+    z.object({
+      success: z.literal(true, { error: "Please provide a boolean." }),
+      code: z.string("Please provide an authorization code."),
+      codeVerifier: z.string("Please provide a code verifier."),
+    }),
+    z.object({
+      success: z.literal(false, { error: "Please provide a boolean." }),
+      error: z.string("Please provide a string error."),
+    }),
+  ],
+  "Invalid input.",
+);
 
 export const signUpRequestBody = z
   .object({
