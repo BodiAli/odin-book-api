@@ -146,5 +146,33 @@ registry.registerPath({
         },
       },
     },
+    400: {
+      summary: "Bad request",
+      description:
+        "Failed authorization due to invalid or expired authorization code.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    401: {
+      summary: "Access denied",
+      description: "User denied consent to authorize api to access their info.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: {
+      summary: "Internal server error.",
+      description: "Unexpected error occurred.",
+      content: {
+        "application/json": {
+          schema: serverError,
+        },
+      },
+    },
   },
 });
