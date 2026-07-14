@@ -1,53 +1,28 @@
-import { afterEach, assert, describe, expect, it, vi } from "vitest";
-import { googleOauth2Verify } from "#src/services/google-oauth2-service.js";
+import { assert, describe, expect, it, vi } from "vitest";
+import { googleOauth2 } from "#src/services/google-oauth2-service.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
-import type { Profile, VerifyCallback } from "passport-google-oauth20";
-import type { User } from "#src/schemas/users/user-schema.js";
+import type { User } from "#src/types/current-user.js";
+import type { Oauth2UserData } from "#src/types/auth.js";
 
-describe("auth-service", () => {
-  interface ProfileData {
-    _json: Pick<
-      Required<Profile["_json"]>,
-      "sub" | "email" | "name" | "picture"
-    >;
-  }
-
-  const profileData: ProfileData = {
-    _json: {
-      sub: "test-userId",
-      email: "test-email@test.com",
-      name: "test: full name",
-      picture: "test-image-url",
-    },
-  };
-
-  const doneMock = vi.fn<VerifyCallback>(() => {
-    // empty
-  });
-
-  const googleOauth2VerifyArguments = [
-    "accessToken",
-    "refreshToken",
-    profileData as Profile,
-    doneMock,
-  ] as const;
-
-  afterEach(() => {
-    vi.resetAllMocks();
-  });
-
+describe("google oauth2 service", () => {
   describe("given a non-existing user", () => {
-    it("should create a new user and call the done function with expected arguments", async () => {
+    it("should create a new user and return it", async () => {
       expect.hasAssertions();
 
+      const userData: Oauth2UserData = {
+        email: "test-email@test.com",
+        name: "test: full name",
+        picture: "test-image-url",
+        sub: "test-userId",
+      };
       const userNotExists = await prisma.user.findUnique({
         where: {
-          id: "test-userId",
+          id: userData.sub,
         },
       });
 
-      await googleOauth2Verify(...googleOauth2VerifyArguments);
+      const returnedUser = await googleOauth2(userData);
       const userExists = await prisma.user.findUnique({
         where: {
           id: "test-userId",
@@ -56,34 +31,39 @@ describe("auth-service", () => {
 
       expect(userNotExists).toBeNull();
       expect(userExists).not.toBeNull();
-      expect(doneMock).toHaveBeenCalledExactlyOnceWith(null, {
-        ...userExists,
-        picture: "test-image-url",
+      expect(returnedUser).toStrictEqual<User>({
+        id: userData.sub,
+        email: userData.email,
+        fullName: userData.name,
+        picture: userData.picture,
+        provider: "google",
       });
     });
   });
 
   describe("given an already existing user", () => {
-    it("should call the done function with the user object", async () => {
+    it("should return the existing user object", async () => {
       expect.hasAssertions();
 
       const createUserGoogleMock = vi.spyOn(userQueries, "createUserGoogle");
-      const existingUser = await prisma.user.create({
+      const createdUser = await prisma.user.create({
         data: {
-          email: profileData._json.email,
-          fullName: profileData._json.name,
-          id: profileData._json.sub,
-          provider: "google",
-          password: null,
+          email: "test-email@test.com",
+          fullName: "test: full name 1",
+          id: "test-userId",
+          provider: "local",
+          password: "test: password",
         },
       });
 
-      await googleOauth2Verify(...googleOauth2VerifyArguments);
-
-      expect(doneMock).toHaveBeenCalledExactlyOnceWith(null, {
-        ...existingUser,
+      const returnedUser = await googleOauth2({
+        email: createdUser.email,
+        name: "test: full name 2",
         picture: "test-image-url",
+        sub: "test-userId",
       });
+
+      expect(returnedUser.id).toBe(createdUser.id);
       expect(createUserGoogleMock).not.toHaveBeenCalled();
     });
 
@@ -92,11 +72,11 @@ describe("auth-service", () => {
 
       const createdUser = await prisma.user.create({
         data: {
-          email: profileData._json.email,
-          fullName: profileData._json.name,
-          id: profileData._json.sub,
-          password: null,
-          provider: "google",
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          id: "test-userId-2",
+          password: "test: password",
+          provider: "local",
           profile: {
             create: {
               imageUrl: "test-image-url-1",
@@ -104,8 +84,14 @@ describe("auth-service", () => {
           },
         },
       });
+      const userData: Oauth2UserData = {
+        email: "test-email@test.com",
+        name: "test: full name",
+        picture: "test-image-url-2",
+        sub: "test-userId-1",
+      };
 
-      await googleOauth2Verify(...googleOauth2VerifyArguments);
+      await googleOauth2(userData);
       const user = await prisma.user.findUnique({
         where: {
           id: createdUser.id,
@@ -120,46 +106,7 @@ describe("auth-service", () => {
       });
       assert(user?.profile);
 
-      expect(user.profile.imageUrl).toBe(profileData._json.picture);
-    });
-
-    it("should authenticate user even when user has not signed up using oauth", async () => {
-      expect.hasAssertions();
-
-      const createdUser = await userQueries.createUserLocal({
-        email: profileData._json.email,
-        fullName: profileData._json.name,
-        password: "test: password",
-      });
-
-      await googleOauth2Verify(...googleOauth2VerifyArguments);
-
-      expect(doneMock).toHaveBeenCalledExactlyOnceWith<[null, User]>(null, {
-        email: createdUser.email,
-        fullName: createdUser.fullName,
-        id: createdUser.id,
-        provider: "local",
-        picture: "test-image-url",
-      });
-    });
-  });
-
-  describe("given an error is thrown", () => {
-    it("should call done with that error", async () => {
-      expect.hasAssertions();
-
-      vi.spyOn(userQueries, "getUserWithPasswordByEmail").mockImplementation(
-        () => {
-          throw new Error("test: error");
-        },
-      );
-
-      await googleOauth2Verify(...googleOauth2VerifyArguments);
-
-      expect(doneMock).toHaveBeenCalledExactlyOnceWith(
-        new Error("test: error"),
-        false,
-      );
+      expect(user.profile.imageUrl).toBe(userData.picture);
     });
   });
 });
