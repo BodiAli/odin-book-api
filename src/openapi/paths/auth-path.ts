@@ -2,6 +2,7 @@ import { clientError, serverError } from "#src/schemas/error-schemas.js";
 import {
   authenticatedResponse,
   logInRequestBody,
+  oauth2RequestBody,
   signUpRequestBody,
 } from "#src/schemas/auth.js";
 import registry from "../registry.js";
@@ -125,6 +126,15 @@ registry.registerPath({
   method: "post",
   path: "/auth/google",
   tags: ["auth"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: oauth2RequestBody,
+        },
+      },
+    },
+  },
   responses: {
     200: {
       summary: "OK",
