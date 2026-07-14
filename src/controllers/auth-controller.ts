@@ -4,11 +4,12 @@ import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { googleOauth2 } from "#src/services/google-oauth2-service.js";
+import { fetchWrapper } from "#src/utils/fetch-wrapper.js";
 import type {
   SignUpRequestBody,
   AuthenticatedResponse,
   Oauth2RequestBody,
-  Oauth2UserInfo,
+  Oauth2UserData,
 } from "#src/types/auth.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { ClientError } from "#src/types/errors.js";
@@ -61,12 +62,16 @@ export function authenticateWithLocal(
 
 export async function authenticateWithGoogle(
   req: Request<unknown, unknown, Oauth2RequestBody>,
-  res: Response<AuthenticatedResponse>,
+  res: Response<AuthenticatedResponse | ClientError>,
+  next: NextFunction,
 ) {
-  const { code, codeVerifier } = req.body;
-
   try {
-    const response = await fetch("https://oauth2.googleapis.com/token", {
+    if (!req.body.success) {
+      throw new CustomHttpStatusError(401, "Access denied");
+    }
+    const { code, codeVerifier } = req.body;
+
+    const data = await fetchWrapper("https://oauth2.googleapis.com/token", {
       method: "POST",
       body: JSON.stringify({
         code,
@@ -77,11 +82,7 @@ export async function authenticateWithGoogle(
         code_verifier: codeVerifier,
       }),
     });
-    console.log("RES", response);
-    const data = (await response.json()) as { id_token: string };
-    console.log("DATA", data);
-
-    const payload = jwt.decode(data.id_token) as Oauth2UserInfo;
+    const payload = jwt.decode(data.id_token) as Oauth2UserData;
     const user = await googleOauth2(payload);
     const jwtToken = issueJwt(payload.sub);
 
@@ -90,7 +91,16 @@ export async function authenticateWithGoogle(
       user,
     });
   } catch (error) {
-    console.error("ERROR", error);
-    res.status(500).json("ERROR");
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({
+        errors: [
+          {
+            message: error.message,
+          },
+        ],
+      });
+      return;
+    }
+    next(error);
   }
 }
