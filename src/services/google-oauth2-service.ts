@@ -1,26 +1,29 @@
 import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
-import type { Oauth2UserInfo } from "#src/types/auth.js";
+import type { Oauth2UserData } from "#src/types/auth.js";
 import type { User } from "#src/types/current-user.js";
 
-export async function googleOauth2(userInfo: Oauth2UserInfo): Promise<User> {
-  const user = await userQueries.getUserByEmail(userInfo.email);
+export async function googleOauth2(userData: Oauth2UserData): Promise<User> {
+  const user = await userQueries.getUserByEmail(userData.email);
 
   if (!user) {
     const createdUser = await userQueries.createUserGoogle({
-      email: userInfo.email,
-      fullName: userInfo.name,
-      id: userInfo.sub,
+      email: userData.email,
+      fullName: userData.name,
+      id: userData.sub,
     });
     const profile = await profileQueries.createProfile({
       userId: createdUser.id,
-      imageUrl: userInfo.picture,
+      imageUrl: userData.picture,
       description: null,
     });
 
     return { ...createdUser, picture: profile.imageUrl };
   }
 
-  await profileQueries.createOrUpdateProfilePicture(user.id, userInfo.picture);
-  return user;
+  const imageUrl = await profileQueries.createOrUpdateProfilePicture(
+    user.id,
+    userData.picture,
+  );
+  return { ...user, picture: imageUrl };
 }
