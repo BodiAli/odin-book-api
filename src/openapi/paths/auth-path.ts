@@ -1,7 +1,9 @@
-import { clientError, serverError } from "#src/schemas/errors/error-schemas.js";
-import { signUpRequestBody } from "#src/schemas/auth/sign-up.js";
-import { logInRequestBody } from "#src/schemas/auth/log-in.js";
-import { authenticatedResponse } from "#src/schemas/auth/authenticated-response.js";
+import { clientError, serverError } from "#src/schemas/error-schemas.js";
+import {
+  authenticatedResponse,
+  logInRequestBody,
+  signUpRequestBody,
+} from "#src/schemas/auth.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -120,18 +122,17 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: "get",
+  method: "post",
   path: "/auth/google",
   tags: ["auth"],
   responses: {
-    302: {
-      description: "Redirect",
-      headers: {
-        Location: {
-          description: "Google oauth2 authorization endpoint",
-          schema: {
-            type: "string",
-          },
+    200: {
+      summary: "OK",
+      description:
+        "Authorization code is exchanged successfully and user info is retrieved.",
+      content: {
+        "application/json": {
+          schema: authenticatedResponse,
         },
       },
     },
