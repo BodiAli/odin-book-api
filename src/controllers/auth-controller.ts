@@ -4,7 +4,7 @@ import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { googleOauth2 } from "#src/services/google-oauth2-service.js";
-import { fetchWrapper } from "#src/utils/fetch-wrapper.js";
+import { fetchWrapperOauth2 } from "#src/utils/oauth2-fetch-wrapper.js";
 import type {
   SignUpRequestBody,
   AuthenticatedResponse,
@@ -71,17 +71,20 @@ export async function authenticateWithGoogle(
     }
     const { code, codeVerifier } = req.body;
 
-    const data = await fetchWrapper("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      body: JSON.stringify({
-        code,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_CALLBACK_URL,
-        grant_type: "authorization_code",
-        code_verifier: codeVerifier,
-      }),
-    });
+    const data = await fetchWrapperOauth2(
+      "https://oauth2.googleapis.com/token",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          code,
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+          grant_type: "authorization_code",
+          code_verifier: codeVerifier,
+        }),
+      },
+    );
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
     const user = await googleOauth2(payload);
     const jwtToken = issueJwt(payload.sub);
