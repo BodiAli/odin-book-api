@@ -106,6 +106,7 @@ describe("signing up endpoints", () => {
             id: expect.any(String) as string,
             provider: "local",
             picture: null,
+            isOnline: true,
           },
         });
       });

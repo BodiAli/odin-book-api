@@ -40,6 +40,7 @@ describe("user-queries", () => {
         fullName: "test: full name",
         provider: "local",
         picture: null,
+        isOnline: false,
       });
     });
   });
@@ -74,6 +75,7 @@ describe("user-queries", () => {
         fullName: "test: full name",
         provider: "local",
         picture: null,
+        isOnline: false,
       });
     });
   });
@@ -149,6 +151,7 @@ describe("user-queries", () => {
         id: user.id,
         provider: "local",
         picture: null,
+        isOnline: true,
       });
     });
   });
@@ -173,6 +176,7 @@ describe("user-queries", () => {
         provider: "local",
         id: createdUser.id,
         picture: null,
+        isOnline: false,
       });
     });
   });
@@ -197,6 +201,7 @@ describe("user-queries", () => {
         provider: "google",
         password: null,
         picture: null,
+        isOnline: true,
       });
     });
   });

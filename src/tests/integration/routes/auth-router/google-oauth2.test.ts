@@ -176,6 +176,7 @@ describe("google oauth2 endpoints", () => {
             id: googleUserData.sub,
             picture: googleUserData.picture,
             provider: "google",
+            isOnline: true,
           },
         });
       });
@@ -192,6 +193,7 @@ describe("google oauth2 endpoints", () => {
             id: "test-userId-1",
             password: "test: password",
             provider: "local",
+            isOnline: true,
             profile: {
               create: {
                 imageUrl: "test-image-url-1",
@@ -246,6 +248,7 @@ describe("google oauth2 endpoints", () => {
             id: createdUser.id,
             picture: googleUserData.picture,
             provider: "local",
+            isOnline: createdUser.isOnline,
           },
         });
       });

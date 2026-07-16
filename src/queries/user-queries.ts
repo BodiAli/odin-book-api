@@ -29,6 +29,7 @@ export async function getUserWithPasswordByEmail(
         password: user.password,
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
+        isOnline: user.isOnline,
       }
     : null;
 }
@@ -53,6 +54,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
         fullName: user.fullName,
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
+        isOnline: user.isOnline,
       }
     : null;
 }
@@ -78,6 +80,7 @@ export async function getUserById(id: string): Promise<User | null> {
         fullName: user.fullName,
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
+        isOnline: user.isOnline,
       }
     : null;
 }
@@ -90,11 +93,16 @@ export async function createUserLocal({
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const { profile, ...user } = await prisma.user.create({
+    const {
+      profile,
+      lastSeen: _lastSeen,
+      ...user
+    } = await prisma.user.create({
       data: {
         email,
         fullName,
         password: hashedPassword,
+        isOnline: true,
       },
       include: {
         profile: {
@@ -137,13 +145,14 @@ export async function createUserGoogle({
   fullName,
   id,
 }: CreateUserGoogleArguments) {
-  const user = await prisma.user.create({
+  const { lastSeen: _lastSeen, ...user } = await prisma.user.create({
     data: {
       email,
       fullName,
       id,
       password: null,
       provider: "google",
+      isOnline: true,
     },
   });
 

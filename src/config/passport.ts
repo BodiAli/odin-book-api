@@ -37,6 +37,7 @@ passport.use(
             provider: user.provider,
             id: user.id,
             picture: user.picture,
+            isOnline: user.isOnline,
           };
           done(null, authenticatedUser);
         } catch (error) {

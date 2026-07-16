@@ -95,6 +95,7 @@ describe("logging in endpoints", () => {
             id: user.id,
             provider: "local",
             picture: null,
+            isOnline: true,
           },
         });
       });
