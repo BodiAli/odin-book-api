@@ -1,26 +1,34 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchWrapperGoogleOauth2 } from "#src/utils/fetch-wrapper-google-oauth2.js";
+import { getUserInfoGoogle } from "#src/services/get-user-info-google.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 
-describe(fetchWrapperGoogleOauth2, () => {
+describe(getUserInfoGoogle, () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
 
-  const url = "test-access_token-endpoint";
-  const requestInit = {};
+  const argumentsObj = {
+    code: "authorization-code",
+    codeVerifier: "code-verifier",
+  };
 
-  it("should throw a CustomHttpStatusError when the authorization code is invalid", async () => {
+  it("should throw a CustomHttpStatusError with the error description when error is 'invalid_grant'", async () => {
     expect.hasAssertions();
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ error: "invalid_grant" }), {
-        status: 400,
-      }),
+      new Response(
+        JSON.stringify({
+          error: "invalid_grant",
+          error_description: "Invalid code verifier.",
+        }),
+        {
+          status: 400,
+        },
+      ),
     );
 
-    await expect(fetchWrapperGoogleOauth2(url, requestInit)).rejects.toThrow(
-      new CustomHttpStatusError(400, "Invalid or expired authorization code."),
+    await expect(getUserInfoGoogle(argumentsObj)).rejects.toThrow(
+      new CustomHttpStatusError(400, "Invalid code verifier."),
     );
   });
 
@@ -33,7 +41,7 @@ describe(fetchWrapperGoogleOauth2, () => {
       }),
     );
 
-    await expect(fetchWrapperGoogleOauth2(url, requestInit)).rejects.toThrow(
+    await expect(getUserInfoGoogle(argumentsObj)).rejects.toThrow(
       new Error("Authentication failed."),
     );
   });
@@ -47,9 +55,7 @@ describe(fetchWrapperGoogleOauth2, () => {
       }),
     );
 
-    await expect(
-      fetchWrapperGoogleOauth2(url, requestInit),
-    ).resolves.toStrictEqual({
+    await expect(getUserInfoGoogle(argumentsObj)).resolves.toStrictEqual({
       id_token: "idToken",
     });
   });
