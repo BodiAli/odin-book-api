@@ -93,7 +93,7 @@ describe("google oauth2 endpoints", () => {
     });
 
     describe("given invalid authorization code", () => {
-      it("should return 400 status with error message", async () => {
+      it("should return 400 status with error description", async () => {
         expect.hasAssertions();
 
         const requestBody: Oauth2RequestBody = {
@@ -102,10 +102,15 @@ describe("google oauth2 endpoints", () => {
           codeVerifier: "test-code-verifier",
         };
         vi.spyOn(globalThis, "fetch").mockResolvedValue(
-          new Response(JSON.stringify({ error: "invalid_grant" }), {
-            status: 400,
-            statusText: "Bad request",
-          }),
+          new Response(
+            JSON.stringify({
+              error: "invalid_grant",
+              error_description: "Bad request",
+            }),
+            {
+              status: 400,
+            },
+          ),
         );
 
         const response = await request(app)
@@ -118,7 +123,7 @@ describe("google oauth2 endpoints", () => {
         expect(response.body).toStrictEqual<ClientError>({
           errors: [
             {
-              message: "Invalid or expired authorization code.",
+              message: "Bad request",
             },
           ],
         });
