@@ -26,4 +26,6 @@ authRouter.post(
   authController.authenticateWithGoogle,
 );
 
+authRouter.post("/github", authController.authenticateWithGithub);
+
 export default authRouter;
