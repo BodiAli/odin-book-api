@@ -1,6 +1,6 @@
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 
-export async function fetchWrapperOauth2(url: string, init: RequestInit) {
+export async function fetchWrapperGoogleOauth2(url: string, init: RequestInit) {
   const response = await fetch(url, init);
 
   if (!response.ok) {
