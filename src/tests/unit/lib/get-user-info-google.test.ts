@@ -1,16 +1,26 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getUserInfoGoogle } from "#src/lib/get-user-info-google.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import type { Oauth2RequestBody } from "#src/types/auth.js";
 
 describe(getUserInfoGoogle, () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
 
-  const argumentsObj = {
+  const argumentsObj: Oauth2RequestBody = {
     code: "authorization-code",
     codeVerifier: "code-verifier",
+    success: true,
   };
+
+  it("should throw a CustomHttpStatusError with a 401 status code with an 'Access denied' message when 'error' argument is not null", async () => {
+    expect.hasAssertions();
+
+    await expect(
+      getUserInfoGoogle({ error: "access_denied", success: false }),
+    ).rejects.toThrow(new CustomHttpStatusError(401, "Access denied"));
+  });
 
   it("should throw a CustomHttpStatusError with the error description when error is 'invalid_grant'", async () => {
     expect.hasAssertions();

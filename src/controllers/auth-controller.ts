@@ -67,12 +67,7 @@ export async function authenticateWithGoogle(
   next: NextFunction,
 ) {
   try {
-    if (!req.body.success) {
-      throw new CustomHttpStatusError(401, "Access denied");
-    }
-    const { code, codeVerifier } = req.body;
-
-    const data = await getUserInfoGoogle({ code, codeVerifier });
+    const data = await getUserInfoGoogle(req.body);
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
     const user = await googleOauth2(payload);
     const jwtToken = issueJwt(payload.sub);
