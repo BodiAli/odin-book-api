@@ -95,9 +95,7 @@ export async function authenticateWithGithub(
   req: Request<unknown, unknown, { code: string }>,
   res: Response,
 ) {
-  const { code } = req.body;
-
-  const data = await getUserInfoGithub({ code });
+  const data = await getUserInfoGithub(req.body);
 
   res.json("HIII");
 }
