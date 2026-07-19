@@ -4,8 +4,8 @@ import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { googleOauth2 } from "#src/services/google-oauth2-authenticate.js";
-import { getUserInfoGoogle } from "#src/services/get-user-info-google.js";
-import { getUserInfoGithub } from "#src/services/get-user-info-github.js";
+import { getUserInfoGoogle } from "#src/lib/get-user-info-google.js";
+import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import type {
   SignUpRequestBody,
   AuthenticatedResponse,

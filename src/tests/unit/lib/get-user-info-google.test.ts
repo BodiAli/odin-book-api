@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getUserInfoGoogle } from "#src/services/get-user-info-google.js";
+import { getUserInfoGoogle } from "#src/lib/get-user-info-google.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 
 describe(getUserInfoGoogle, () => {
