@@ -14,7 +14,7 @@ describe(getUserInfoGoogle, () => {
     success: true,
   };
 
-  it("should throw a CustomHttpStatusError with a 401 status code with an 'Access denied' message when 'error' argument is not null", async () => {
+  it("should throw a CustomHttpStatusError with a 401 status code when 'success' argument is false", async () => {
     expect.hasAssertions();
 
     await expect(
