@@ -92,7 +92,7 @@ export async function authenticateWithGoogle(
 }
 
 export async function authenticateWithGithub(
-  req: Request<unknown, unknown, { code: string }>,
+  req: Request<unknown, unknown, Oauth2RequestBody>,
   res: Response,
 ) {
   const data = await getUserInfoGithub(req.body);
