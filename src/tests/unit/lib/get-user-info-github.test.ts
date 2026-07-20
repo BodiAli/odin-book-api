@@ -1,7 +1,7 @@
 import { describe, it, afterEach, vi, expect } from "vitest";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Oauth2RequestBody } from "#src/types/auth.js";
+import type { Oauth2RequestBody, Oauth2UserData } from "#src/types/auth.js";
 
 describe(getUserInfoGithub, () => {
   afterEach(() => {
@@ -10,6 +10,7 @@ describe(getUserInfoGithub, () => {
 
   const argumentsObj: Oauth2RequestBody = {
     code: "authorization-code",
+    codeVerifier: "code-verifier",
     success: true,
   };
 
@@ -28,16 +29,38 @@ describe(getUserInfoGithub, () => {
       vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
 
       await expect(
-        getUserInfoGithub({ success: true, code: "authorization-code" }),
+        getUserInfoGithub({
+          success: true,
+          code: "authorization-code",
+          codeVerifier: "code-verifier",
+        }),
       ).rejects.not.toThrow(new CustomHttpStatusError(401, "Access denied"));
     });
   });
 
   describe("exchanging authorization code for an access token", () => {
-    /* 
-      Github returns a 200 status code regardless of request error so when it responds with
-      a code that is not 200 it means that this error is unexpected.
-    */
+    it("should throw a CustomHttpStatusError with a 400 status code and pass the error_description if error is 'invalid_grant'", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: "invalid_grant",
+            error_description:
+              "code verifier did not match the code challenge sent in the request",
+          }),
+          { status: 400 },
+        ),
+      );
+
+      await expect(getUserInfoGithub(argumentsObj)).rejects.toThrow(
+        new CustomHttpStatusError(
+          400,
+          "code verifier did not match the code challenge sent in the request",
+        ),
+      );
+    });
+
     it("should throw a CustomHttpStatusError with a 502 status code if response is not ok", async () => {
       expect.hasAssertions();
 
@@ -111,26 +134,121 @@ describe(getUserInfoGithub, () => {
   });
 
   describe("getting basic user info", () => {
-    it.todo(
-      "should throw a CustomHttpStatusError with a 401 status code when access token is missing or invalid",
-      async () => {
-        expect.hasAssertions();
+    it("should throw a CustomHttpStatusError with a 502 status code when response is not ok", async () => {
+      expect.hasAssertions();
 
-        vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      vi.spyOn(globalThis, "fetch")
+        .mockResolvedValueOnce(
           new Response(
             JSON.stringify({ access_token: "expired-access-token" }),
             {
+              status: 200,
               headers: {
                 "Content-Type": "application/json",
               },
             },
           ),
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({ message: "Invalid access token", status: "401" }),
+            { status: 401 },
+          ),
         );
 
-        await expect(getUserInfoGithub(argumentsObj)).rejects.toThrow(
-          new CustomHttpStatusError(401, "Invalid access token"),
-        );
-      },
-    );
+      await expect(getUserInfoGithub(argumentsObj)).rejects.toThrow(
+        new CustomHttpStatusError(502, "Failed to authenticate with Github."),
+      );
+    });
+  });
+
+  describe("getting user emails", () => {
+    it("should throw a CustomHttpStatusError with a 502 status code when response is not ok", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            access_token: "expired-access-token",
+          }),
+          { status: 200 },
+        ),
+      );
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 123,
+            name: "test: github name",
+            avatar_url: "test-image-url",
+          }),
+          { status: 200 },
+        ),
+      );
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            message: "Invalid access token",
+            status: "401",
+          }),
+          { status: 401 },
+        ),
+      );
+
+      await expect(getUserInfoGithub(argumentsObj)).rejects.toThrow(
+        new CustomHttpStatusError(502, "Failed to authenticate with Github."),
+      );
+    });
+  });
+
+  describe("returning a successful response", () => {
+    it("should return expected user data", async () => {
+      expect.hasAssertions();
+
+      const userData: Oauth2UserData = {
+        email: "test-primary-email@test.com",
+        name: "test: github name",
+        sub: "123",
+        picture: "test-image-url",
+      };
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            access_token: "access-token",
+          }),
+          { status: 200 },
+        ),
+      );
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: 123,
+            name: "test: github name",
+            avatar_url: "test-image-url",
+          }),
+          { status: 200 },
+        ),
+      );
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
+            {
+              email: "test-not-primary-email@test.com",
+              verified: true,
+              primary: false,
+            },
+            {
+              email: "test-primary-email@test.com",
+              verified: true,
+              primary: true,
+            },
+          ]),
+          { status: 200 },
+        ),
+      );
+
+      await expect(getUserInfoGithub(argumentsObj)).resolves.toStrictEqual(
+        userData,
+      );
+    });
   });
 });
