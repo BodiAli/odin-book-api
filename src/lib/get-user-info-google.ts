@@ -27,7 +27,7 @@ export async function getIdTokenGoogle(requestBody: Oauth2RequestBody) {
     if (error === "invalid_grant") {
       throw new CustomHttpStatusError(400, error_description);
     }
-    throw new Error("Authentication failed.");
+    throw new CustomHttpStatusError(502, "Failed to authenticate with Google.");
   }
 
   const data = (await response.json()) as { id_token: string };
