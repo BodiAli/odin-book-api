@@ -177,7 +177,6 @@ describe(getUserInfoGithub, () => {
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 123,
             name: "test: github name",
             avatar_url: "test-image-url",
           }),
@@ -207,7 +206,6 @@ describe(getUserInfoGithub, () => {
       const userData: Oauth2UserData = {
         email: "test-primary-email@test.com",
         name: "test: github name",
-        sub: "123",
         picture: "test-image-url",
       };
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
@@ -221,7 +219,6 @@ describe(getUserInfoGithub, () => {
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            id: 123,
             name: "test: github name",
             avatar_url: "test-image-url",
           }),
