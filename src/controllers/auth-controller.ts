@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import { googleOauth2 } from "#src/services/google-oauth2-authenticate.js";
+import { returnOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
 import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import type {
@@ -69,8 +69,8 @@ export async function authenticateWithGoogle(
   try {
     const data = await getIdTokenGoogle(req.body);
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
-    const user = await googleOauth2(payload);
-    const jwtToken = issueJwt(payload.sub);
+    const user = await returnOrCreateOauth2User(payload, "google");
+    const jwtToken = issueJwt(user.id);
 
     res.json({
       token: jwtToken,
@@ -93,9 +93,23 @@ export async function authenticateWithGoogle(
 
 export async function authenticateWithGithub(
   req: Request<unknown, unknown, Oauth2RequestBody>,
-  res: Response,
+  res: Response<AuthenticatedResponse | ClientError>,
+  next: NextFunction,
 ) {
-  const data = await getUserInfoGithub(req.body);
+  try {
+    const userInfo = await getUserInfoGithub(req.body);
+    const user = await returnOrCreateOauth2User(userInfo, "github");
+    const jwtToken = issueJwt(user.id);
 
-  res.json("HIII");
+    res.json({
+      token: jwtToken,
+      user,
+    });
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
 }
