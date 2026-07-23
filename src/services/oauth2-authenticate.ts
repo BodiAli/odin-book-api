@@ -2,15 +2,19 @@ import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
 import type { Oauth2UserData } from "#src/types/auth.js";
 import type { User } from "#src/types/current-user.js";
+import type { Provider } from "#src/generated/prisma/enums.js";
 
-export async function googleOauth2(userData: Oauth2UserData): Promise<User> {
+export async function returnOrCreateOauth2User(
+  userData: Oauth2UserData,
+  provider: Provider,
+): Promise<User> {
   const user = await userQueries.getUserByEmail(userData.email);
 
   if (!user) {
-    const createdUser = await userQueries.createUserGoogle({
+    const createdUser = await userQueries.createUserOauth({
       email: userData.email,
       fullName: userData.name,
-      id: userData.sub,
+      provider,
     });
     const profile = await profileQueries.createProfile({
       userId: createdUser.id,
