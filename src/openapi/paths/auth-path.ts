@@ -176,3 +176,66 @@ registry.registerPath({
     },
   },
 });
+
+registry.registerPath({
+  method: "post",
+  path: "/auth/github",
+  tags: ["auth"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: oauth2RequestBody,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      summary: "OK",
+      description:
+        "Authorization code is exchanged successfully and user info is retrieved.",
+      content: {
+        "application/json": {
+          schema: authenticatedResponse,
+        },
+      },
+    },
+    400: {
+      summary: "Bad request",
+      description: "Invalid code_verifier.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    401: {
+      summary: "Access Denied",
+      description: "User denied consent to authorize api to access their info.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    502: {
+      summary: "Bad gateway",
+      description: "Server received an unexpected response Github.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: {
+      summary: "Internal server error.",
+      description: "Unexpected error occurred.",
+      content: {
+        "application/json": {
+          schema: serverError,
+        },
+      },
+    },
+  },
+});
