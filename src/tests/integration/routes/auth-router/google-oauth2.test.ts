@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, assert } from "vitest";
 import express from "express";
 import request from "supertest";
 import jwt from "jsonwebtoken";
@@ -11,7 +11,7 @@ import type {
 } from "#src/types/auth.js";
 import type { ClientError } from "#src/types/errors.js";
 
-describe("google oauth2 endpoints", () => {
+describe("google oauth2 endpoint", () => {
   const app = express();
   app.use(indexRouter);
 
@@ -68,7 +68,7 @@ describe("google oauth2 endpoints", () => {
     });
 
     describe("given request failed due to unknown reason", () => {
-      it("should return 500 status", async () => {
+      it("should return 502 status", async () => {
         expect.hasAssertions();
 
         const requestBody: Oauth2RequestBody = {
@@ -88,7 +88,7 @@ describe("google oauth2 endpoints", () => {
           .type("json")
           .send(requestBody);
 
-        expect(response.serverError).toBe(true);
+        expect(response.statusCode).toBe(502);
       });
     });
 
@@ -135,14 +135,13 @@ describe("google oauth2 endpoints", () => {
         expect.hasAssertions();
 
         const googleUserData: Oauth2UserData = {
-          sub: "test-userId",
           email: "test-email@test.com",
           name: "test: full name",
           picture: "test-image-url",
         };
         const nonExistingUser = await prisma.user.findUnique({
           where: {
-            id: googleUserData.sub,
+            email: googleUserData.email,
           },
         });
         const idToken = jwt.sign(googleUserData, "secret-key");
@@ -167,18 +166,19 @@ describe("google oauth2 endpoints", () => {
           .expect(200);
         const existingUser = await prisma.user.findUnique({
           where: {
-            id: googleUserData.sub,
+            email: googleUserData.email,
           },
         });
+        assert(existingUser);
 
         expect(nonExistingUser).toBeNull();
         expect(existingUser).not.toBeNull();
         expect(response.body).toStrictEqual<AuthenticatedResponse>({
           token: expect.any(String) as string,
           user: {
+            id: existingUser.id,
             email: googleUserData.email,
             fullName: googleUserData.name,
-            id: googleUserData.sub,
             picture: googleUserData.picture,
             provider: "google",
             isOnline: true,
@@ -195,7 +195,7 @@ describe("google oauth2 endpoints", () => {
           data: {
             email: "test-email@test.com",
             fullName: "test: full name",
-            id: "test-userId-1",
+            id: "test-userId",
             password: "test: password",
             provider: "local",
             isOnline: true,
@@ -217,7 +217,6 @@ describe("google oauth2 endpoints", () => {
           email: "test-email@test.com",
           name: "test: full name",
           picture: "test-image-url-2",
-          sub: "test-userId-2",
         };
         const idToken = jwt.sign(googleUserData, "secret-key");
         vi.spyOn(globalThis, "fetch").mockResolvedValue(
