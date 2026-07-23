@@ -25,7 +25,10 @@ authRouter.post(
   validateBody(oauth2RequestBody),
   authController.authenticateWithGoogle,
 );
-
-authRouter.post("/github", authController.authenticateWithGithub);
+authRouter.post(
+  "/github",
+  validateBody(oauth2RequestBody),
+  authController.authenticateWithGithub,
+);
 
 export default authRouter;
