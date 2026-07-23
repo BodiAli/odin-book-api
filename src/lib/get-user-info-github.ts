@@ -13,7 +13,6 @@ interface CodeSuccessfulResponse {
 type CodeExchangeResponse = CodeErrorResponse | CodeSuccessfulResponse;
 
 interface UserInfoResponse {
-  id: number;
   name: string;
   avatar_url: string;
 }
@@ -104,7 +103,6 @@ export async function getUserInfoGithub(
     email: primaryEmail.email,
     name: userInfoData.name,
     picture: userInfoData.avatar_url,
-    sub: String(userInfoData.id),
   };
 
   return userData;
