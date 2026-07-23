@@ -52,7 +52,7 @@ describe(getIdTokenGoogle, () => {
     );
 
     await expect(getIdTokenGoogle(argumentsObj)).rejects.toThrow(
-      new Error("Authentication failed."),
+      new CustomHttpStatusError(502, "Failed to authenticate with Google."),
     );
   });
 
