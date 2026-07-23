@@ -3,6 +3,7 @@ import prisma from "#src/lib/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { User } from "#src/types/current-user.js";
+import type { Provider } from "#src/generated/prisma/enums.js";
 
 export async function getUserWithPasswordByEmail(
   email: string,
@@ -140,18 +141,17 @@ export async function createUserLocal({
   }
 }
 
-export async function createUserGoogle({
+export async function createUserOauth({
   email,
   fullName,
-  id,
-}: CreateUserGoogleArguments) {
+  provider,
+}: CreateUserOauth2) {
   const { lastSeen: _lastSeen, ...user } = await prisma.user.create({
     data: {
       email,
       fullName,
-      id,
       password: null,
-      provider: "google",
+      provider: provider,
       isOnline: true,
     },
   });
@@ -164,8 +164,8 @@ export interface CreateUserLocalArguments {
   fullName: string;
   password: string;
 }
-export interface CreateUserGoogleArguments {
-  id: string;
+export interface CreateUserOauth2 {
   email: string;
   fullName: string;
+  provider: Provider;
 }
