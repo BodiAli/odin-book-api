@@ -181,24 +181,47 @@ describe("user-queries", () => {
     });
   });
 
-  describe(userQueries.createUserGoogle, () => {
-    it("should create user field with 'google' as the provider field", async () => {
+  describe(userQueries.createUserOauth, () => {
+    it("should create user with 'google' as the provider field when 'google' value is passed", async () => {
       expect.hasAssertions();
 
-      await userQueries.createUserGoogle({
+      await userQueries.createUserOauth({
         email: "test-email@test.com",
         fullName: "test: full name",
-        id: "test-userId",
+        provider: "google",
       });
       const createdUser = await userQueries.getUserWithPasswordByEmail(
         "test-email@test.com",
       );
 
       expect(createdUser).toStrictEqual<User & { password: string | null }>({
+        id: expect.any(String) as string,
         email: "test-email@test.com",
         fullName: "test: full name",
-        id: "test-userId",
         provider: "google",
+        password: null,
+        picture: null,
+        isOnline: true,
+      });
+    });
+
+    it("should create user with 'github' as the provider field when 'github' value is passed", async () => {
+      expect.hasAssertions();
+
+      await userQueries.createUserOauth({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        provider: "github",
+      });
+      const createdUser = await userQueries.getUserWithPasswordByEmail(
+        "test-email@test.com",
+      );
+
+      expect(createdUser).toStrictEqual<User & { password: string | null }>({
+        id: expect.any(String) as string,
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        provider: "github",
         password: null,
         picture: null,
         isOnline: true,
