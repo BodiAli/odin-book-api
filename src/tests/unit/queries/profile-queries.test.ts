@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/lib/prisma-client.js";
 import type { ProfileModel } from "#src/generated/prisma/models.js";
@@ -43,12 +43,19 @@ describe("profile-queries", () => {
           provider: "google",
         },
       });
-      const profilePicture = await profileQueries.createOrUpdateProfilePicture(
+      await profileQueries.createOrUpdateProfilePicture(
         createdUser.id,
         "test-image-url",
       );
 
-      expect(profilePicture).toBe("test-image-url");
+      const createdProfile = await prisma.profile.findUnique({
+        where: {
+          userId: createdUser.id,
+        },
+      });
+      assert(createdProfile);
+
+      expect(createdProfile.imageUrl).toBe("test-image-url");
     });
 
     it("should update user profile with the provided imageUrl when user profile exists", async () => {
@@ -68,12 +75,26 @@ describe("profile-queries", () => {
           },
         },
       });
+      const notUpdatedProfile = await prisma.profile.findUnique({
+        where: {
+          userId: createdUser.id,
+        },
+      });
+      assert(notUpdatedProfile);
       const profilePicture = await profileQueries.createOrUpdateProfilePicture(
         createdUser.id,
         "test-image-url",
       );
+      const updatedProfile = await prisma.profile.findUnique({
+        where: {
+          userId: createdUser.id,
+        },
+      });
+      assert(updatedProfile);
 
-      expect(profilePicture).toBe("test-image-url");
+      expect(notUpdatedProfile.imageUrl).toBe("test-image-url-1");
+      expect(updatedProfile.imageUrl).toBe("test-image-url");
+      expect(profilePicture).toBe(updatedProfile.imageUrl);
     });
   });
 });
