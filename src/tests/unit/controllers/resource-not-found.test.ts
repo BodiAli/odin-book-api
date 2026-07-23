@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import express from "express";
 import request from "supertest";
-import resourceNotFound from "#src/middlewares/resource-not-found.js";
+import resourceNotFound from "#src/errors/resource-not-found.js";
 
 describe("resourceNotFound middleware", () => {
   const app = express();

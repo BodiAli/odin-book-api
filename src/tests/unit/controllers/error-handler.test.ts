@@ -1,17 +1,17 @@
 import request from "supertest";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import genericErrorHandler from "#src/middlewares/generic-error-handler.js";
+import errorHandler from "#src/errors/error-handler.js";
 import type { ServerError } from "#src/types/errors.js";
 
-describe(genericErrorHandler, () => {
+describe(errorHandler, () => {
   const app = express();
 
   beforeEach(() => {
     app.get("/test", (_req, _res, next) => {
       next(new Error("test: error thrown"));
     });
-    app.use(genericErrorHandler);
+    app.use(errorHandler);
     vi.spyOn(console, "error").mockImplementation(() => null);
   });
 
