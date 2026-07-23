@@ -1,7 +1,7 @@
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { Oauth2RequestBody } from "#src/types/auth.js";
 
-export async function getUserInfoGoogle(requestBody: Oauth2RequestBody) {
+export async function getIdTokenGoogle(requestBody: Oauth2RequestBody) {
   if (!requestBody.success) {
     throw new CustomHttpStatusError(401, "Access denied");
   }

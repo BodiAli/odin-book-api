@@ -4,7 +4,7 @@ import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { googleOauth2 } from "#src/services/google-oauth2-authenticate.js";
-import { getUserInfoGoogle } from "#src/lib/get-user-info-google.js";
+import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import type {
   SignUpRequestBody,
@@ -67,7 +67,7 @@ export async function authenticateWithGoogle(
   next: NextFunction,
 ) {
   try {
-    const data = await getUserInfoGoogle(req.body);
+    const data = await getIdTokenGoogle(req.body);
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
     const user = await googleOauth2(payload);
     const jwtToken = issueJwt(payload.sub);

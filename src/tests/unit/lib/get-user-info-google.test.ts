@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getUserInfoGoogle } from "#src/lib/get-user-info-google.js";
+import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { Oauth2RequestBody } from "#src/types/auth.js";
 
-describe(getUserInfoGoogle, () => {
+describe(getIdTokenGoogle, () => {
   afterEach(() => {
     vi.resetAllMocks();
   });
@@ -18,7 +18,7 @@ describe(getUserInfoGoogle, () => {
     expect.hasAssertions();
 
     await expect(
-      getUserInfoGoogle({ error: "access_denied", success: false }),
+      getIdTokenGoogle({ error: "access_denied", success: false }),
     ).rejects.toThrow(new CustomHttpStatusError(401, "Access denied"));
   });
 
@@ -37,7 +37,7 @@ describe(getUserInfoGoogle, () => {
       ),
     );
 
-    await expect(getUserInfoGoogle(argumentsObj)).rejects.toThrow(
+    await expect(getIdTokenGoogle(argumentsObj)).rejects.toThrow(
       new CustomHttpStatusError(400, "Invalid code verifier."),
     );
   });
@@ -51,7 +51,7 @@ describe(getUserInfoGoogle, () => {
       }),
     );
 
-    await expect(getUserInfoGoogle(argumentsObj)).rejects.toThrow(
+    await expect(getIdTokenGoogle(argumentsObj)).rejects.toThrow(
       new Error("Authentication failed."),
     );
   });
@@ -65,7 +65,7 @@ describe(getUserInfoGoogle, () => {
       }),
     );
 
-    await expect(getUserInfoGoogle(argumentsObj)).resolves.toStrictEqual({
+    await expect(getIdTokenGoogle(argumentsObj)).resolves.toStrictEqual({
       id_token: "idToken",
     });
   });
