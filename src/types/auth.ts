@@ -13,7 +13,6 @@ export type SignUpRequestBody = z.infer<typeof signUpRequestBody>;
 
 export type Oauth2RequestBody = z.infer<typeof oauth2RequestBody>;
 export interface Oauth2UserData {
-  sub: string;
   email: string;
   name: string;
   picture: string;
