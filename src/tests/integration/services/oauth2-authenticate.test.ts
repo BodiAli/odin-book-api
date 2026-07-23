@@ -1,11 +1,11 @@
 import { assert, describe, expect, it, vi } from "vitest";
-import { googleOauth2 } from "#src/services/google-oauth2-authenticate.js";
+import { returnOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/types/current-user.js";
 import type { Oauth2UserData } from "#src/types/auth.js";
 
-describe("google oauth2 service", () => {
+describe("oauth2 service", () => {
   describe("given a non-existing user", () => {
     it("should create a new user and return it", async () => {
       expect.hasAssertions();
@@ -14,25 +14,24 @@ describe("google oauth2 service", () => {
         email: "test-email@test.com",
         name: "test: full name",
         picture: "test-image-url",
-        sub: "test-userId",
       };
       const userNotExists = await prisma.user.findUnique({
         where: {
-          id: userData.sub,
+          email: userData.email,
         },
       });
 
-      const returnedUser = await googleOauth2(userData);
+      const returnedUser = await returnOrCreateOauth2User(userData, "google");
       const userExists = await prisma.user.findUnique({
         where: {
-          id: "test-userId",
+          email: userData.email,
         },
       });
 
       expect(userNotExists).toBeNull();
       expect(userExists).not.toBeNull();
       expect(returnedUser).toStrictEqual<User>({
-        id: userData.sub,
+        id: expect.any(String) as string,
         email: userData.email,
         fullName: userData.name,
         picture: userData.picture,
@@ -46,26 +45,27 @@ describe("google oauth2 service", () => {
     it("should return the existing user object", async () => {
       expect.hasAssertions();
 
-      const createUserGoogleMock = vi.spyOn(userQueries, "createUserGoogle");
+      const createUserOauthMock = vi.spyOn(userQueries, "createUserOauth");
       const createdUser = await prisma.user.create({
         data: {
           email: "test-email@test.com",
           fullName: "test: full name 1",
-          id: "test-userId",
           provider: "local",
           password: "test: password",
         },
       });
 
-      const returnedUser = await googleOauth2({
-        email: createdUser.email,
-        name: "test: full name 2",
-        picture: "test-image-url",
-        sub: "test-userId",
-      });
+      const returnedUser = await returnOrCreateOauth2User(
+        {
+          email: createdUser.email,
+          name: "test: full name 2",
+          picture: "test-image-url",
+        },
+        "github",
+      );
 
       expect(returnedUser.id).toBe(createdUser.id);
-      expect(createUserGoogleMock).not.toHaveBeenCalled();
+      expect(createUserOauthMock).not.toHaveBeenCalled();
     });
 
     it("should update the existing user profile picture", async () => {
@@ -89,10 +89,9 @@ describe("google oauth2 service", () => {
         email: "test-email@test.com",
         name: "test: full name",
         picture: "test-image-url-2",
-        sub: "test-userId-1",
       };
 
-      await googleOauth2(userData);
+      await returnOrCreateOauth2User(userData, "google");
       const user = await prisma.user.findUnique({
         where: {
           id: createdUser.id,
