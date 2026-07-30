@@ -1,5 +1,5 @@
 import { assert, describe, expect, it, vi } from "vitest";
-import { returnOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
+import { getOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
 import prisma from "#src/lib/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/types/current-user.js";
@@ -21,7 +21,7 @@ describe("oauth2 service", () => {
         },
       });
 
-      const returnedUser = await returnOrCreateOauth2User(userData, "google");
+      const returnedUser = await getOrCreateOauth2User(userData, "google");
       const userExists = await prisma.user.findUnique({
         where: {
           email: userData.email,
@@ -55,7 +55,7 @@ describe("oauth2 service", () => {
         },
       });
 
-      const returnedUser = await returnOrCreateOauth2User(
+      const returnedUser = await getOrCreateOauth2User(
         {
           email: createdUser.email,
           name: "test: full name 2",
@@ -91,7 +91,7 @@ describe("oauth2 service", () => {
         picture: "test-image-url-2",
       };
 
-      await returnOrCreateOauth2User(userData, "google");
+      await getOrCreateOauth2User(userData, "google");
       const user = await prisma.user.findUnique({
         where: {
           id: createdUser.id,

@@ -4,7 +4,7 @@ import type { Oauth2UserData } from "#src/types/auth.js";
 import type { User } from "#src/types/current-user.js";
 import type { Provider } from "#src/generated/prisma/enums.js";
 
-export async function returnOrCreateOauth2User(
+export async function getOrCreateOauth2User(
   userData: Oauth2UserData,
   provider: Provider,
 ): Promise<User> {

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import * as userQueries from "#src/queries/user-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import { returnOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
+import { getOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
 import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import type {
@@ -69,7 +69,7 @@ export async function authenticateWithGoogle(
   try {
     const data = await getIdTokenGoogle(req.body);
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
-    const user = await returnOrCreateOauth2User(payload, "google");
+    const user = await getOrCreateOauth2User(payload, "google");
     const jwtToken = issueJwt(user.id);
 
     res.json({
@@ -98,7 +98,7 @@ export async function authenticateWithGithub(
 ) {
   try {
     const userInfo = await getUserInfoGithub(req.body);
-    const user = await returnOrCreateOauth2User(userInfo, "github");
+    const user = await getOrCreateOauth2User(userInfo, "github");
     const jwtToken = issueJwt(user.id);
 
     res.json({
