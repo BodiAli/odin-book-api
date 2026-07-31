@@ -1,4 +1,4 @@
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 
 export async function createProfile({
   userId,

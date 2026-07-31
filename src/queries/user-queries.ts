@@ -1,5 +1,5 @@
 import * as bcrypt from "bcrypt";
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { User } from "#src/types/current-user.js";

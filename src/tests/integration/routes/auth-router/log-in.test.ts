@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import request from "supertest";
 import express from "express";
 import indexRouter from "#src/routes/index-router.js";
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type {
   LogInRequestBody,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import request from "supertest";
 import express from "express";
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 import indexRouter from "#src/routes/index-router.js";
 import type {
   SignUpRequestBody,

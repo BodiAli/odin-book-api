@@ -3,7 +3,7 @@ import express from "express";
 import request from "supertest";
 import jwt from "jsonwebtoken";
 import indexRouter from "#src/routes/index-router.js";
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 import type {
   Oauth2RequestBody,
   AuthenticatedResponse,

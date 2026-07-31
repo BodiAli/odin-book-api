@@ -1,7 +1,7 @@
 import { describe, expect, it, assert } from "vitest";
 import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { User } from "#src/types/current-user.js";
 

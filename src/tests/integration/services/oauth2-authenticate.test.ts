@@ -1,6 +1,6 @@
 import { assert, describe, expect, it, vi } from "vitest";
 import { getOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
-import prisma from "#src/lib/prisma-client.js";
+import prisma from "#src/db/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/types/current-user.js";
 import type { Oauth2UserData } from "#src/types/auth.js";
