@@ -113,3 +113,18 @@ export async function authenticateWithGithub(
     next(error);
   }
 }
+
+export async function signInAsGuest(
+  _req: Request,
+  res: Response<AuthenticatedResponse>,
+  next: NextFunction,
+) {
+  try {
+    const guest = await userQueries.getOrCreateGuestUser();
+    const token = issueJwt(guest.id, "30m");
+
+    res.json({ token, user: guest });
+  } catch (error) {
+    next(error);
+  }
+}
