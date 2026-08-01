@@ -239,3 +239,29 @@ registry.registerPath({
     },
   },
 });
+
+registry.registerPath({
+  method: "post",
+  path: "/auth/guest",
+  tags: ["auth"],
+  responses: {
+    200: {
+      description: "Successfully signing in as a guest.",
+      summary: "OK",
+      content: {
+        "application/json": {
+          schema: authenticatedResponse,
+        },
+      },
+    },
+    500: {
+      summary: "Internal server error.",
+      description: "Unexpected error occurred.",
+      content: {
+        "application/json": {
+          schema: serverError,
+        },
+      },
+    },
+  },
+});
