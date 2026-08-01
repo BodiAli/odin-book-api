@@ -162,6 +162,24 @@ export async function createUserOauth({
   return user;
 }
 
+export async function getOrCreateGuestUser(): Promise<User> {
+  const { lastSeen: _lastSeen, ...guest } = await prisma.user.upsert({
+    create: {
+      email: "guest-user",
+      fullName: "Guest",
+      isGuest: true,
+      password: "guest",
+      isOnline: true,
+    },
+    update: {},
+    where: {
+      email: "guest-user",
+    },
+  });
+
+  return { ...guest, picture: null };
+}
+
 export interface CreateUserLocalArguments {
   email: string;
   fullName: string;
@@ -171,21 +189,4 @@ export interface CreateUserOauth2 {
   email: string;
   fullName: string;
   provider: Provider;
-}
-
-export async function getOrCreateGuestUser() {
-  const guest = await prisma.user.upsert({
-    create: {
-      email: "guest-user",
-      fullName: "Guest",
-      isGuest: true,
-      password: "guest",
-    },
-    update: {},
-    where: {
-      email: "guest-user",
-    },
-  });
-
-  return guest;
 }
