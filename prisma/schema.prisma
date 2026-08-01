@@ -16,6 +16,7 @@ model User {
   provider Provider @default(local)
   isOnline Boolean  @default(false)
   lastSeen DateTime @default(now())
+  isGuest  Boolean  @default(false)
   profile  Profile?
 }
 
