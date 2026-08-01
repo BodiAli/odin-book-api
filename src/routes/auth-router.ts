@@ -31,4 +31,6 @@ authRouter.post(
   authController.authenticateWithGithub,
 );
 
+authRouter.post("/guest", authController.signInAsGuest);
+
 export default authRouter;
