@@ -27,6 +27,7 @@ describe("guest sign in endpoint", () => {
             isOnline: true,
             picture: null,
             provider: "local",
+            isGuest: true,
           },
         });
       });
