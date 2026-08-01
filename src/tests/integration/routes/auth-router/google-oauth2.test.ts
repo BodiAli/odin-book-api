@@ -182,6 +182,7 @@ describe("google oauth2 endpoint", () => {
             picture: googleUserData.picture,
             provider: "google",
             isOnline: true,
+            isGuest: false,
           },
         });
       });
@@ -253,6 +254,7 @@ describe("google oauth2 endpoint", () => {
             picture: googleUserData.picture,
             provider: "local",
             isOnline: createdUser.isOnline,
+            isGuest: false,
           },
         });
       });

@@ -107,6 +107,7 @@ describe("signing up endpoints", () => {
             provider: "local",
             picture: null,
             isOnline: true,
+            isGuest: false,
           },
         });
       });

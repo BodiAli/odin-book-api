@@ -96,6 +96,7 @@ describe("logging in endpoints", () => {
             provider: "local",
             picture: null,
             isOnline: true,
+            isGuest: false,
           },
         });
       });

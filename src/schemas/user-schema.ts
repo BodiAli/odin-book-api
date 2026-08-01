@@ -12,4 +12,5 @@ export const user: z.ZodType<
   provider: z.enum(Provider),
   picture: z.string(),
   isOnline: z.boolean(),
+  isGuest: z.boolean(),
 });

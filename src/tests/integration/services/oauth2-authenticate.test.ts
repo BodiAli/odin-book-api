@@ -37,6 +37,7 @@ describe("oauth2 service", () => {
         picture: userData.picture,
         provider: "google",
         isOnline: true,
+        isGuest: false,
       });
     });
   });

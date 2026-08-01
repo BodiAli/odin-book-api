@@ -137,6 +137,7 @@ describe("github oauth2 endpoint", () => {
             isOnline: true,
             picture: "test-image-url",
             provider: "github",
+            isGuest: false,
           },
         });
         expect(nonExistingUser).toBeNull();

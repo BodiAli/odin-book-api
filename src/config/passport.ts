@@ -38,6 +38,7 @@ passport.use(
             id: user.id,
             picture: user.picture,
             isOnline: user.isOnline,
+            isGuest: user.isGuest,
           };
           done(null, authenticatedUser);
         } catch (error) {
