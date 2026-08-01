@@ -31,6 +31,7 @@ export async function getUserWithPasswordByEmail(
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
         isOnline: user.isOnline,
+        isGuest: user.isGuest,
       }
     : null;
 }
@@ -56,6 +57,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
         isOnline: user.isOnline,
+        isGuest: user.isGuest,
       }
     : null;
 }
@@ -82,6 +84,7 @@ export async function getUserById(id: string): Promise<User | null> {
         picture: user.profile?.imageUrl ?? null,
         provider: user.provider,
         isOnline: user.isOnline,
+        isGuest: user.isGuest,
       }
     : null;
 }
@@ -168,4 +171,21 @@ export interface CreateUserOauth2 {
   email: string;
   fullName: string;
   provider: Provider;
+}
+
+export async function getOrCreateGuestUser() {
+  const guest = await prisma.user.upsert({
+    create: {
+      email: "guest-user",
+      fullName: "Guest",
+      isGuest: true,
+      password: "guest",
+    },
+    update: {},
+    where: {
+      email: "guest-user",
+    },
+  });
+
+  return guest;
 }
