@@ -41,6 +41,7 @@ describe("user-queries", () => {
         provider: "local",
         picture: null,
         isOnline: false,
+        isGuest: false,
       });
     });
   });
@@ -76,6 +77,7 @@ describe("user-queries", () => {
         provider: "local",
         picture: null,
         isOnline: false,
+        isGuest: false,
       });
     });
   });
@@ -152,6 +154,7 @@ describe("user-queries", () => {
         provider: "local",
         picture: null,
         isOnline: true,
+        isGuest: false,
       });
     });
   });
@@ -177,6 +180,7 @@ describe("user-queries", () => {
         id: createdUser.id,
         picture: null,
         isOnline: false,
+        isGuest: false,
       });
     });
   });
@@ -202,6 +206,7 @@ describe("user-queries", () => {
         password: null,
         picture: null,
         isOnline: true,
+        isGuest: false,
       });
     });
 
@@ -225,7 +230,46 @@ describe("user-queries", () => {
         password: null,
         picture: null,
         isOnline: true,
+        isGuest: false,
       });
+    });
+  });
+
+  describe(userQueries.getOrCreateGuestUser, () => {
+    it("should create new guest user when no guest user exists", async () => {
+      expect.hasAssertions();
+
+      const nonExistingUser = await prisma.user.findUnique({
+        where: {
+          email: "guest-user",
+        },
+      });
+
+      await userQueries.getOrCreateGuestUser();
+      const guestUser = await prisma.user.findUnique({
+        where: {
+          email: "guest-user",
+        },
+      });
+
+      expect(nonExistingUser).toBeNull();
+      expect(guestUser).not.toBeNull();
+    });
+
+    it("should get the guest user when guest user already exists", async () => {
+      expect.hasAssertions();
+
+      await userQueries.getOrCreateGuestUser();
+      const guestExists = await prisma.user.findUnique({
+        where: {
+          email: "guest-user",
+        },
+      });
+      assert(guestExists);
+
+      const guestUser = await userQueries.getOrCreateGuestUser();
+
+      expect(guestUser.id).toBe(guestExists.id);
     });
   });
 });
