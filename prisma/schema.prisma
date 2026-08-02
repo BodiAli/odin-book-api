@@ -9,15 +9,17 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique @db.VarChar(254)
-  fullName String   @db.VarChar(100)
-  password String?
-  provider Provider @default(local)
-  isOnline Boolean  @default(false)
-  lastSeen DateTime @default(now())
-  isGuest  Boolean  @default(false)
-  profile  Profile?
+  id         String   @id @default(uuid())
+  email      String   @unique @db.VarChar(254)
+  fullName   String   @db.VarChar(100)
+  password   String?
+  provider   Provider @default(local)
+  isOnline   Boolean  @default(false)
+  lastSeen   DateTime @default(now())
+  isGuest    Boolean  @default(false)
+  profile    Profile?
+  followedBy User[]   @relation("UserFollows")
+  following  User[]   @relation("UserFollows")
 }
 
 model Profile {
