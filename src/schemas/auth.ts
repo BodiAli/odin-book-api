@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { user } from "./user-schema.js";
+import { user } from "./users.js";
 
 export const authenticatedResponse = z.object({
   token: z.string(),
