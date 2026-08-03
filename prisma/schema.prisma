@@ -9,17 +9,17 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  email      String   @unique @db.VarChar(254)
-  fullName   String   @db.VarChar(100)
+  id         String       @id @default(uuid())
+  email      String       @unique @db.VarChar(254)
+  fullName   String       @db.VarChar(100)
   password   String?
-  provider   Provider @default(local)
-  isOnline   Boolean  @default(false)
-  lastSeen   DateTime @default(now())
-  isGuest    Boolean  @default(false)
+  provider   Provider     @default(local)
+  isOnline   Boolean      @default(false)
+  lastSeen   DateTime     @default(now())
+  isGuest    Boolean      @default(false)
   profile    Profile?
-  followedBy User[]   @relation("UserFollows")
-  following  User[]   @relation("UserFollows")
+  followedBy UserFollow[] @relation("FollowedBy")
+  following  UserFollow[] @relation("Following")
 }
 
 model Profile {
@@ -28,6 +28,15 @@ model Profile {
   imageUrl    String?
   user        User    @relation(references: [id], fields: [userId])
   userId      String  @unique
+}
+
+model UserFollow {
+  followedById String
+  followedBy   User   @relation("FollowedBy", references: [id], fields: [followedById])
+  followingId  String
+  following    User   @relation("Following", references: [id], fields: [followingId])
+
+  @@id([followedById, followingId])
 }
 
 enum Provider {
