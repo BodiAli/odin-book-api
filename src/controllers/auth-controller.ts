@@ -14,7 +14,7 @@ import type {
 } from "#src/types/auth.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { ClientError } from "#src/types/errors.js";
-import type { User } from "#src/types/current-user.js";
+import type { User } from "#src/types/users.js";
 
 export async function createUser(
   req: Request<unknown, unknown, SignUpRequestBody>,

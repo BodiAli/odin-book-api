@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
-import type { User } from "#src/types/current-user.js";
+import type { User } from "#src/types/users.js";
 
 passport.use(
   new LocalStrategy(
