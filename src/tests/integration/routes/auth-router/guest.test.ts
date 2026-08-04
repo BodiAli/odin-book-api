@@ -9,7 +9,7 @@ describe("guest sign in endpoint", () => {
   app.use(indexRouter);
 
   describe("signing in as guest POST /auth/guest", () => {
-    describe("request to endpoint", () => {
+    describe("given request to endpoint", () => {
       it("should return jwt token with guest user", async () => {
         expect.hasAssertions();
 
