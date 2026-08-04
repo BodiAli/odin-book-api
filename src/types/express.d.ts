@@ -1,4 +1,4 @@
-import type { User as UserSchema } from "#src/schemas/users.js";
+import type { User as UserSchema } from "#src/types/users.ts";
 
 declare global {
   namespace Express {
