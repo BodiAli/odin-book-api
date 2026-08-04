@@ -13,6 +13,16 @@ vi.mock(import("#src/routes/auth-router.js"), () => {
   };
 });
 
+vi.mock(import("#src/routes/users-router.js"), () => {
+  const router = express.Router();
+  router.get("/", (_req, res) => {
+    res.json({ mocked: true });
+  });
+  return {
+    default: router,
+  };
+});
+
 describe("index-router mount endpoints", () => {
   const app = express();
   app.use("/", indexRouter);
@@ -25,9 +35,20 @@ describe("index-router mount endpoints", () => {
     it("should mount authRouter on the /auth path", async () => {
       expect.hasAssertions();
 
-      const response = await supertest(app).post("/auth/sign-up");
+      const response = await supertest(app).post("/auth/sign-up").expect(200);
 
-      expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual<Mocked>({
+        mocked: true,
+      });
+    });
+  });
+
+  describe("users-router", () => {
+    it("should mount usersRouter on /users path", async () => {
+      expect.hasAssertions();
+
+      const response = await supertest(app).get("/users");
+
       expect(response.body).toStrictEqual<Mocked>({
         mocked: true,
       });
