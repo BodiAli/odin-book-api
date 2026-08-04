@@ -236,5 +236,50 @@ describe("followers-queries", () => {
         ]);
       });
     });
+
+    describe(followersQueries.getFollowings, () => {
+      it("should throw a CustomHttpStatus error when the target user does not exist", async () => {
+        expect.hasAssertions();
+
+        await expect(
+          followersQueries.getFollowings("non-existing-id"),
+        ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
+      });
+
+      it("should return the followings of target user", async () => {
+        expect.hasAssertions();
+
+        const userAFollowings = await followersQueries.getFollowings(userA.id);
+        const userBFollowings = await followersQueries.getFollowings(userB.id);
+        const userCFollowings = await followersQueries.getFollowings(userC.id);
+
+        expect(userAFollowings).toStrictEqual<PublicUser[]>([
+          {
+            fullName: "test: userB",
+            id: userB.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
+          {
+            fullName: "test: userC",
+            id: userC.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
+        ]);
+        expect(userBFollowings).toStrictEqual<PublicUser[]>([
+          {
+            fullName: "test: userC",
+            id: userC.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
+        ]);
+        expect(userCFollowings).toHaveLength(0);
+      });
+    });
   });
 });
