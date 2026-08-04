@@ -95,7 +95,7 @@ export async function getFollowers(userId: string): Promise<PublicUser[]> {
     throw new CustomHttpStatusError(404, "User not found.");
   }
 
-  const userFollows = await prisma.userFollow.findMany({
+  const userFollowers = await prisma.userFollow.findMany({
     where: {
       followingId: userId,
     },
@@ -121,12 +121,60 @@ export async function getFollowers(userId: string): Promise<PublicUser[]> {
     },
   });
 
-  return userFollows.map((userFollow) => {
+  return userFollowers.map((userFollow) => {
     const { followedBy } = userFollow;
     const { profile, ...follower } = followedBy;
 
     return {
       ...follower,
+      picture: profile ? profile.imageUrl : null,
+    };
+  });
+}
+
+export async function getFollowings(userId: string): Promise<PublicUser[]> {
+  const doesUserExist = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!doesUserExist) {
+    throw new CustomHttpStatusError(404, "User not found.");
+  }
+
+  const userFollowings = await prisma.userFollow.findMany({
+    where: {
+      followedById: userId,
+    },
+    include: {
+      following: {
+        select: {
+          id: true,
+          fullName: true,
+          isOnline: true,
+          lastSeen: true,
+          profile: {
+            select: {
+              imageUrl: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      following: {
+        fullName: "asc",
+      },
+    },
+  });
+
+  return userFollowings.map((userFollow) => {
+    const { following: followingUser } = userFollow;
+    const { profile, ...following } = followingUser;
+
+    return {
+      ...following,
       picture: profile ? profile.imageUrl : null,
     };
   });
