@@ -179,3 +179,22 @@ export async function getFollowings(userId: string): Promise<PublicUser[]> {
     };
   });
 }
+
+export async function unfollowUser(currentUserId: string, userId: string) {
+  try {
+    await prisma.userFollow.delete({
+      where: {
+        followedById_followingId: {
+          followedById: currentUserId,
+          followingId: userId,
+        },
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        throw new CustomHttpStatusError(404, "User not found.");
+      }
+    }
+  }
+}
