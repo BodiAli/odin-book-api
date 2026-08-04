@@ -282,4 +282,62 @@ describe("followers-queries", () => {
       });
     });
   });
+
+  describe("delete queries", () => {
+    describe(followersQueries.unfollowUser, () => {
+      it("should throw a CustomHttpStatus error when target user does not", async () => {
+        expect.hasAssertions();
+
+        const userA = await prisma.user.create({
+          data: {
+            email: "test-userA@test.com",
+            fullName: "test: userA",
+          },
+        });
+
+        await expect(
+          followersQueries.unfollowUser(userA.id, "non-existing-id"),
+        ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
+      });
+
+      it("should unfollow target user", async () => {
+        expect.hasAssertions();
+
+        const userA = await prisma.user.create({
+          data: {
+            email: "test-userA@test.com",
+            fullName: "test: userA",
+          },
+        });
+        const userB = await prisma.user.create({
+          data: {
+            email: "test-userB@test.com",
+            fullName: "test: userB",
+          },
+        });
+        const userC = await prisma.user.create({
+          data: {
+            email: "test-userC@test.com",
+            fullName: "test: userC",
+          },
+        });
+
+        await followersQueries.followUser(userA.id, userC.id);
+        await followersQueries.followUser(userB.id, userC.id);
+
+        await followersQueries.unfollowUser(userA.id, userC.id);
+        const userCFollowers = await followersQueries.getFollowers(userC.id);
+
+        expect(userCFollowers).toStrictEqual<PublicUser[]>([
+          {
+            id: userB.id,
+            fullName: "test: userB",
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
+        ]);
+      });
+    });
+  });
 });
