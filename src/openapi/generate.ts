@@ -2,7 +2,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import registry from "./registry.js";
+import "./components/security-scheme.js";
 import "./paths/auth-path.js";
+import "./paths/users-path.js";
 
 const generator = new OpenApiGeneratorV31(registry.definitions);
 
@@ -19,7 +21,11 @@ const openApiDocument = generator.generateDocument({
   tags: [
     {
       name: "auth",
-      description: "authentication operations",
+      description: "Authentication operations",
+    },
+    {
+      name: "user-follow",
+      description: "User follow operations",
     },
   ],
   servers: [{ url: "http://localhost:3000" }],

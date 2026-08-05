@@ -39,7 +39,7 @@ registry.registerPath({
     },
     "409": {
       summary: "Conflict with existing data.",
-      description: "User entered an existing username or email.",
+      description: "User entered an existing email.",
       content: {
         "application/json": {
           schema: clientError,
