@@ -1,4 +1,5 @@
 import { clientError, serverError } from "#src/schemas/errors/errors.js";
+import { followersResponse } from "#src/schemas/routes/users.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -78,6 +79,38 @@ registry.registerPath({
     200: {
       summary: "OK",
       description: "Target user followers are retrieved.",
+      content: {
+        "application/json": {
+          schema: followersResponse,
+        },
+      },
+    },
+    401: {
+      summary: "Unauthorized",
+      description: "Access token is missing or invalid",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    404: {
+      summary: "Not found",
+      description: "Target user is not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: {
+      summary: "Internal server error.",
+      description: "Unexpected error occurred.",
+      content: {
+        "application/json": {
+          schema: serverError,
+        },
+      },
     },
   },
 });

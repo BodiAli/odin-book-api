@@ -26,3 +26,8 @@ export const publicUser: z.ZodType<
   lastSeen: z.date(),
   picture: z.string().nullable(),
 });
+
+export const followersResponse = z.xor([
+  z.object({ count: z.number() }),
+  z.object({ followers: z.array(publicUser) }),
+]);
