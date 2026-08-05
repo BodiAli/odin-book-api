@@ -1,10 +1,11 @@
 import passport from "passport";
 import type { Request, Response, NextFunction, RequestHandler } from "express";
 import type { User } from "#src/types/users.js";
+import type { ClientError } from "#src/types/errors.js";
 
 export default function authenticateJwt(
   req: Request,
-  res: Response,
+  res: Response<ClientError>,
   next: NextFunction,
 ) {
   (
@@ -18,7 +19,11 @@ export default function authenticateJwt(
         }
 
         if (!user) {
-          res.status(401).json({ unauthorized: true });
+          res
+            .status(401)
+            .json({
+              errors: [{ message: "Access token is missing or invalid." }],
+            });
           return;
         }
 
