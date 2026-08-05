@@ -1,4 +1,4 @@
-import { clientError, serverError } from "#src/schemas/error-schemas.js";
+import { clientError, serverError } from "#src/schemas/errors/errors.js";
 import {
   authenticatedResponse,
   logInRequestBody,
