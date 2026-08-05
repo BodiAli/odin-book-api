@@ -7,7 +7,7 @@ import issueJwt from "#src/utils/issue-jwt.js";
 import type { ClientError } from "#src/types/errors.js";
 import "#src/config/passport.js";
 
-describe("unauthorize guest middleware", () => {
+describe("validate JWT middleware", () => {
   const app = express();
 
   beforeAll(() => {
