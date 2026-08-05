@@ -1,7 +1,11 @@
 import { Router } from "express";
+import * as usersController from "#src/controllers/users-controller.js";
 
 const usersRouter = Router();
 
-usersRouter.get("/:userId/followers");
+usersRouter.post(
+  "/:userId/followers",
+  usersController.createFollowerForTargetUser,
+);
 
 export default usersRouter;
