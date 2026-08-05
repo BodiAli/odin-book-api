@@ -9,107 +9,101 @@ import type {
 } from "#src/types/auth.js";
 import type { ClientError } from "#src/types/errors.js";
 
-describe("signing up endpoints", () => {
+describe("/auth/sign-up endpoint", () => {
   const app = express();
   app.use(indexRouter);
 
-  describe("create user POST /auth/sign-up", () => {
-    describe("given invalid inputs", () => {
-      it("should return 400 status with error messages", async () => {
-        expect.hasAssertions();
+  describe("create user POST", () => {
+    it("should return 400 status with error messages when given invalid inputs", async () => {
+      expect.hasAssertions();
 
-        const requestBody: Partial<SignUpRequestBody> = {
-          email: "test-invalid-email",
-          password: "test: valid password",
-          confirmPassword: "test: invalid confirm password",
-          fullName: "test: valid full name",
-        };
+      const requestBody: Partial<SignUpRequestBody> = {
+        email: "test-invalid-email",
+        password: "test: valid password",
+        confirmPassword: "test: invalid confirm password",
+        fullName: "test: valid full name",
+      };
 
-        const response = await request(app)
-          .post("/auth/sign-up")
-          .type("json")
-          .send(requestBody)
-          .expect("Content-type", /json/)
-          .expect(400);
+      const response = await request(app)
+        .post("/auth/sign-up")
+        .type("json")
+        .send(requestBody)
+        .expect("Content-type", /json/)
+        .expect(400);
 
-        expect(response.body).toStrictEqual<ClientError>({
-          errors: [
-            {
-              message: "Please provide a valid Email.",
-            },
-            {
-              message: "Passwords do not match.",
-            },
-          ],
-        });
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "Please provide a valid Email.",
+          },
+          {
+            message: "Passwords do not match.",
+          },
+        ],
       });
     });
 
-    describe("given already existing email", () => {
-      it("should return 409 status with error message", async () => {
-        expect.hasAssertions();
+    it("should return 409 status with error message when email already exists", async () => {
+      expect.hasAssertions();
 
-        const requestBody: SignUpRequestBody = {
+      const requestBody: SignUpRequestBody = {
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test: password",
+        confirmPassword: "test: password",
+      };
+      await prisma.user.create({
+        data: {
           email: "test-email@test.com",
           fullName: "test: full name",
           password: "test: password",
-          confirmPassword: "test: password",
-        };
-        await prisma.user.create({
-          data: {
-            email: "test-email@test.com",
-            fullName: "test: full name",
-            password: "test: password",
+        },
+      });
+
+      const response = await request(app)
+        .post("/auth/sign-up")
+        .type("json")
+        .send(requestBody)
+        .expect("Content-type", /json/)
+        .expect(409);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "Email already exists.",
           },
-        });
-
-        const response = await request(app)
-          .post("/auth/sign-up")
-          .type("json")
-          .send(requestBody)
-          .expect("Content-type", /json/)
-          .expect(409);
-
-        expect(response.body).toStrictEqual<ClientError>({
-          errors: [
-            {
-              message: "Email already exists.",
-            },
-          ],
-        });
+        ],
       });
     });
 
-    describe("given valid data", () => {
-      it("should return 200 status with JWT and user object", async () => {
-        expect.hasAssertions();
+    it("should return 200 status with JWT and user object when given valid data", async () => {
+      expect.hasAssertions();
 
-        const requestBody: SignUpRequestBody = {
+      const requestBody: SignUpRequestBody = {
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test: password",
+        confirmPassword: "test: password",
+      };
+
+      const response = await request(app)
+        .post("/auth/sign-up")
+        .type("json")
+        .send(requestBody)
+        .expect("Content-type", /json/)
+        .expect(200);
+
+      expect(response.body).toStrictEqual<AuthenticatedResponse>({
+        token: expect.any(String) as string,
+        user: {
           email: "test-email@test.com",
           fullName: "test: full name",
-          password: "test: password",
-          confirmPassword: "test: password",
-        };
-
-        const response = await request(app)
-          .post("/auth/sign-up")
-          .type("json")
-          .send(requestBody)
-          .expect("Content-type", /json/)
-          .expect(200);
-
-        expect(response.body).toStrictEqual<AuthenticatedResponse>({
-          token: expect.any(String) as string,
-          user: {
-            email: "test-email@test.com",
-            fullName: "test: full name",
-            id: expect.any(String) as string,
-            provider: "local",
-            picture: null,
-            isOnline: true,
-            isGuest: false,
-          },
-        });
+          id: expect.any(String) as string,
+          provider: "local",
+          picture: null,
+          isOnline: true,
+          isGuest: false,
+        },
       });
     });
   });
