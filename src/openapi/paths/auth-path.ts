@@ -4,7 +4,7 @@ import {
   logInRequestBody,
   oauth2RequestBody,
   signUpRequestBody,
-} from "#src/schemas/auth.js";
+} from "#src/schemas/routes/auth.js";
 import registry from "../registry.js";
 
 registry.registerPath({

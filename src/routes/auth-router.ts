@@ -4,7 +4,7 @@ import {
   signUpRequestBody,
   logInRequestBody,
   oauth2RequestBody,
-} from "#src/schemas/auth.js";
+} from "#src/schemas/routes/auth.js";
 import * as authController from "#src/controllers/auth-controller.js";
 
 const authRouter = Router();

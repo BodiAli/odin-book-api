@@ -3,7 +3,7 @@ import type {
   logInRequestBody,
   oauth2RequestBody,
   signUpRequestBody,
-} from "#src/schemas/auth.js";
+} from "#src/schemas/routes/auth.js";
 import type { z } from "zod";
 
 export type AuthenticatedResponse = z.infer<typeof authenticatedResponse>;
