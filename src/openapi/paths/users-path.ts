@@ -74,6 +74,14 @@ registry.registerPath({
         type: "string",
       },
     },
+    {
+      in: "query",
+      name: "count",
+      required: false,
+      schema: {
+        type: "boolean",
+      },
+    },
   ],
   responses: {
     200: {
