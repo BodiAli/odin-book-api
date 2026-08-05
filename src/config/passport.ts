@@ -3,7 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
-import type { User } from "#src/types/users.js";
+import type { User } from "#src/types/routes/users.js";
 
 passport.use(
   new LocalStrategy(

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Oauth2RequestBody } from "#src/types/auth.js";
+import type { Oauth2RequestBody } from "#src/types/routes/auth.js";
 
 describe(getIdTokenGoogle, () => {
   afterEach(() => {

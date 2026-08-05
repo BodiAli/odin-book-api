@@ -1,6 +1,9 @@
 import assert from "node:assert";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Oauth2RequestBody, Oauth2UserData } from "#src/types/auth.js";
+import type {
+  Oauth2RequestBody,
+  Oauth2UserData,
+} from "#src/types/routes/auth.js";
 
 interface CodeErrorResponse {
   error: string;

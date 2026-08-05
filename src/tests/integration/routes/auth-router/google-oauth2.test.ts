@@ -8,8 +8,8 @@ import type {
   Oauth2RequestBody,
   AuthenticatedResponse,
   Oauth2UserData,
-} from "#src/types/auth.js";
-import type { ClientError } from "#src/types/errors.js";
+} from "#src/types/routes/auth.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/auth/google endpoint", () => {
   const app = express();

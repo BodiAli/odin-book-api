@@ -3,11 +3,11 @@ import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
-import type { ClientError } from "#src/types/errors.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 import type {
   AuthenticatedResponse,
   Oauth2RequestBody,
-} from "#src/types/auth.js";
+} from "#src/types/routes/auth.js";
 
 describe("/auth/github endpoint", () => {
   const app = express();

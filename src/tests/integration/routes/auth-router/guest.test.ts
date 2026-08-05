@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
-import type { AuthenticatedResponse } from "#src/types/auth.js";
+import type { AuthenticatedResponse } from "#src/types/routes/auth.js";
 
 describe("/auth/guest endpoint", () => {
   const app = express();

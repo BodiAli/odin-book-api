@@ -4,7 +4,7 @@ import request from "supertest";
 import authenticateJwt from "#src/middlewares/authenticate-jwt.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import type { ClientError } from "#src/types/errors.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 import "#src/config/passport.js";
 
 describe("validate JWT middleware", () => {

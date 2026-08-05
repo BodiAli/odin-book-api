@@ -1,5 +1,5 @@
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Oauth2RequestBody } from "#src/types/auth.js";
+import type { Oauth2RequestBody } from "#src/types/routes/auth.js";
 
 export async function getIdTokenGoogle(requestBody: Oauth2RequestBody) {
   if (!requestBody.success) {

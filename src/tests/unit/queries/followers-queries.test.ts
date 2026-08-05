@@ -3,7 +3,7 @@ import * as followersQueries from "#src/queries/followers-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { UserModel } from "#src/generated/prisma/models.js";
-import type { PublicUser } from "#src/types/users.js";
+import type { PublicUser } from "#src/types/routes/users.js";
 
 describe("followers-queries", () => {
   describe(followersQueries.followUser, () => {

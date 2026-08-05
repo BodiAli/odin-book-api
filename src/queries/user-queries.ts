@@ -2,7 +2,7 @@ import * as bcrypt from "bcrypt";
 import prisma from "#src/db/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { User } from "#src/types/users.js";
+import type { User } from "#src/types/routes/users.js";
 import type { Provider } from "#src/generated/prisma/enums.js";
 
 export async function getUserWithPasswordByEmail(

@@ -6,8 +6,8 @@ import indexRouter from "#src/routes/index-router.js";
 import type {
   SignUpRequestBody,
   AuthenticatedResponse,
-} from "#src/types/auth.js";
-import type { ClientError } from "#src/types/errors.js";
+} from "#src/types/routes/auth.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/auth/sign-up endpoint", () => {
   const app = express();

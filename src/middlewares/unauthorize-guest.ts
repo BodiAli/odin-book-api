@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import type { NextFunction, Request, Response } from "express";
-import type { ClientError } from "#src/types/errors.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 export default function unauthorizeGuest(
   req: Request,

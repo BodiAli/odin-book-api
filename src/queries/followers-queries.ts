@@ -1,7 +1,7 @@
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
-import type { PublicUser } from "#src/types/users.js";
+import type { PublicUser } from "#src/types/routes/users.js";
 
 export async function followUser(currentUserId: string, userId: string) {
   if (currentUserId === userId) {

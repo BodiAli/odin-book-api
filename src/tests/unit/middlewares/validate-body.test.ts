@@ -3,7 +3,7 @@ import { z } from "zod";
 import request from "supertest";
 import express from "express";
 import validateBody from "#src/middlewares/validate-body.js";
-import type { ClientError } from "#src/types/errors.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("validate body middleware", () => {
   const app = express();

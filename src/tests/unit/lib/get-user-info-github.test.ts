@@ -1,7 +1,10 @@
 import { describe, it, afterEach, vi, expect } from "vitest";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Oauth2RequestBody, Oauth2UserData } from "#src/types/auth.js";
+import type {
+  Oauth2RequestBody,
+  Oauth2UserData,
+} from "#src/types/routes/auth.js";
 
 describe(getUserInfoGithub, () => {
   afterEach(() => {

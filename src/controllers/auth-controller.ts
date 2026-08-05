@@ -11,10 +11,10 @@ import type {
   AuthenticatedResponse,
   Oauth2RequestBody,
   Oauth2UserData,
-} from "#src/types/auth.js";
+} from "#src/types/routes/auth.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import type { ClientError } from "#src/types/errors.js";
-import type { User } from "#src/types/users.js";
+import type { ClientError } from "#src/types/errors/errors.js";
+import type { User } from "#src/types/routes/users.js";
 
 export async function createUser(
   req: Request<unknown, unknown, SignUpRequestBody>,

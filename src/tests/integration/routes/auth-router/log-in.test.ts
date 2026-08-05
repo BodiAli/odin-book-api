@@ -7,8 +7,8 @@ import * as userQueries from "#src/queries/user-queries.js";
 import type {
   LogInRequestBody,
   AuthenticatedResponse,
-} from "#src/types/auth.js";
-import type { ClientError } from "#src/types/errors.js";
+} from "#src/types/routes/auth.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/auth/log-in endpoint", () => {
   const app = express();

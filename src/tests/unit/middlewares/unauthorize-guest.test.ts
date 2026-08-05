@@ -3,7 +3,7 @@ import express from "express";
 import request from "supertest";
 import unauthorizeGuest from "#src/middlewares/unauthorize-guest.js";
 import * as userQueries from "#src/queries/user-queries.js";
-import type { ClientError } from "#src/types/errors.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("unauthorize guest middleware", () => {
   it("should return a 403 status with error message when user is guest", async () => {

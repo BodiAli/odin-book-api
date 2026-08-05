@@ -2,7 +2,7 @@ import request from "supertest";
 import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import errorHandler from "#src/errors/error-handler.js";
-import type { ServerError } from "#src/types/errors.js";
+import type { ServerError } from "#src/types/errors/errors.js";
 
 describe(errorHandler, () => {
   const app = express();
