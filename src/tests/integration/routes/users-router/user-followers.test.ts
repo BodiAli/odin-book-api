@@ -4,43 +4,204 @@ import express from "express";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import type { ClientError } from "#src/types/errors.js";
+import * as followersQueries from "#src/queries/followers-queries.js";
+import type { ClientError } from "#src/types/errors/errors.js";
+import type { FollowersResponse, PublicUser } from "#src/types/routes/users.js";
 
-describe("user followers endpoints", () => {
+describe("/users/:userId/followers endpoint", () => {
   const app = express();
   app.use(indexRouter);
 
-  describe("create follower for target user POST /users/:userId/followers", () => {
-    describe("given non-existing target user", () => {
-      it("should return 404 status with error message", async () => {
-        expect.hasAssertions();
+  interface JsonFollowersResponse {
+    followers: (Omit<PublicUser, "lastSeen"> & { lastSeen: string })[];
+  }
 
-        const currentUser = await prisma.user.create({
-          data: {
-            email: "test-email@test.com",
-            fullName: "test: full name",
+  describe("create follower POST", () => {
+    it("should return 404 status with error message when target user does not exist", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+
+      const response = await request(app)
+        .post("/users/nonExistingId/followers")
+        .auth(userAToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "User not found.",
           },
-        });
-        const token = issueJwt(currentUser.id, "10m");
-
-        const response = await request(app)
-          .post("/users/nonExistingId/followers")
-          .auth(token, { type: "bearer" })
-          .expect("Content-type", /json/)
-          .expect(404);
-
-        expect(response.body).toStrictEqual<ClientError>({
-          errors: [
-            {
-              message: "User not found.",
-            },
-          ],
-        });
+        ],
       });
     });
 
-    describe("given valid target user id", () => {
-      it.todo("should follow target user");
+    it("should return 204 status when request is valid", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+
+      const response = await request(app)
+        .post(`/users/${userB.id}/followers`)
+        .auth(userAToken, { type: "bearer" });
+
+      expect(response.noContent).toBe(true);
     });
+  });
+
+  describe("get followers GET", () => {
+    it("should return 404 status with error message when target user does not exist", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+
+      const response = await request(app)
+        .get("/users/nonExistingId/followers")
+        .auth(userAToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "User not found.",
+          },
+        ],
+      });
+    });
+
+    it("should return 200 status with followers count when count query parameter is passed", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+      await followersQueries.followUser(userA.id, userB.id);
+
+      const response = await request(app)
+        .get(`/users/${userB.id}/followers?count=true`)
+        .auth(userAToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(200);
+
+      expect(response.body).toStrictEqual<FollowersResponse>({
+        count: 1,
+      });
+    });
+
+    it("should return 200 status with an array of followers when count is not true", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+      await followersQueries.followUser(userA.id, userB.id);
+
+      const response = await request(app)
+        .get(`/users/${userB.id}/followers?count=invalid`)
+        .auth(userAToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(200);
+
+      expect(response.body).toStrictEqual<JsonFollowersResponse>({
+        followers: [
+          {
+            id: userA.id,
+            fullName: "test: userA",
+            isOnline: false,
+            lastSeen: expect.any(String) as string,
+            picture: null,
+          },
+        ],
+      });
+    });
+
+    it("should return 200 status with an array of followers when count is missing", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+      await followersQueries.followUser(userA.id, userB.id);
+
+      const response = await request(app)
+        .get(`/users/${userB.id}/followers`)
+        .auth(userAToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(200);
+
+      expect(response.body).toStrictEqual<JsonFollowersResponse>({
+        followers: [
+          {
+            id: userA.id,
+            fullName: "test: userA",
+            isOnline: false,
+            lastSeen: expect.any(String) as string,
+            picture: null,
+          },
+        ],
+      });
+    });
+  });
+
+  describe("delete follower DELETE", () => {
+    it.todo(
+      "should return 404 status with error message when target user does not exist",
+    );
   });
 });
