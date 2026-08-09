@@ -37,7 +37,7 @@ describe("/users/:userId/followers endpoint", () => {
       expect(response.body).toStrictEqual<ClientError>({
         errors: [
           {
-            message: "User not found.",
+            message: "No user to follow was found.",
           },
         ],
       });
@@ -200,8 +200,55 @@ describe("/users/:userId/followers endpoint", () => {
   });
 
   describe("delete follower DELETE", () => {
-    it.todo(
-      "should return 404 status with error message when target user does not exist",
-    );
+    it("should return 404 status with error message when target user does not exist", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+
+      const response = await request(app)
+        .delete("/users/nonExistingId/followers")
+        .auth(userAToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "No user to unfollow was found.",
+          },
+        ],
+      });
+    });
+
+    it("should return 204 status when request is valid", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+        },
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+      await followersQueries.followUser(userA.id, userB.id);
+
+      const response = await request(app)
+        .delete(`/users/${userB.id}/followers`)
+        .auth(userAToken, { type: "bearer" });
+
+      expect(response.noContent).toBe(true);
+    });
   });
 });
