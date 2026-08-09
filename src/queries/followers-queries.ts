@@ -36,7 +36,7 @@ export async function followUser(currentUserId: string, userId: string) {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2003") {
-        throw new CustomHttpStatusError(404, "User not found.");
+        throw new CustomHttpStatusError(404, "No user to follow was found.");
       }
     }
 
@@ -193,7 +193,7 @@ export async function unfollowUser(currentUserId: string, userId: string) {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2025") {
-        throw new CustomHttpStatusError(404, "User not found.");
+        throw new CustomHttpStatusError(404, "No user to unfollow was found.");
       }
     }
   }
