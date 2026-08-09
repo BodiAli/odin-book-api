@@ -31,3 +31,8 @@ export const followersResponse = z.xor([
   z.object({ count: z.number() }),
   z.object({ followers: z.array(publicUser) }),
 ]);
+
+export const followingsResponse = z.xor([
+  z.object({ count: z.number() }),
+  z.object({ followings: z.array(publicUser) }),
+]);
