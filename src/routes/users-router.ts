@@ -9,4 +9,6 @@ usersRouter
   .get(usersController.getFollowers)
   .delete(usersController.deleteFollowerOfTargetUser);
 
+usersRouter.get("/:userId/followings", usersController.getFollowings);
+
 export default usersRouter;
