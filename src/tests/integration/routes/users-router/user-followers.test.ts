@@ -4,7 +4,7 @@ import express from "express";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import * as followersQueries from "#src/queries/followers-queries.js";
+import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { FollowersResponse, PublicUser } from "#src/types/routes/users.js";
 
@@ -111,7 +111,7 @@ describe("/users/:userId/followers endpoint", () => {
         },
       });
       const userAToken = issueJwt(userA.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .get(`/users/${userB.id}/followers?count=true`)
@@ -140,7 +140,7 @@ describe("/users/:userId/followers endpoint", () => {
         },
       });
       const userAToken = issueJwt(userA.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .get(`/users/${userB.id}/followers?count=invalid`)
@@ -177,7 +177,7 @@ describe("/users/:userId/followers endpoint", () => {
         },
       });
       const userAToken = issueJwt(userA.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .get(`/users/${userB.id}/followers`)
@@ -242,7 +242,7 @@ describe("/users/:userId/followers endpoint", () => {
         },
       });
       const userAToken = issueJwt(userA.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .delete(`/users/${userB.id}/followers`)

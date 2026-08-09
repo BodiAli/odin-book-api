@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import * as followersQueries from "#src/queries/followers-queries.js";
+import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
@@ -17,7 +17,7 @@ export async function createFollowerForTargetUser(
   const { userId } = req.params;
 
   try {
-    await followersQueries.followUser(req.user.id, userId);
+    await userFollowsQueries.followUser(req.user.id, userId);
     res.sendStatus(204);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
@@ -39,12 +39,12 @@ export async function getFollowers(
 
   try {
     if (count && count === "true") {
-      const numOfFollowers = await followersQueries.getNumOfFollowers(userId);
+      const numOfFollowers = await userFollowsQueries.getNumOfFollowers(userId);
       res.json({ count: numOfFollowers });
       return;
     }
 
-    const followers = await followersQueries.getFollowers(userId);
+    const followers = await userFollowsQueries.getFollowers(userId);
     res.json({ followers });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
@@ -65,7 +65,7 @@ export async function deleteFollowerOfTargetUser(
   const { userId } = req.params;
 
   try {
-    await followersQueries.unfollowUser(req.user.id, userId);
+    await userFollowsQueries.unfollowUser(req.user.id, userId);
     res.sendStatus(204);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
@@ -86,12 +86,13 @@ export async function getFollowings(
   const { count } = req.query;
   try {
     if (count && count === "true") {
-      const numOfFollowings = await followersQueries.getNumOfFollowing(userId);
+      const numOfFollowings =
+        await userFollowsQueries.getNumOfFollowing(userId);
       res.json({ count: numOfFollowings });
       return;
     }
 
-    const followings = await followersQueries.getFollowings(userId);
+    const followings = await userFollowsQueries.getFollowings(userId);
     res.json({ followings: followings });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {

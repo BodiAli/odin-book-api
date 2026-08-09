@@ -4,7 +4,7 @@ import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import * as followersQueries from "#src/queries/followers-queries.js";
+import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type {
   FollowingsResponse,
@@ -58,7 +58,7 @@ describe("/users/:userId/followings endpoint", () => {
         },
       });
       const userBToken = issueJwt(userB.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .get(`/users/${userA.id}/followings?count=true`)
@@ -87,7 +87,7 @@ describe("/users/:userId/followings endpoint", () => {
         },
       });
       const userBToken = issueJwt(userB.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .get(`/users/${userA.id}/followings?count=invalid`)
@@ -124,7 +124,7 @@ describe("/users/:userId/followings endpoint", () => {
         },
       });
       const userBToken = issueJwt(userB.id, "10m");
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       const response = await request(app)
         .get(`/users/${userA.id}/followings`)

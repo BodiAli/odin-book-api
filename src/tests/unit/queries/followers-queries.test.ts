@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import * as followersQueries from "#src/queries/followers-queries.js";
+import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { UserModel } from "#src/generated/prisma/models.js";
 import type { PublicUser } from "#src/types/routes/users.js";
 
 describe("followers-queries", () => {
-  describe(followersQueries.followUser, () => {
+  describe(userFollowsQueries.followUser, () => {
     it("should throw a CustomHttpStatusError when the target user does not exist", async () => {
       expect.hasAssertions();
 
@@ -18,7 +18,7 @@ describe("followers-queries", () => {
       });
 
       await expect(
-        followersQueries.followUser(userA.id, "non-existing-id"),
+        userFollowsQueries.followUser(userA.id, "non-existing-id"),
       ).rejects.toThrow(
         new CustomHttpStatusError(404, "No user to follow was found."),
       );
@@ -35,7 +35,7 @@ describe("followers-queries", () => {
       });
 
       await expect(
-        followersQueries.followUser(userA.id, userA.id),
+        userFollowsQueries.followUser(userA.id, userA.id),
       ).rejects.toThrow(
         new CustomHttpStatusError(400, "You cannot follow yourself."),
       );
@@ -57,10 +57,10 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
 
       await expect(
-        followersQueries.followUser(userA.id, userB.id),
+        userFollowsQueries.followUser(userA.id, userB.id),
       ).rejects.toThrow(
         new CustomHttpStatusError(409, "You already follow test: userB."),
       );
@@ -90,7 +90,7 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
       const userAFollowsUserB = await prisma.userFollow.findUnique({
         where: {
           followedById_followingId: {
@@ -105,7 +105,7 @@ describe("followers-queries", () => {
     });
   });
 
-  describe(followersQueries.getNumOfFollowers, () => {
+  describe(userFollowsQueries.getNumOfFollowers, () => {
     let userA: Omit<UserModel, "password">;
     let userB: Omit<UserModel, "password">;
     let userC: Omit<UserModel, "password">;
@@ -130,30 +130,30 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userC.id);
-      await followersQueries.followUser(userB.id, userC.id);
+      await userFollowsQueries.followUser(userA.id, userC.id);
+      await userFollowsQueries.followUser(userB.id, userC.id);
 
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
     });
 
     it("should throw a CustomHttpStatus error when the target user does not exist", async () => {
       expect.hasAssertions();
 
       await expect(
-        followersQueries.getNumOfFollowers("non-existing-id"),
+        userFollowsQueries.getNumOfFollowers("non-existing-id"),
       ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
     });
 
     it("should return the number of followers of target user", async () => {
       expect.hasAssertions();
 
-      const userANumOfFollowers = await followersQueries.getNumOfFollowers(
+      const userANumOfFollowers = await userFollowsQueries.getNumOfFollowers(
         userA.id,
       );
-      const userBNumOfFollowers = await followersQueries.getNumOfFollowers(
+      const userBNumOfFollowers = await userFollowsQueries.getNumOfFollowers(
         userB.id,
       );
-      const userCNumOfFollowers = await followersQueries.getNumOfFollowers(
+      const userCNumOfFollowers = await userFollowsQueries.getNumOfFollowers(
         userC.id,
       );
 
@@ -163,7 +163,7 @@ describe("followers-queries", () => {
     });
   });
 
-  describe(followersQueries.getNumOfFollowing, () => {
+  describe(userFollowsQueries.getNumOfFollowing, () => {
     let userA: Omit<UserModel, "password">;
     let userB: Omit<UserModel, "password">;
     let userC: Omit<UserModel, "password">;
@@ -188,30 +188,30 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userC.id);
-      await followersQueries.followUser(userB.id, userC.id);
+      await userFollowsQueries.followUser(userA.id, userC.id);
+      await userFollowsQueries.followUser(userB.id, userC.id);
 
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
     });
 
     it("should throw a CustomHttpStatus error when the target user does not exist", async () => {
       expect.hasAssertions();
 
       await expect(
-        followersQueries.getNumOfFollowing("non-existing-id"),
+        userFollowsQueries.getNumOfFollowing("non-existing-id"),
       ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
     });
 
     it("should return the number of followings of target user", async () => {
       expect.hasAssertions();
 
-      const userANumOfFollowings = await followersQueries.getNumOfFollowing(
+      const userANumOfFollowings = await userFollowsQueries.getNumOfFollowing(
         userA.id,
       );
-      const userBNumOfFollowings = await followersQueries.getNumOfFollowing(
+      const userBNumOfFollowings = await userFollowsQueries.getNumOfFollowing(
         userB.id,
       );
-      const userCNumOfFollowings = await followersQueries.getNumOfFollowing(
+      const userCNumOfFollowings = await userFollowsQueries.getNumOfFollowing(
         userC.id,
       );
 
@@ -221,7 +221,7 @@ describe("followers-queries", () => {
     });
   });
 
-  describe(followersQueries.getFollowers, () => {
+  describe(userFollowsQueries.getFollowers, () => {
     let userA: Omit<UserModel, "password">;
     let userB: Omit<UserModel, "password">;
     let userC: Omit<UserModel, "password">;
@@ -246,26 +246,26 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userC.id);
-      await followersQueries.followUser(userB.id, userC.id);
+      await userFollowsQueries.followUser(userA.id, userC.id);
+      await userFollowsQueries.followUser(userB.id, userC.id);
 
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
     });
 
     it("should throw a CustomHttpStatus error when the target user does not exist", async () => {
       expect.hasAssertions();
 
       await expect(
-        followersQueries.getFollowers("non-existing-id"),
+        userFollowsQueries.getFollowers("non-existing-id"),
       ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
     });
 
     it("should return the followers of target user", async () => {
       expect.hasAssertions();
 
-      const userAFollowers = await followersQueries.getFollowers(userA.id);
-      const userBFollowers = await followersQueries.getFollowers(userB.id);
-      const userCFollowers = await followersQueries.getFollowers(userC.id);
+      const userAFollowers = await userFollowsQueries.getFollowers(userA.id);
+      const userBFollowers = await userFollowsQueries.getFollowers(userB.id);
+      const userCFollowers = await userFollowsQueries.getFollowers(userC.id);
 
       expect(userAFollowers).toHaveLength(0);
       expect(userBFollowers).toStrictEqual<PublicUser[]>([
@@ -296,7 +296,7 @@ describe("followers-queries", () => {
     });
   });
 
-  describe(followersQueries.getFollowings, () => {
+  describe(userFollowsQueries.getFollowings, () => {
     let userA: Omit<UserModel, "password">;
     let userB: Omit<UserModel, "password">;
     let userC: Omit<UserModel, "password">;
@@ -321,26 +321,26 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userC.id);
-      await followersQueries.followUser(userB.id, userC.id);
+      await userFollowsQueries.followUser(userA.id, userC.id);
+      await userFollowsQueries.followUser(userB.id, userC.id);
 
-      await followersQueries.followUser(userA.id, userB.id);
+      await userFollowsQueries.followUser(userA.id, userB.id);
     });
 
     it("should throw a CustomHttpStatus error when the target user does not exist", async () => {
       expect.hasAssertions();
 
       await expect(
-        followersQueries.getFollowings("non-existing-id"),
+        userFollowsQueries.getFollowings("non-existing-id"),
       ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
     });
 
     it("should return the followings of target user", async () => {
       expect.hasAssertions();
 
-      const userAFollowings = await followersQueries.getFollowings(userA.id);
-      const userBFollowings = await followersQueries.getFollowings(userB.id);
-      const userCFollowings = await followersQueries.getFollowings(userC.id);
+      const userAFollowings = await userFollowsQueries.getFollowings(userA.id);
+      const userBFollowings = await userFollowsQueries.getFollowings(userB.id);
+      const userCFollowings = await userFollowsQueries.getFollowings(userC.id);
 
       expect(userAFollowings).toStrictEqual<PublicUser[]>([
         {
@@ -371,7 +371,7 @@ describe("followers-queries", () => {
     });
   });
 
-  describe(followersQueries.unfollowUser, () => {
+  describe(userFollowsQueries.unfollowUser, () => {
     it("should throw a CustomHttpStatus error when target user does not", async () => {
       expect.hasAssertions();
 
@@ -383,7 +383,7 @@ describe("followers-queries", () => {
       });
 
       await expect(
-        followersQueries.unfollowUser(userA.id, "non-existing-id"),
+        userFollowsQueries.unfollowUser(userA.id, "non-existing-id"),
       ).rejects.toThrow(
         new CustomHttpStatusError(404, "No user to unfollow was found."),
       );
@@ -411,11 +411,11 @@ describe("followers-queries", () => {
         },
       });
 
-      await followersQueries.followUser(userA.id, userC.id);
-      await followersQueries.followUser(userB.id, userC.id);
+      await userFollowsQueries.followUser(userA.id, userC.id);
+      await userFollowsQueries.followUser(userB.id, userC.id);
 
-      await followersQueries.unfollowUser(userA.id, userC.id);
-      const userCFollowers = await followersQueries.getFollowers(userC.id);
+      await userFollowsQueries.unfollowUser(userA.id, userC.id);
+      const userCFollowers = await userFollowsQueries.getFollowers(userC.id);
 
       expect(userCFollowers).toStrictEqual<PublicUser[]>([
         {
