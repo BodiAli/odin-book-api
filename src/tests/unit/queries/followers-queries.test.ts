@@ -19,7 +19,9 @@ describe("followers-queries", () => {
 
       await expect(
         followersQueries.followUser(userA.id, "non-existing-id"),
-      ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No user to follow was found."),
+      );
     });
 
     it("should throw a CustomHttpStatusError when current user tries to follow themselves", async () => {
@@ -382,7 +384,9 @@ describe("followers-queries", () => {
 
       await expect(
         followersQueries.unfollowUser(userA.id, "non-existing-id"),
-      ).rejects.toThrow(new CustomHttpStatusError(404, "User not found."));
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No user to unfollow was found."),
+      );
     });
 
     it("should unfollow target user", async () => {
