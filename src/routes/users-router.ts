@@ -6,6 +6,7 @@ const usersRouter = Router();
 usersRouter
   .route("/:userId/followers")
   .post(usersController.createFollowerForTargetUser)
-  .get(usersController.getFollowers);
+  .get(usersController.getFollowers)
+  .delete(usersController.deleteFollowerOfTargetUser);
 
 export default usersRouter;
