@@ -52,3 +52,23 @@ export async function getFollowers(
     next(error);
   }
 }
+
+export async function deleteFollowerOfTargetUser(
+  req: Request<{ userId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+) {
+  assert(req.user, "User not found");
+  const { userId } = req.params;
+
+  try {
+    await followersQueries.unfollowUser(req.user.id, userId);
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
