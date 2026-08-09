@@ -3,7 +3,10 @@ import * as followersQueries from "#src/queries/followers-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
-import type { FollowersResponse } from "#src/types/routes/users.js";
+import type {
+  FollowersResponse,
+  FollowingsResponse,
+} from "#src/types/routes/users.js";
 
 export async function createFollowerForTargetUser(
   req: Request<{ userId: string }>,
@@ -64,6 +67,32 @@ export async function deleteFollowerOfTargetUser(
   try {
     await followersQueries.unfollowUser(req.user.id, userId);
     res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function getFollowings(
+  req: Request<{ userId: string }>,
+  res: Response<FollowingsResponse | ClientError>,
+  next: NextFunction,
+) {
+  assert(req.user, "User not found");
+  const { userId } = req.params;
+  const { count } = req.query;
+  try {
+    if (count && count === "true") {
+      const numOfFollowings = await followersQueries.getNumOfFollowing(userId);
+      res.json({ count: numOfFollowings });
+      return;
+    }
+
+    const followings = await followersQueries.getFollowings(userId);
+    res.json({ followings: followings });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
