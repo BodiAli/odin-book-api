@@ -13,7 +13,7 @@ model User {
   email                 String         @unique @db.VarChar(254)
   fullName              String         @db.VarChar(100)
   password              String?
-  provider              Provider       @default(local)
+  provider              Provider       @default(LOCAL)
   isOnline              Boolean        @default(false)
   lastSeen              DateTime       @default(now())
   isGuest               Boolean        @default(false)
@@ -51,9 +51,9 @@ model Notification {
 }
 
 enum Provider {
-  google
-  github
-  local
+  GOOGLE
+  GITHUB
+  LOCAL
 }
 
 enum Type {
