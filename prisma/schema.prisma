@@ -9,17 +9,19 @@ datasource db {
 }
 
 model User {
-  id         String       @id @default(uuid())
-  email      String       @unique @db.VarChar(254)
-  fullName   String       @db.VarChar(100)
-  password   String?
-  provider   Provider     @default(local)
-  isOnline   Boolean      @default(false)
-  lastSeen   DateTime     @default(now())
-  isGuest    Boolean      @default(false)
-  profile    Profile?
-  followedBy UserFollow[] @relation("FollowedBy")
-  following  UserFollow[] @relation("Following")
+  id                    String         @id @default(uuid())
+  email                 String         @unique @db.VarChar(254)
+  fullName              String         @db.VarChar(100)
+  password              String?
+  provider              Provider       @default(local)
+  isOnline              Boolean        @default(false)
+  lastSeen              DateTime       @default(now())
+  isGuest               Boolean        @default(false)
+  profile               Profile?
+  followedBy            UserFollow[]   @relation("FollowedBy")
+  following             UserFollow[]   @relation("Following")
+  notificationsSent     Notification[] @relation("Actor")
+  notificationsReceived Notification[] @relation("Notifier")
 }
 
 model Profile {
@@ -39,8 +41,21 @@ model UserFollow {
   @@id([followedById, followingId])
 }
 
+model Notification {
+  id         String @id @default(ulid())
+  actorId    String
+  actor      User   @relation("Actor", references: [id], fields: [actorId])
+  notifierId String
+  notifier   User   @relation("Notifier", references: [id], fields: [notifierId])
+  type       Type
+}
+
 enum Provider {
   google
   github
   local
+}
+
+enum Type {
+  FOLLOW
 }
