@@ -99,7 +99,7 @@ describe("/auth/sign-up endpoint", () => {
           email: "test-email@test.com",
           fullName: "test: full name",
           id: expect.any(String) as string,
-          provider: "local",
+          provider: "LOCAL",
           picture: null,
           isOnline: true,
           isGuest: false,

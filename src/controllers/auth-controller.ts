@@ -69,7 +69,7 @@ export async function authenticateWithGoogle(
   try {
     const data = await getIdTokenGoogle(req.body);
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
-    const user = await getOrCreateOauth2User(payload, "google");
+    const user = await getOrCreateOauth2User(payload, "GOOGLE");
     const jwtToken = issueJwt(user.id);
 
     res.json({
@@ -98,7 +98,7 @@ export async function authenticateWithGithub(
 ) {
   try {
     const userInfo = await getUserInfoGithub(req.body);
-    const user = await getOrCreateOauth2User(userInfo, "github");
+    const user = await getOrCreateOauth2User(userInfo, "GITHUB");
     const jwtToken = issueJwt(user.id);
 
     res.json({

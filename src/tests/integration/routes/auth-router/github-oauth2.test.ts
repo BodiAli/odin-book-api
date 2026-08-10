@@ -131,7 +131,7 @@ describe("/auth/github endpoint", () => {
           fullName: "test: github name",
           isOnline: true,
           picture: "test-image-url",
-          provider: "github",
+          provider: "GITHUB",
           isGuest: false,
         },
       });

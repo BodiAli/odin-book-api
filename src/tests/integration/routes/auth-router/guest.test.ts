@@ -25,7 +25,7 @@ describe("/auth/guest endpoint", () => {
           fullName: "Guest",
           isOnline: true,
           picture: null,
-          provider: "local",
+          provider: "LOCAL",
           isGuest: true,
         },
       });

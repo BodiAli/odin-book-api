@@ -171,7 +171,7 @@ describe("/auth/google endpoint", () => {
           email: googleUserData.email,
           fullName: googleUserData.name,
           picture: googleUserData.picture,
-          provider: "google",
+          provider: "GOOGLE",
           isOnline: true,
           isGuest: false,
         },
@@ -187,7 +187,7 @@ describe("/auth/google endpoint", () => {
           fullName: "test: full name",
           id: "test-userId",
           password: "test: password",
-          provider: "local",
+          provider: "LOCAL",
           isOnline: true,
           profile: {
             create: {
@@ -241,7 +241,7 @@ describe("/auth/google endpoint", () => {
           fullName: createdUser.fullName,
           id: createdUser.id,
           picture: googleUserData.picture,
-          provider: "local",
+          provider: "LOCAL",
           isOnline: createdUser.isOnline,
           isGuest: false,
         },

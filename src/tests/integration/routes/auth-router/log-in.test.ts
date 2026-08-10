@@ -88,7 +88,7 @@ describe("/auth/log-in endpoint", () => {
           email: "test-email@test.com",
           fullName: "test: full name",
           id: user.id,
-          provider: "local",
+          provider: "LOCAL",
           picture: null,
           isOnline: true,
           isGuest: false,
@@ -103,7 +103,7 @@ describe("/auth/log-in endpoint", () => {
         data: {
           email: "test-email@test.com",
           fullName: "test: full name",
-          provider: "google",
+          provider: "GOOGLE",
           password: null,
         },
       });

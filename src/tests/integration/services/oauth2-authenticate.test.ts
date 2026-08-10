@@ -21,7 +21,7 @@ describe("oauth2 service", () => {
         },
       });
 
-      const returnedUser = await getOrCreateOauth2User(userData, "google");
+      const returnedUser = await getOrCreateOauth2User(userData, "GOOGLE");
       const userExists = await prisma.user.findUnique({
         where: {
           email: userData.email,
@@ -35,7 +35,7 @@ describe("oauth2 service", () => {
         email: userData.email,
         fullName: userData.name,
         picture: userData.picture,
-        provider: "google",
+        provider: "GOOGLE",
         isOnline: true,
         isGuest: false,
       });
@@ -51,7 +51,7 @@ describe("oauth2 service", () => {
         data: {
           email: "test-email@test.com",
           fullName: "test: full name 1",
-          provider: "local",
+          provider: "LOCAL",
           password: "test: password",
         },
       });
@@ -62,7 +62,7 @@ describe("oauth2 service", () => {
           name: "test: full name 2",
           picture: "test-image-url",
         },
-        "github",
+        "GITHUB",
       );
 
       expect(returnedUser.id).toBe(createdUser.id);
@@ -78,7 +78,7 @@ describe("oauth2 service", () => {
           fullName: "test: full name",
           id: "test-userId-2",
           password: "test: password",
-          provider: "local",
+          provider: "LOCAL",
           profile: {
             create: {
               imageUrl: "test-image-url-1",
@@ -92,7 +92,7 @@ describe("oauth2 service", () => {
         picture: "test-image-url-2",
       };
 
-      await getOrCreateOauth2User(userData, "google");
+      await getOrCreateOauth2User(userData, "GOOGLE");
       const user = await prisma.user.findUnique({
         where: {
           id: createdUser.id,

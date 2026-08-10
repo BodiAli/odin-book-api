@@ -38,7 +38,7 @@ describe("user-queries", () => {
         email: "test-email@test.com",
         password: "test-password",
         fullName: "test: full name",
-        provider: "local",
+        provider: "LOCAL",
         picture: null,
         isOnline: false,
         isGuest: false,
@@ -74,7 +74,7 @@ describe("user-queries", () => {
         id: expect.any(String) as string,
         email: "test-email@test.com",
         fullName: "test: full name",
-        provider: "local",
+        provider: "LOCAL",
         picture: null,
         isOnline: false,
         isGuest: false,
@@ -151,7 +151,7 @@ describe("user-queries", () => {
         email: "test-email@test.com",
         fullName: "test: full name",
         id: user.id,
-        provider: "local",
+        provider: "LOCAL",
         picture: null,
         isOnline: true,
         isGuest: false,
@@ -176,7 +176,7 @@ describe("user-queries", () => {
       expect(user).toStrictEqual<User>({
         email: "test-email@test.com",
         fullName: "test: full name",
-        provider: "local",
+        provider: "LOCAL",
         id: createdUser.id,
         picture: null,
         isOnline: false,
@@ -192,7 +192,7 @@ describe("user-queries", () => {
       await userQueries.createUserOauth({
         email: "test-email@test.com",
         fullName: "test: full name",
-        provider: "google",
+        provider: "GOOGLE",
       });
       const createdUser = await userQueries.getUserWithPasswordByEmail(
         "test-email@test.com",
@@ -202,7 +202,7 @@ describe("user-queries", () => {
         id: expect.any(String) as string,
         email: "test-email@test.com",
         fullName: "test: full name",
-        provider: "google",
+        provider: "GOOGLE",
         password: null,
         picture: null,
         isOnline: true,
@@ -216,7 +216,7 @@ describe("user-queries", () => {
       await userQueries.createUserOauth({
         email: "test-email@test.com",
         fullName: "test: full name",
-        provider: "github",
+        provider: "GITHUB",
       });
       const createdUser = await userQueries.getUserWithPasswordByEmail(
         "test-email@test.com",
@@ -226,7 +226,7 @@ describe("user-queries", () => {
         id: expect.any(String) as string,
         email: "test-email@test.com",
         fullName: "test: full name",
-        provider: "github",
+        provider: "GITHUB",
         password: null,
         picture: null,
         isOnline: true,

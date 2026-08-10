@@ -40,7 +40,7 @@ describe("profile-queries", () => {
           fullName: "test: full name",
           id: "test-userId",
           password: null,
-          provider: "google",
+          provider: "GOOGLE",
         },
       });
       await profileQueries.createOrUpdateProfilePicture(
@@ -67,7 +67,7 @@ describe("profile-queries", () => {
           fullName: "test: full name",
           id: "test-userId",
           password: null,
-          provider: "google",
+          provider: "GOOGLE",
           profile: {
             create: {
               imageUrl: "test-image-url-1",
