@@ -3,7 +3,7 @@ import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import type { ProfileModel } from "#src/generated/prisma/models.js";
 
-describe("profile-queries", () => {
+describe("profile queries", () => {
   describe(profileQueries.createProfile, () => {
     it("should create a new profile", async () => {
       expect.hasAssertions();

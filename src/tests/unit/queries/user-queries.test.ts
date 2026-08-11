@@ -5,7 +5,7 @@ import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { User } from "#src/types/routes/users.js";
 
-describe("user-queries", () => {
+describe("user queries", () => {
   describe(userQueries.getUserWithPasswordByEmail, () => {
     it("should return null when no user is found", async () => {
       expect.hasAssertions();

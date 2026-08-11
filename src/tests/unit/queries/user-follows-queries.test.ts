@@ -5,7 +5,7 @@ import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { UserModel } from "#src/generated/prisma/models.js";
 import type { PublicUser } from "#src/types/routes/users.js";
 
-describe("followers-queries", () => {
+describe("user-follows queries", () => {
   describe(userFollowsQueries.followUser, () => {
     it("should throw a CustomHttpStatusError when the target user does not exist", async () => {
       expect.hasAssertions();
