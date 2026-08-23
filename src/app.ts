@@ -8,6 +8,8 @@ import errorHandler from "./errors/error-handler.js";
 
 const app = express();
 
+app.disable("x-powered-by");
+
 app.use(cors());
 
 app.use(indexRouter);
