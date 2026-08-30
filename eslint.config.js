@@ -32,6 +32,9 @@ export default defineConfig([
         projectService: true,
       },
     },
+    settings: {
+      "import-x/ignore": ["node_modules"],
+    },
     rules: {
       "import-x/order": [
         "error",
@@ -49,7 +52,6 @@ export default defineConfig([
         },
       ],
       "import-x/no-cycle": "error",
-      "import-x/no-named-as-default-member": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -57,7 +59,6 @@ export default defineConfig([
           varsIgnorePattern: "^_",
         },
       ],
-      "import-x/default": "off",
       "@typescript-eslint/no-empty-object-type": [
         "error",
         { allowInterfaces: "with-single-extends" },
