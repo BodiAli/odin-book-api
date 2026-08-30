@@ -13,7 +13,8 @@
     "build": "tsc -b",
     "start": "NODE_ENV=production node ./dist/app.js",
     "generate:prisma": "prisma generate --sql",
-    "generate:openapi": "tsx --tsconfig ./tsconfig.app.json ./src/openapi/generate.ts"
+    "generate:openapi": "tsx --tsconfig ./tsconfig.app.json ./src/openapi/generate.ts",
+    "lint": "eslint"
   },
   "author": "Abdulrahman Ali",
   "license": "MIT",
