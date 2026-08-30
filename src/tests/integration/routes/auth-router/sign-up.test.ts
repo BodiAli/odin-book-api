@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
 import express from "express";
 import prisma from "#src/db/prisma-client.js";
@@ -11,7 +11,10 @@ import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/auth/sign-up endpoint", () => {
   const app = express();
-  app.use(indexRouter);
+
+  beforeAll(() => {
+    app.use(indexRouter);
+  });
 
   describe("create user POST", () => {
     it("should return 400 status with error messages when given invalid inputs", async () => {

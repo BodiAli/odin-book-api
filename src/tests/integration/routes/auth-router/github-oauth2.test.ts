@@ -1,4 +1,4 @@
-import { afterEach, assert, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
 import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
@@ -11,7 +11,10 @@ import type {
 
 describe("/auth/github endpoint", () => {
   const app = express();
-  app.use(indexRouter);
+
+  beforeAll(() => {
+    app.use(indexRouter);
+  });
 
   afterEach(() => {
     vi.resetAllMocks();

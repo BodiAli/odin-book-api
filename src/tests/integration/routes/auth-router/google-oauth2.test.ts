@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach, assert } from "vitest";
+import { describe, it, expect, vi, afterEach, assert, beforeAll } from "vitest";
 import express from "express";
 import request from "supertest";
 import jwt from "jsonwebtoken";
@@ -13,7 +13,10 @@ import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/auth/google endpoint", () => {
   const app = express();
-  app.use(indexRouter);
+
+  beforeAll(() => {
+    app.use(indexRouter);
+  });
 
   afterEach(() => {
     vi.resetAllMocks();

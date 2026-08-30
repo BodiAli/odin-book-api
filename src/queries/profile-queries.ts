@@ -1,10 +1,11 @@
 import prisma from "#src/db/prisma-client.js";
+import type { ProfileModel } from "#src/generated/prisma/models.js";
 
 export async function createProfile({
   userId,
   imageUrl,
   description,
-}: CreateProfileArguments) {
+}: CreateProfileArguments): Promise<ProfileModel> {
   const profile = await prisma.profile.create({
     data: {
       userId,
@@ -19,7 +20,7 @@ export async function createProfile({
 export async function createOrUpdateProfilePicture(
   userId: string,
   imageUrl: string | null,
-) {
+): Promise<string | null> {
   const profile = await prisma.profile.upsert({
     create: {
       userId,

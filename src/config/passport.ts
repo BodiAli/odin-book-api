@@ -3,6 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
+import config from "./config.js";
 import type { User } from "#src/types/routes/users.js";
 
 passport.use(
@@ -10,7 +11,7 @@ passport.use(
     { session: false, usernameField: "email" },
     (email, password, done) => {
       const message = "Incorrect email or password.";
-      const asyncHandler = async () => {
+      const asyncHandler = async (): Promise<void> => {
         try {
           const user = await userQueries.getUserWithPasswordByEmail(email);
           if (!user) {
@@ -41,6 +42,7 @@ passport.use(
             isOnline: user.isOnline,
             isGuest: user.isGuest,
           };
+
           done(null, authenticatedUser);
         } catch (error) {
           done(error);
@@ -56,10 +58,10 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: process.env.JWT_SECRET,
+      secretOrKey: config.jwtSecret,
     },
     (payload: { sub: string }, done) => {
-      const asyncHandler = async () => {
+      const asyncHandler = async (): Promise<void> => {
         try {
           const user = await userQueries.getUserById(payload.sub);
 

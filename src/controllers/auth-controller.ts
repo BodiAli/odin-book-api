@@ -19,7 +19,7 @@ import type { User } from "#src/types/routes/users.js";
 export async function createUser(
   req: Request<unknown, unknown, SignUpRequestBody>,
   res: Response<AuthenticatedResponse | ClientError>,
-) {
+): Promise<void> {
   const { confirmPassword: _confirmPassword, ...userData } = req.body;
 
   try {
@@ -39,7 +39,7 @@ export function authenticateWithLocal(
   req: Request,
   res: Response<AuthenticatedResponse | ClientError>,
   next: NextFunction,
-) {
+): void {
   (
     passport.authenticate(
       "local",
@@ -65,7 +65,7 @@ export async function authenticateWithGoogle(
   req: Request<unknown, unknown, Oauth2RequestBody>,
   res: Response<AuthenticatedResponse | ClientError>,
   next: NextFunction,
-) {
+): Promise<void> {
   try {
     const data = await getIdTokenGoogle(req.body);
     const payload = jwt.decode(data.id_token) as Oauth2UserData;
@@ -87,7 +87,7 @@ export async function authenticateWithGoogle(
       });
       return;
     }
-    next(error);
+    next("error");
   }
 }
 
@@ -95,7 +95,7 @@ export async function authenticateWithGithub(
   req: Request<unknown, unknown, Oauth2RequestBody>,
   res: Response<AuthenticatedResponse | ClientError>,
   next: NextFunction,
-) {
+): Promise<void> {
   try {
     const userInfo = await getUserInfoGithub(req.body);
     const user = await getOrCreateOauth2User(userInfo, "GITHUB");
@@ -118,7 +118,7 @@ export async function signInAsGuest(
   _req: Request,
   res: Response<AuthenticatedResponse>,
   next: NextFunction,
-) {
+): Promise<void> {
   try {
     const guest = await userQueries.getOrCreateGuestUser();
     const token = issueJwt(guest.id, "30m");

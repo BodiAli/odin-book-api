@@ -12,7 +12,7 @@ export async function createFollowerForTargetUser(
   req: Request<{ userId: string }>,
   res: Response<ClientError>,
   next: NextFunction,
-) {
+): Promise<void> {
   assert(req.user, "User not found");
   const { userId } = req.params;
 
@@ -32,7 +32,7 @@ export async function getFollowers(
   req: Request<{ userId: string }>,
   res: Response<FollowersResponse | ClientError>,
   next: NextFunction,
-) {
+): Promise<void> {
   assert(req.user, "User not found");
   const { userId } = req.params;
   const { count } = req.query;
@@ -60,7 +60,7 @@ export async function deleteFollowerOfTargetUser(
   req: Request<{ userId: string }>,
   res: Response<ClientError>,
   next: NextFunction,
-) {
+): Promise<void> {
   assert(req.user, "User not found");
   const { userId } = req.params;
 
@@ -80,7 +80,7 @@ export async function getFollowings(
   req: Request<{ userId: string }>,
   res: Response<FollowingsResponse | ClientError>,
   next: NextFunction,
-) {
+): Promise<void> {
   assert(req.user, "User not found");
   const { userId } = req.params;
   const { count } = req.query;

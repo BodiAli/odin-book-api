@@ -3,7 +3,7 @@ import type { ClientError } from "#src/types/errors/errors.js";
 import type { NextFunction, Request, Response } from "express";
 
 export default function validateBody(zodSchema: z.ZodType) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       zodSchema.parse(req.body);
       next();

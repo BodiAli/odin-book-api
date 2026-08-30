@@ -1,13 +1,9 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "#src/generated/prisma/client.js";
+import config from "#src/config/config.js";
 
-const connectionString =
-  process.env.NODE_ENV === "test"
-    ? process.env.TEST_DATABASE_URL
-    : process.env.DATABASE_URL;
-
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({ connectionString: config.connectionString });
 const prisma = new PrismaClient({
   adapter,
   omit: {

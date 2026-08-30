@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
@@ -6,7 +6,10 @@ import type { AuthenticatedResponse } from "#src/types/routes/auth.js";
 
 describe("/auth/guest endpoint", () => {
   const app = express();
-  app.use(indexRouter);
+
+  beforeAll(() => {
+    app.use(indexRouter);
+  });
 
   describe("signing in as guest POST", () => {
     it("should return jwt token with guest user", async () => {

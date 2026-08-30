@@ -3,7 +3,10 @@ import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import type { PublicUser } from "#src/types/routes/users.js";
 
-export async function followUser(currentUserId: string, userId: string) {
+export async function followUser(
+  currentUserId: string,
+  userId: string,
+): Promise<void> {
   if (currentUserId === userId) {
     throw new CustomHttpStatusError(400, "You cannot follow yourself.");
   }
@@ -44,7 +47,7 @@ export async function followUser(currentUserId: string, userId: string) {
   }
 }
 
-export async function getNumOfFollowers(userId: string) {
+export async function getNumOfFollowers(userId: string): Promise<number> {
   const doesUserExist = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -64,7 +67,7 @@ export async function getNumOfFollowers(userId: string) {
   return numberOfFollowers;
 }
 
-export async function getNumOfFollowing(userId: string) {
+export async function getNumOfFollowing(userId: string): Promise<number> {
   const doesUserExist = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -180,7 +183,10 @@ export async function getFollowings(userId: string): Promise<PublicUser[]> {
   });
 }
 
-export async function unfollowUser(currentUserId: string, userId: string) {
+export async function unfollowUser(
+  currentUserId: string,
+  userId: string,
+): Promise<void> {
   try {
     await prisma.userFollow.delete({
       where: {

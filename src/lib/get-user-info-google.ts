@@ -1,7 +1,14 @@
+import config from "#src/config/config.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { Oauth2RequestBody } from "#src/types/routes/auth.js";
 
-export async function getIdTokenGoogle(requestBody: Oauth2RequestBody) {
+interface IdToken {
+  id_token: string;
+}
+
+export async function getIdTokenGoogle(
+  requestBody: Oauth2RequestBody,
+): Promise<IdToken> {
   if (!requestBody.success) {
     throw new CustomHttpStatusError(401, "Access denied");
   }
@@ -11,9 +18,9 @@ export async function getIdTokenGoogle(requestBody: Oauth2RequestBody) {
     method: "POST",
     body: JSON.stringify({
       code,
-      client_id: process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+      client_id: config.googleClientId,
+      client_secret: config.googleClientSecret,
+      redirect_uri: config.googleCallbackUrl,
       grant_type: "authorization_code",
       code_verifier: codeVerifier,
     }),
@@ -30,6 +37,6 @@ export async function getIdTokenGoogle(requestBody: Oauth2RequestBody) {
     throw new CustomHttpStatusError(502, "Failed to authenticate with Google.");
   }
 
-  const data = (await response.json()) as { id_token: string };
+  const data = (await response.json()) as IdToken;
   return data;
 }

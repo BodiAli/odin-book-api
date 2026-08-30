@@ -148,7 +148,7 @@ export async function createUserOauth({
   email,
   fullName,
   provider,
-}: CreateUserOauth2) {
+}: CreateUserOauth2): Promise<User> {
   const { lastSeen: _lastSeen, ...user } = await prisma.user.create({
     data: {
       email,
@@ -159,7 +159,7 @@ export async function createUserOauth({
     },
   });
 
-  return user;
+  return { ...user, picture: null };
 }
 
 export async function getOrCreateGuestUser(): Promise<User> {

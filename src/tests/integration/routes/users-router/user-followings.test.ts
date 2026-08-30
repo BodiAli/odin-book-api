@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
@@ -13,7 +13,10 @@ import type {
 
 describe("/users/:userId/followings endpoint", () => {
   const app = express();
-  app.use(indexRouter);
+
+  beforeAll(() => {
+    app.use(indexRouter);
+  });
 
   interface JsonFollowingsResponse {
     followings: (Omit<PublicUser, "lastSeen"> & { lastSeen: string })[];

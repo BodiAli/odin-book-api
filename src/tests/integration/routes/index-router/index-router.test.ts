@@ -1,6 +1,6 @@
 import supertest from "supertest";
 import express from "express";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
@@ -27,7 +27,10 @@ vi.mock(import("#src/routes/users-router.js"), () => {
 
 describe("index-router mount endpoints", () => {
   const app = express();
-  app.use("/", indexRouter);
+
+  beforeAll(() => {
+    app.use("/", indexRouter);
+  });
 
   interface Mocked {
     mocked: true;

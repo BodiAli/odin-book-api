@@ -6,7 +6,7 @@ export default function unauthorizeGuest(
   req: Request,
   res: Response<ClientError>,
   next: NextFunction,
-) {
+): void {
   assert(req.user, "User not found");
 
   if (req.user.isGuest) {

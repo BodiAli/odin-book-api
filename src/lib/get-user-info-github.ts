@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import config from "#src/config/config.js";
 import type {
   Oauth2RequestBody,
   Oauth2UserData,
@@ -39,8 +40,8 @@ export async function getUserInfoGithub(
     {
       method: "POST",
       body: JSON.stringify({
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        client_id: config.githubClientId,
+        client_secret: config.githubClientSecret,
         code,
         code_verifier: codeVerifier,
       }),

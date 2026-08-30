@@ -5,6 +5,7 @@ import indexRouter from "./routes/index-router.js";
 import openapiRouter from "./routes/openapi-router.js";
 import resourceNotFound from "./errors/resource-not-found.js";
 import errorHandler from "./errors/error-handler.js";
+import config from "./config/config.js";
 
 const app = express();
 
@@ -18,8 +19,6 @@ app.use("/api-docs", openapiRouter);
 app.use(resourceNotFound);
 app.use(errorHandler);
 
-const PORT = Number(process.env.PORT) || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${String(PORT)}.`);
+app.listen(config.port, () => {
+  console.log(`Server listening on port ${String(config.port)}.`);
 });

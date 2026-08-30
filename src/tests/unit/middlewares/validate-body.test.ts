@@ -7,9 +7,9 @@ import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("validate body middleware", () => {
   const app = express();
-  app.use(express.json());
 
   beforeAll(() => {
+    app.use(express.json());
     app.post(
       "/test",
       validateBody(

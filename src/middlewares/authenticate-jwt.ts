@@ -7,7 +7,7 @@ export default function authenticateJwt(
   req: Request,
   res: Response<ClientError>,
   next: NextFunction,
-) {
+): void {
   (
     passport.authenticate(
       "jwt",

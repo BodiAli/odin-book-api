@@ -4,12 +4,13 @@ import globals from "globals";
 import vitest from "@vitest/eslint-plugin";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import { importX } from "eslint-plugin-import-x";
+import node from "eslint-plugin-n";
 import { globalIgnores, defineConfig } from "eslint/config";
 
 export default defineConfig([
   globalIgnores(["dist"]),
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     extends: [
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
@@ -18,6 +19,9 @@ export default defineConfig([
       importX.flatConfigs.typescript,
       eslintConfigPrettier,
     ],
+    plugins: {
+      n: node,
+    },
     languageOptions: {
       globals: {
         ...globals.node,
@@ -58,6 +62,8 @@ export default defineConfig([
         "error",
         { allowInterfaces: "with-single-extends" },
       ],
+      "@typescript-eslint/explicit-function-return-type": "error",
+      "n/no-process-env": "error",
     },
   },
   {
@@ -65,7 +71,6 @@ export default defineConfig([
     extends: [vitest.configs.all],
     rules: {
       "@typescript-eslint/unbound-method": "off",
-      "vitest/require-hook": ["error", { allowedFunctionCalls: ["app.use"] }],
       "vitest/no-hooks": "off",
     },
     settings: {

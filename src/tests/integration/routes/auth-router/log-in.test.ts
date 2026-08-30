@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
 import express from "express";
 import indexRouter from "#src/routes/index-router.js";
@@ -12,7 +12,10 @@ import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/auth/log-in endpoint", () => {
   const app = express();
-  app.use(indexRouter);
+
+  beforeAll(() => {
+    app.use(indexRouter);
+  });
 
   describe("authenticate user POST", () => {
     it("should return 400 status with error messages when given invalid data", async () => {
