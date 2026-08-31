@@ -27,7 +27,6 @@ export default defineConfig([
         ...globals.node,
         ...globals.vitest,
       },
-      ecmaVersion: "latest",
       parserOptions: {
         projectService: true,
       },
