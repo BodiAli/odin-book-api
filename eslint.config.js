@@ -17,7 +17,7 @@ export default defineConfig([
       tseslint.configs.stylisticTypeChecked,
       importX.flatConfigs.recommended,
       importX.flatConfigs.typescript,
-      unicorn.configs.recommended,
+      unicorn.configs.unopinionated,
       eslintConfigPrettier,
     ],
     plugins: {
