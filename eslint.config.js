@@ -4,6 +4,7 @@ import vitest from "@vitest/eslint-plugin";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import { importX } from "eslint-plugin-import-x";
 import node from "eslint-plugin-n";
+import unicorn from "eslint-plugin-unicorn";
 import { globalIgnores, defineConfig } from "eslint/config";
 
 export default defineConfig([
@@ -16,6 +17,7 @@ export default defineConfig([
       tseslint.configs.stylisticTypeChecked,
       importX.flatConfigs.recommended,
       importX.flatConfigs.typescript,
+      unicorn.configs.recommended,
       eslintConfigPrettier,
     ],
     plugins: {
@@ -59,6 +61,7 @@ export default defineConfig([
       ],
       "@typescript-eslint/explicit-function-return-type": "error",
       "n/no-process-env": "error",
+      "unicorn/comment-content": "error",
     },
   },
   {
