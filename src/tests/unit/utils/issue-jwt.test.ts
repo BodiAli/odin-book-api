@@ -1,4 +1,3 @@
-import { describe, expect, it } from "vitest";
 import * as jwt from "jsonwebtoken";
 import issueJwt from "#src/utils/issue-jwt.js";
 import config from "#src/config/config.js";

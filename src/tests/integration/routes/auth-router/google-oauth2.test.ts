@@ -1,4 +1,3 @@
-import { describe, it, expect, vi, afterEach, assert, beforeAll } from "vitest";
 import express from "express";
 import request from "supertest";
 import jwt from "jsonwebtoken";
@@ -75,10 +74,13 @@ describe("/auth/google endpoint", () => {
         codeVerifier: "test-code-verifier",
       };
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(JSON.stringify({ error: "invalid_scope" }), {
-          status: 400,
-          statusText: "Bad request",
-        }),
+        Response.json(
+          { error: "invalid_scope" },
+          {
+            status: 400,
+            statusText: "Bad request",
+          },
+        ),
       );
 
       const response = await request(app)
@@ -98,11 +100,11 @@ describe("/auth/google endpoint", () => {
         codeVerifier: "test-code-verifier",
       };
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             error: "invalid_grant",
             error_description: "Bad request",
-          }),
+          },
           {
             status: 400,
           },
@@ -140,11 +142,14 @@ describe("/auth/google endpoint", () => {
       });
       const idToken = jwt.sign(googleUserData, "secret-key");
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(JSON.stringify({ id_token: idToken }), {
-          headers: {
-            "Content-Type": "application/json",
+        Response.json(
+          { id_token: idToken },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           },
-        }),
+        ),
       );
       const requestBody: Oauth2RequestBody = {
         code: "test-authorization-code",
@@ -213,10 +218,10 @@ describe("/auth/google endpoint", () => {
       };
       const idToken = jwt.sign(googleUserData, "secret-key");
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             id_token: idToken,
-          }),
+          },
           {
             headers: {
               "Content-Type": "application/json",

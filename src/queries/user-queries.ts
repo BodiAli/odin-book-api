@@ -119,24 +119,22 @@ export async function createUserLocal({
 
     return { ...user, picture: profile?.imageUrl ?? null };
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        const field = (
-          error.meta?.["driverAdapterError"] as {
-            cause: {
-              constraint: {
-                fields: string[];
-              };
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const field = (
+        error.meta?.["driverAdapterError"] as {
+          cause: {
+            constraint: {
+              fields: string[];
             };
-          }
-        ).cause.constraint.fields["0"];
+          };
+        }
+      ).cause.constraint.fields["0"];
 
-        if (field === "email") {
-          throw new CustomHttpStatusError(409, "Email already exists.");
-        }
-        if (field === "username") {
-          throw new CustomHttpStatusError(409, "Username already exists.");
-        }
+      if (field === "email") {
+        throw new CustomHttpStatusError(409, "Email already exists.");
       }
     }
 

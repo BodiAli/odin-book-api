@@ -1,4 +1,3 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { Oauth2RequestBody } from "#src/types/routes/auth.js";
@@ -26,11 +25,11 @@ describe(getIdTokenGoogle, () => {
     expect.hasAssertions();
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
-        JSON.stringify({
+      Response.json(
+        {
           error: "invalid_grant",
           error_description: "Invalid code verifier.",
-        }),
+        },
         {
           status: 400,
         },
@@ -46,9 +45,12 @@ describe(getIdTokenGoogle, () => {
     expect.hasAssertions();
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ error: "unexpected_reason" }), {
-        status: 403,
-      }),
+      Response.json(
+        { error: "unexpected_reason" },
+        {
+          status: 403,
+        },
+      ),
     );
 
     await expect(getIdTokenGoogle(argumentsObj)).rejects.toThrow(
@@ -60,9 +62,12 @@ describe(getIdTokenGoogle, () => {
     expect.hasAssertions();
 
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ id_token: "idToken" }), {
-        status: 200,
-      }),
+      Response.json(
+        { id_token: "idToken" },
+        {
+          status: 200,
+        },
+      ),
     );
 
     await expect(getIdTokenGoogle(argumentsObj)).resolves.toStrictEqual({

@@ -1,6 +1,6 @@
 import supertest from "supertest";
 import express from "express";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";

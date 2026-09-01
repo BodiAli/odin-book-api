@@ -1,4 +1,3 @@
-import { afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
 import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
@@ -55,9 +54,12 @@ describe("/auth/github endpoint", () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(JSON.stringify({ error: "unexpected_error" }), {
-          status: 500,
-        }),
+        Response.json(
+          { error: "unexpected_error" },
+          {
+            status: 500,
+          },
+        ),
       );
 
       const response = await request(app)
@@ -77,35 +79,36 @@ describe("/auth/github endpoint", () => {
 
       vi.spyOn(globalThis, "fetch")
         .mockResolvedValueOnce(
-          new Response(JSON.stringify({ access_token: "access-token" }), {
-            status: 200,
-          }),
+          Response.json(
+            { access_token: "access-token" },
+            {
+              status: 200,
+            },
+          ),
         )
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify({
+          Response.json(
+            {
               id: 123,
               name: "test: github name",
               avatar_url: "test-image-url",
-            }),
+            },
             { status: 200 },
           ),
         )
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify([
-              {
-                email: "test-not-primary-email@test.com",
-                verified: true,
-                primary: false,
-              },
-              {
-                email: "test-primary-email@test.com",
-                verified: true,
-                primary: true,
-              },
-            ]),
-          ),
+          Response.json([
+            {
+              email: "test-not-primary-email@test.com",
+              verified: true,
+              primary: false,
+            },
+            {
+              email: "test-primary-email@test.com",
+              verified: true,
+              primary: true,
+            },
+          ]),
         );
       const nonExistingUser = await prisma.user.findUnique({
         where: {

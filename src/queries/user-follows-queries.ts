@@ -37,10 +37,11 @@ export async function followUser(
       },
     });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2003") {
-        throw new CustomHttpStatusError(404, "No user to follow was found.");
-      }
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      throw new CustomHttpStatusError(404, "No user to follow was found.");
     }
 
     throw error;
@@ -197,10 +198,12 @@ export async function unfollowUser(
       },
     });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2025") {
-        throw new CustomHttpStatusError(404, "No user to unfollow was found.");
-      }
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new CustomHttpStatusError(404, "No user to unfollow was found.");
     }
+    throw error;
   }
 }

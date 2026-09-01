@@ -1,4 +1,3 @@
-import { beforeAll, describe, expect, it } from "vitest";
 import express from "express";
 import request from "supertest";
 import authenticateJwt from "#src/middlewares/authenticate-jwt.js";

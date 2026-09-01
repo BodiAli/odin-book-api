@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";

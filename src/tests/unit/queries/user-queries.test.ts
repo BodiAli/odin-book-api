@@ -1,4 +1,3 @@
-import { describe, expect, it, assert } from "vitest";
 import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
 import prisma from "#src/db/prisma-client.js";

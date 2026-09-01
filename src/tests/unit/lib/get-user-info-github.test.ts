@@ -1,4 +1,3 @@
-import { describe, it, afterEach, vi, expect } from "vitest";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type {
@@ -46,12 +45,12 @@ describe(getUserInfoGithub, () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             error: "invalid_grant",
             error_description:
               "code verifier did not match the code challenge sent in the request",
-          }),
+          },
           { status: 400 },
         ),
       );
@@ -68,12 +67,15 @@ describe(getUserInfoGithub, () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(JSON.stringify({ error: "Unexpected Error" }), {
-          status: 500,
-          headers: {
-            "Content-Type": "application/json",
+        Response.json(
+          { error: "Unexpected Error" },
+          {
+            status: 500,
+            headers: {
+              "Content-Type": "application/json",
+            },
           },
-        }),
+        ),
       );
 
       await expect(getUserInfoGithub(argumentsObj)).rejects.toThrow(
@@ -85,11 +87,11 @@ describe(getUserInfoGithub, () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             error: "bad_verification_code",
             error_description: "The code passed is incorrect or expired.",
-          }),
+          },
           {
             status: 200,
             headers: {
@@ -113,11 +115,11 @@ describe(getUserInfoGithub, () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             error: "unverified_user_email",
             error_description: "The user must have a verified primary email.",
-          }),
+          },
           {
             status: 200,
             headers: {
@@ -142,8 +144,8 @@ describe(getUserInfoGithub, () => {
 
       vi.spyOn(globalThis, "fetch")
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify({ access_token: "expired-access-token" }),
+          Response.json(
+            { access_token: "expired-access-token" },
             {
               status: 200,
               headers: {
@@ -153,8 +155,8 @@ describe(getUserInfoGithub, () => {
           ),
         )
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify({ message: "Invalid access token", status: "401" }),
+          Response.json(
+            { message: "Invalid access token", status: "401" },
             { status: 401 },
           ),
         );
@@ -170,28 +172,28 @@ describe(getUserInfoGithub, () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             access_token: "expired-access-token",
-          }),
+          },
           { status: 200 },
         ),
       );
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             name: "test: github name",
             avatar_url: "test-image-url",
-          }),
+          },
           { status: 200 },
         ),
       );
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             message: "Invalid access token",
             status: "401",
-          }),
+          },
           { status: 401 },
         ),
       );
@@ -212,25 +214,25 @@ describe(getUserInfoGithub, () => {
         picture: "test-image-url",
       };
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             access_token: "access-token",
-          }),
+          },
           { status: 200 },
         ),
       );
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
+        Response.json(
+          {
             name: "test: github name",
             avatar_url: "test-image-url",
-          }),
+          },
           { status: 200 },
         ),
       );
       vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-        new Response(
-          JSON.stringify([
+        Response.json(
+          [
             {
               email: "test-not-primary-email@test.com",
               verified: true,
@@ -241,7 +243,7 @@ describe(getUserInfoGithub, () => {
               verified: true,
               primary: true,
             },
-          ]),
+          ],
           { status: 200 },
         ),
       );

@@ -1,4 +1,3 @@
-import { assert, describe, expect, it } from "vitest";
 import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import type { ProfileModel } from "#src/generated/prisma/models.js";
