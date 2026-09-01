@@ -14,7 +14,8 @@
     "start": "NODE_ENV=production node ./dist/app.js",
     "generate:prisma": "prisma generate --sql",
     "generate:openapi": "tsx --tsconfig ./tsconfig.app.json ./src/openapi/generate.ts",
-    "lint": "tsc -b tsconfig.json --noEmit && eslint"
+    "lint": "tsc -b tsconfig.json --noEmit && eslint",
+    "format": "prettier -w ."
   },
   "author": "Abdulrahman Ali",
   "license": "MIT",
@@ -53,7 +54,7 @@
     "eslint-plugin-import-x": "^4.16.2",
     "eslint-plugin-n": "^18.3.0",
     "eslint-plugin-unicorn": "^74.0.0",
-    "prettier": "^3.8.3",
+    "prettier": "^3.9.6",
     "prisma": "^7.8.0",
     "supertest": "^7.2.2",
     "tsx": "^4.22.4",
