@@ -8,7 +8,7 @@ import unicorn from "eslint-plugin-unicorn";
 import { globalIgnores, defineConfig } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", "./src/generated"]),
   {
     files: ["**/*.ts"],
     extends: [
@@ -62,6 +62,7 @@ export default defineConfig([
       "@typescript-eslint/explicit-function-return-type": "error",
       "n/no-process-env": "error",
       "unicorn/comment-content": "error",
+      "unicorn/no-top-level-side-effects": "off",
     },
   },
   {
