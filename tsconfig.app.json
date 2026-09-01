@@ -12,7 +12,8 @@
       "esnext"
     ],
     "types": [
-      "node"
+      "node",
+      "vitest/globals"
     ],
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
