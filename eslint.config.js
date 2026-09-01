@@ -1,6 +1,5 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
-import globals from "globals";
 import vitest from "@vitest/eslint-plugin";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import { importX } from "eslint-plugin-import-x";
@@ -23,10 +22,6 @@ export default defineConfig([
       n: node,
     },
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.vitest,
-      },
       parserOptions: {
         projectService: true,
       },
@@ -72,6 +67,8 @@ export default defineConfig([
     rules: {
       "@typescript-eslint/unbound-method": "off",
       "vitest/no-hooks": "off",
+      "vitest/prefer-importing-vitest-globals": "off",
+      "vitest/no-importing-vitest-globals": "warn",
     },
     settings: {
       vitest: {
