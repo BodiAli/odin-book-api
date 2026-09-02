@@ -1,7 +1,7 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import vitest from "@vitest/eslint-plugin";
-import eslintConfigPrettier from "eslint-config-prettier/flat";
+import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import { importX } from "eslint-plugin-import-x";
 import node from "eslint-plugin-n";
 import unicorn from "eslint-plugin-unicorn";
@@ -18,7 +18,7 @@ export default defineConfig([
       importX.flatConfigs.recommended,
       importX.flatConfigs.typescript,
       unicorn.configs.unopinionated,
-      eslintConfigPrettier,
+      eslintPluginPrettierRecommended,
     ],
     plugins: {
       n: node,
