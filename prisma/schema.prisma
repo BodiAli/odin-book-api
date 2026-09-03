@@ -42,12 +42,26 @@ model UserFollow {
 }
 
 model Notification {
-  id         String @id @default(ulid())
+  id         String           @id @default(uuid())
   actorId    String
-  actor      User   @relation("Actor", references: [id], fields: [actorId])
+  actor      User             @relation("Actor", references: [id], fields: [actorId])
   notifierId String
-  notifier   User   @relation("Notifier", references: [id], fields: [notifierId])
-  type       Type
+  notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
+  type       NotificationType
+  entity     Entity?
+}
+
+model Entity {
+  id             String       @id @default(uuid())
+  notificationId String       @unique
+  notification   Notification @relation(references: [id], fields: [notificationId])
+  postId         String       @unique
+  post           Post         @relation(references: [id], fields: [postId])
+}
+
+model Post {
+  id     String  @id @default(uuid())
+  entity Entity?
 }
 
 enum Provider {
@@ -56,6 +70,7 @@ enum Provider {
   LOCAL
 }
 
-enum Type {
+enum NotificationType {
   FOLLOW
+  COMMENT
 }
