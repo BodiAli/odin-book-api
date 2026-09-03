@@ -27,6 +27,10 @@ const openApiDocument = generator.generateDocument({
       name: "user-follow",
       description: "User follow operations",
     },
+    {
+      name: "notifications",
+      description: "Notification operations",
+    },
   ],
   servers: [{ url: "http://localhost:3000" }],
 });
