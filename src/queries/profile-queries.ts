@@ -37,6 +37,22 @@ export async function createOrUpdateProfilePicture(
   return profile.imageUrl;
 }
 
+export async function getProfilePicture(
+  userId: string,
+): Promise<string | null> {
+  const profilePicture = await prisma.profile.findUnique({
+    where: {
+      userId,
+    },
+    select: {
+      imageUrl: true,
+    },
+  });
+  assert(profilePicture, "Profile not found");
+
+  return profilePicture.imageUrl;
+}
+
 export interface CreateProfileArguments {
   userId: string;
   imageUrl: string | null;
