@@ -62,6 +62,7 @@ export default defineConfig([
       "@typescript-eslint/explicit-function-return-type": "error",
       "n/no-process-env": "error",
       "unicorn/comment-content": "error",
+      "unicorn/consistent-boolean-name": "error",
       "unicorn/no-top-level-side-effects": "off",
     },
   },
