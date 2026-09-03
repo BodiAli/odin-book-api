@@ -1,5 +1,6 @@
-import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
+import * as profileQueries from "#src/queries/profile-queries.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import type { ProfileModel } from "#src/generated/prisma/models.js";
 
 describe("profile queries", () => {
@@ -94,6 +95,46 @@ describe("profile queries", () => {
       expect(notUpdatedProfile.imageUrl).toBe("test-image-url-1");
       expect(updatedProfile.imageUrl).toBe("test-image-url");
       expect(profilePicture).toBe(updatedProfile.imageUrl);
+    });
+  });
+
+  describe(profileQueries.getProfilePicture, () => {
+    it("should null when user doesn't have a profile picture", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: fullname",
+        password: "test: password",
+      });
+      await profileQueries.createProfile({
+        userId: user.id,
+        description: "test: profile description",
+        imageUrl: null,
+      });
+
+      const profilePicture = await profileQueries.getProfilePicture(user.id);
+
+      expect(profilePicture).toBeNull();
+    });
+
+    it("should return user's profile picture when user has a profile picture", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: fullname",
+        password: "test: password",
+      });
+      await profileQueries.createProfile({
+        userId: user.id,
+        description: "test: profile description",
+        imageUrl: "test-image-url",
+      });
+
+      const profilePicture = await profileQueries.getProfilePicture(user.id);
+
+      expect(profilePicture).toBe("test-image-url");
     });
   });
 });
