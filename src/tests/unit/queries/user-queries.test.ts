@@ -96,13 +96,13 @@ describe("user queries", () => {
       );
       assert(userWithPassword);
       assert(userWithPassword.password);
-      const doesPasswordMatch = await bcrypt.compare(
+      const didPasswordMatch = await bcrypt.compare(
         "test: password",
         userWithPassword.password,
       );
 
       expect(userWithPassword.password).not.toBe("test: password");
-      expect(doesPasswordMatch).toBe(true);
+      expect(didPasswordMatch).toBe(true);
     });
 
     it("should throw error when creating user with already existing email", async () => {
