@@ -9,6 +9,7 @@ registry.registerPath({
   path: "/users/{userId}/followers",
   method: "post",
   tags: ["user-follow"],
+  description: "Follows target user.",
   security: [
     {
       bearerHttpAuthorization: [],
@@ -63,6 +64,7 @@ registry.registerPath({
   path: "/users/{userId}/followers",
   method: "get",
   tags: ["user-follow"],
+  description: "Retrieves the followers of the target user.",
   security: [
     {
       bearerHttpAuthorization: [],
@@ -130,6 +132,7 @@ registry.registerPath({
   path: "/users/{userId}/followers",
   method: "delete",
   tags: ["user-follow"],
+  description: "Unfollows target user.",
   security: [
     {
       bearerHttpAuthorization: [],
@@ -184,6 +187,7 @@ registry.registerPath({
   path: "/users/{userId}/followings",
   method: "get",
   tags: ["user-follow"],
+  description: "Retrieves target user followings.",
   security: [
     {
       bearerHttpAuthorization: [],
