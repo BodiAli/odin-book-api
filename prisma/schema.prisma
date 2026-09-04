@@ -48,20 +48,6 @@ model Notification {
   notifierId String
   notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
   type       NotificationType
-  entity     Entity?
-}
-
-model Entity {
-  id             String       @id @default(uuid())
-  notificationId String       @unique
-  notification   Notification @relation(references: [id], fields: [notificationId])
-  postId         String       @unique
-  post           Post         @relation(references: [id], fields: [postId])
-}
-
-model Post {
-  id     String  @id @default(uuid())
-  entity Entity?
 }
 
 enum Provider {
@@ -72,5 +58,4 @@ enum Provider {
 
 enum NotificationType {
   FOLLOW
-  COMMENT
 }
