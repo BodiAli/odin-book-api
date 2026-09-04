@@ -1,45 +1,65 @@
 import prisma from "#src/db/prisma-client.js";
+import generateNotification from "#src/utils/generate-notification.js";
 import * as profileQueries from "./profile-queries.js";
 import type { Notification } from "#src/types/routes/notifications.js";
+import type { NotificationType } from "#src/generated/prisma/enums.js";
+import type { NotificationModel } from "#src/generated/prisma/models.js";
+
+export async function createNotification({
+  actorId,
+  notifierId,
+  type,
+}: CreateNotificationArg): Promise<NotificationModel> {
+  const createdNotification = await prisma.notification.create({
+    data: {
+      type,
+      actorId,
+      notifierId,
+    },
+  });
+
+  return createdNotification;
+}
 
 export async function getUserNotifications(
   currentUserId: string,
 ): Promise<Notification[]> {
-  const user = await prisma.user.findUnique({
+  const currentUserNotifications = await prisma.notification.findMany({
     where: {
-      id: currentUserId,
+      notifierId: currentUserId,
     },
-    include: {
-      notificationsReceived: {
-        include: {
-          actor: {
-            select: {
-              id: true,
-              fullName: true,
-            },
-          },
+    select: {
+      actor: {
+        select: {
+          fullName: true,
         },
       },
+      id: true,
     },
   });
   const actorProfilePicture =
     await profileQueries.getProfilePicture(currentUserId);
-  assert(user, "User not found");
 
-  const notificationsResponse = user.notificationsReceived.map<Notification>(
+  const notificationsResponse = currentUserNotifications.map<Notification>(
     ({ id, actor }) => {
-      const text = `${actor.fullName} followed you.`;
+      const message = generateNotification({
+        actorName: actor.fullName,
+        type: "FOLLOW",
+        entityId: null,
+      });
       return {
-        actor: {
-          fullName: actor.fullName,
-          id: actor.id,
-          picture: actorProfilePicture,
-        },
         id,
-        text,
+        actorProfilePicture,
+        message,
       };
     },
   );
 
   return notificationsResponse;
+}
+
+interface CreateNotificationArg {
+  actorId: string;
+  notifierId: string;
+  type: NotificationType;
 }
