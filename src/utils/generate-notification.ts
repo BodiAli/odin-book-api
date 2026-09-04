@@ -1,24 +1,16 @@
 import type { NotificationType } from "#src/generated/prisma/enums.js";
 
-interface NoEntityNotificationData {
+interface NotificationData {
   actorName: string;
-  type: Extract<NotificationType, "FOLLOW">;
-  entityId: null;
+  type: NotificationType;
+  entityId: string | null;
 }
 
-interface EntityNotificationData {
-  actorName: string;
-  type: Exclude<NotificationType, "FOLLOW">;
-  entityId: string;
-}
-
-type NotificationData = NoEntityNotificationData | EntityNotificationData;
-
-export default async function generateNotification({
+export default function generateNotification({
   actorName,
   type,
   entityId,
-}: NotificationData): Promise<string> {
+}: NotificationData): string {
   switch (type) {
     case "FOLLOW": {
       return `${actorName} started following you.`;
