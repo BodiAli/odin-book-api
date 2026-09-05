@@ -13,4 +13,5 @@ export default {
   githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
   githubClientId: process.env.GITHUB_CLIENT_ID,
   port: Number(process.env.PORT) || 3000,
+  origin: process.env.ORIGIN,
 };
