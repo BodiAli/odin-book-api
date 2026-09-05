@@ -63,6 +63,7 @@ export default defineConfig([
       "n/no-process-env": "error",
       "unicorn/comment-content": "error",
       "unicorn/consistent-boolean-name": "error",
+      "unicorn/text-encoding-identifier-case": ["error", { withDash: true }],
       "unicorn/no-top-level-side-effects": "off",
     },
   },
