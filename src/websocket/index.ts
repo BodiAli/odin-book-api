@@ -32,9 +32,7 @@ class WebSocketApp {
       assert(req.url, "req.url not defined");
       const user = await authenticateUser(req.url);
       req.user = user;
-    } catch (err) {
-      console.log(err);
-
+    } catch {
       socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
       socket.destroy();
       return;
