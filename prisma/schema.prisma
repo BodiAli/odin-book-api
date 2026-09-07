@@ -48,6 +48,7 @@ model Notification {
   notifierId String
   notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
   type       NotificationType
+  createdAt  DateTime         @default(now())
 }
 
 enum Provider {
