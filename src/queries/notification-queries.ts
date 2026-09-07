@@ -1,6 +1,5 @@
 import prisma from "#src/db/prisma-client.js";
 import generateNotification from "#src/utils/generate-notification.js";
-import * as profileQueries from "./profile-queries.js";
 import type { Notification } from "#src/types/routes/notifications.js";
 import type { NotificationType } from "#src/generated/prisma/enums.js";
 import type { NotificationModel } from "#src/generated/prisma/models.js";
@@ -28,29 +27,38 @@ export async function getUserNotifications(
     where: {
       notifierId: currentUserId,
     },
-    select: {
+    include: {
       actor: {
         select: {
           fullName: true,
+          profile: {
+            select: {
+              imageUrl: true,
+            },
+          },
         },
       },
-      id: true,
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
-  const actorProfilePicture =
-    await profileQueries.getProfilePicture(currentUserId);
 
   const notificationsResponse = currentUserNotifications.map<Notification>(
-    ({ id, actor }) => {
+    ({ id, actor, createdAt, type }) => {
       const message = generateNotification({
         actorName: actor.fullName,
         type: "FOLLOW",
         entityId: null,
       });
+      const actorProfilePicture = actor.profile ? actor.profile.imageUrl : null;
+
       return {
         id,
         actorProfilePicture,
         message,
+        createdAt,
+        type,
       };
     },
   );
