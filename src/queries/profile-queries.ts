@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import prisma from "#src/db/prisma-client.js";
 import type { ProfileModel } from "#src/generated/prisma/models.js";
 
