@@ -1,8 +1,12 @@
-import { clientError, serverError } from "#src/schemas/errors/errors.js";
+import { clientError } from "#src/schemas/errors/errors.js";
 import {
   followersResponse,
   followingsResponse,
 } from "#src/schemas/routes/users.js";
+import {
+  serverErrorResponse,
+  unauthorizedResponse,
+} from "./common-responses.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -30,15 +34,7 @@ registry.registerPath({
       summary: "OK",
       description: "Followed target user successfully.",
     },
-    401: {
-      summary: "Unauthorized",
-      description: "Access token is missing or invalid.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
+    401: unauthorizedResponse,
     404: {
       summary: "Not found",
       description: "No user to follow was found.",
@@ -48,15 +44,7 @@ registry.registerPath({
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
 
@@ -98,15 +86,7 @@ registry.registerPath({
         },
       },
     },
-    401: {
-      summary: "Unauthorized",
-      description: "Access token is missing or invalid.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
+    401: unauthorizedResponse,
     404: {
       summary: "Not found",
       description: "Target user is not found.",
@@ -116,15 +96,7 @@ registry.registerPath({
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
 
@@ -153,15 +125,7 @@ registry.registerPath({
       summary: "OK",
       description: "Unfollowed target user successfully.",
     },
-    401: {
-      summary: "Unauthorized",
-      description: "Access token is missing or invalid.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
+    401: unauthorizedResponse,
     404: {
       summary: "Not found",
       description: "No user to unfollow was found.",
@@ -171,15 +135,7 @@ registry.registerPath({
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
 
@@ -221,15 +177,7 @@ registry.registerPath({
         },
       },
     },
-    401: {
-      summary: "Unauthorized",
-      description: "Access token is missing or invalid.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
+    401: unauthorizedResponse,
     404: {
       summary: "Not found",
       description: "Target user is not found.",
@@ -239,14 +187,6 @@ registry.registerPath({
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
