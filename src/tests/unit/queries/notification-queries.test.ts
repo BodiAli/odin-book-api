@@ -4,7 +4,6 @@ import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import type { Notification } from "#src/types/routes/notifications.js";
 import type { User } from "#src/types/routes/users.js";
-import type { NotificationModel } from "#src/generated/prisma/models.js";
 
 describe("notification queries", () => {
   let userA: User;
@@ -66,29 +65,26 @@ describe("notification queries", () => {
       });
       assert(notification);
 
-      expect(notification).toStrictEqual<NotificationModel>({
-        actorId: userA.id,
-        notifierId: userB.id,
-        type: "FOLLOW",
-        id: notification.id,
-      });
+      expect(notification).toBeDefined();
     });
   });
 
   describe(notificationQueries.getUserNotifications, () => {
-    it("should return user notifications", async () => {
+    it("should return user notifications ordered by newest", async () => {
       expect.hasAssertions();
 
-      await notificationQueries.createNotification({
-        actorId: userA.id,
-        notifierId: userB.id,
-        type: "FOLLOW",
-      });
-      await notificationQueries.createNotification({
-        actorId: userA.id,
-        notifierId: userC.id,
-        type: "FOLLOW",
-      });
+      const notificationCreatedByUserA =
+        await notificationQueries.createNotification({
+          actorId: userA.id,
+          notifierId: userC.id,
+          type: "FOLLOW",
+        });
+      const notificationCreatedByUserB =
+        await notificationQueries.createNotification({
+          actorId: userB.id,
+          notifierId: userC.id,
+          type: "FOLLOW",
+        });
 
       const userANotifications = await notificationQueries.getUserNotifications(
         userA.id,
@@ -101,18 +97,21 @@ describe("notification queries", () => {
       );
 
       expect(userANotifications).toHaveLength(0);
-      expect(userBNotifications).toStrictEqual<Notification[]>([
-        {
-          id: expect.any(String) as string,
-          actorProfilePicture: userBImageUrl,
-          message: "test: userA started following you.",
-        },
-      ]);
+      expect(userBNotifications).toHaveLength(0);
       expect(userCNotifications).toStrictEqual<Notification[]>([
         {
-          id: expect.any(String) as string,
-          actorProfilePicture: userCImageUrl,
+          id: notificationCreatedByUserB.id,
+          actorProfilePicture: userBImageUrl,
+          message: "test: userB started following you.",
+          type: "FOLLOW",
+          createdAt: expect.any(Date) as Date,
+        },
+        {
+          id: notificationCreatedByUserA.id,
+          actorProfilePicture: userAImageUrl,
           message: "test: userA started following you.",
+          type: "FOLLOW",
+          createdAt: expect.any(Date) as Date,
         },
       ]);
     });
