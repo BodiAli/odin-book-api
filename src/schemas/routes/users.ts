@@ -16,7 +16,7 @@ export const user: z.ZodType<
 });
 
 export const publicUser: z.ZodType<
-  Pick<UserModel, "id" | "fullName" | "isOnline" | "lastSeen"> & {
+  Omit<UserModel, "email" | "password" | "provider" | "isGuest"> & {
     picture: string | null;
   }
 > = z.object({
