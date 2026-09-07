@@ -4,19 +4,16 @@ import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import type { Notification } from "#src/types/routes/notifications.js";
 import type { User } from "#src/types/routes/users.js";
-import type {
-  NotificationModel,
-  ProfileModel,
-} from "#src/generated/prisma/models.js";
+import type { NotificationModel } from "#src/generated/prisma/models.js";
 
 describe("notification queries", () => {
   let userA: User;
   let userB: User;
   let userC: User;
 
-  let userAProfile: ProfileModel;
-  let userBProfile: ProfileModel;
-  let userCProfile: ProfileModel;
+  const userAImageUrl = "test-image-url-userC";
+  const userBImageUrl = null;
+  const userCImageUrl = "test-image-url-userC";
 
   beforeEach(async () => {
     userA = await userQueries.createUserLocal({
@@ -35,20 +32,20 @@ describe("notification queries", () => {
       password: "test: password",
     });
 
-    userAProfile = await profileQueries.createProfile({
+    await profileQueries.createProfile({
       userId: userA.id,
       description: null,
-      imageUrl: "test-image-url-userA",
+      imageUrl: userAImageUrl,
     });
-    userBProfile = await profileQueries.createProfile({
+    await profileQueries.createProfile({
       userId: userB.id,
       description: null,
-      imageUrl: null,
+      imageUrl: userBImageUrl,
     });
-    userCProfile = await profileQueries.createProfile({
+    await profileQueries.createProfile({
       userId: userC.id,
       description: null,
-      imageUrl: "test-image-url-userC",
+      imageUrl: userCImageUrl,
     });
   });
 
@@ -107,14 +104,14 @@ describe("notification queries", () => {
       expect(userBNotifications).toStrictEqual<Notification[]>([
         {
           id: expect.any(String) as string,
-          actorProfilePicture: null,
+          actorProfilePicture: userBImageUrl,
           message: "test: userA started following you.",
         },
       ]);
       expect(userCNotifications).toStrictEqual<Notification[]>([
         {
           id: expect.any(String) as string,
-          actorProfilePicture: userCProfile.imageUrl,
+          actorProfilePicture: userCImageUrl,
           message: "test: userA started following you.",
         },
       ]);
