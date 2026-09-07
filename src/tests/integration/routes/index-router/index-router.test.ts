@@ -1,6 +1,5 @@
-import supertest from "supertest";
+import request from "supertest";
 import express from "express";
-
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
@@ -25,6 +24,17 @@ vi.mock(import("#src/routes/users-router.js"), () => {
   };
 });
 
+vi.mock(import("#src/routes/notifications-router.js"), () => {
+  const router = express.Router();
+  router.get("/", (_req, res) => {
+    res.json({ mocked: true });
+  });
+
+  return {
+    default: router,
+  };
+});
+
 describe("index-router mount endpoints", () => {
   const app = express();
 
@@ -40,7 +50,7 @@ describe("index-router mount endpoints", () => {
     it("should mount authRouter on the /auth path", async () => {
       expect.hasAssertions();
 
-      const response = await supertest(app).post("/auth/sign-up").expect(200);
+      const response = await request(app).post("/auth/sign-up").expect(200);
 
       expect(response.body).toStrictEqual<Mocked>({
         mocked: true,
@@ -49,10 +59,10 @@ describe("index-router mount endpoints", () => {
   });
 
   describe("users-router", () => {
-    it("should authenticate jwt", async () => {
+    it("should authenticate JWT", async () => {
       expect.hasAssertions();
 
-      const response = await supertest(app).get("/users");
+      const response = await request(app).get("/users");
 
       expect(response.unauthorized).toBe(true);
     });
@@ -68,9 +78,42 @@ describe("index-router mount endpoints", () => {
       });
       const currentUserToken = issueJwt(currentUser.id, "10m");
 
-      const response = await supertest(app)
+      const response = await request(app)
         .get("/users")
         .auth(currentUserToken, { type: "bearer" })
+        .expect(200);
+
+      expect(response.body).toStrictEqual<Mocked>({
+        mocked: true,
+      });
+    });
+  });
+
+  describe("notifications-router", () => {
+    it("should authenticate JWT", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app).get("/notifications");
+
+      expect(response.unauthorized).toBe(true);
+    });
+
+    it("should mount notificationsRouter on /notifications path", async () => {
+      expect.hasAssertions();
+
+      const currentUser = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+        },
+      });
+      const currentUserToken = issueJwt(currentUser.id, "10m");
+
+      const response = await request(app)
+        .get("/users")
+        .auth(currentUserToken, {
+          type: "bearer",
+        })
         .expect(200);
 
       expect(response.body).toStrictEqual<Mocked>({
