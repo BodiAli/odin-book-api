@@ -5,6 +5,7 @@ import registry from "./registry.js";
 import "./components/security-scheme.js";
 import "./paths/auth-path.js";
 import "./paths/users-path.js";
+import "./paths/notifications-path.js";
 
 const generator = new OpenApiGeneratorV31(registry.definitions);
 
