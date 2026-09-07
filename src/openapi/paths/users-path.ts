@@ -6,7 +6,8 @@ import {
 import {
   serverErrorResponse,
   unauthorizedResponse,
-} from "./common-responses.js";
+} from "../common/responses.js";
+import { security } from "../common/security.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -14,11 +15,7 @@ registry.registerPath({
   method: "post",
   tags: ["user-follow"],
   description: "Follows target user.",
-  security: [
-    {
-      bearerHttpAuthorization: [],
-    },
-  ],
+  security,
   parameters: [
     {
       in: "path",

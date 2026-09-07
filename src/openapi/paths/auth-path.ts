@@ -5,7 +5,7 @@ import {
   oauth2RequestBody,
   signUpRequestBody,
 } from "#src/schemas/routes/auth.js";
-import { serverErrorResponse } from "./common-responses.js";
+import { serverErrorResponse } from "../common/responses.js";
 import registry from "../registry.js";
 
 registry.registerPath({

@@ -2,7 +2,8 @@ import { notificationsResponse } from "#src/schemas/routes/notifications.js";
 import {
   serverErrorResponse,
   unauthorizedResponse,
-} from "./common-responses.js";
+} from "../common/responses.js";
+import { security } from "../common/security.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -10,7 +11,7 @@ registry.registerPath({
   path: "/notifications",
   tags: ["notifications"],
   description: "Retrieves current user notifications.",
-
+  security,
   responses: {
     200: {
       summary: "OK",
