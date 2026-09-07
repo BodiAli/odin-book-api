@@ -1,10 +1,11 @@
-import { clientError, serverError } from "#src/schemas/errors/errors.js";
+import { clientError } from "#src/schemas/errors/errors.js";
 import {
   authenticatedResponse,
   logInRequestBody,
   oauth2RequestBody,
   signUpRequestBody,
 } from "#src/schemas/routes/auth.js";
+import { serverErrorResponse } from "./common-responses.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -55,15 +56,7 @@ registry.registerPath({
         },
       },
     },
-    "500": {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    "500": serverErrorResponse,
   },
 });
 
@@ -91,6 +84,15 @@ registry.registerPath({
         },
       },
     },
+    "400": {
+      summary: "Invalid inputs.",
+      description: "User entered invalid inputs.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     "401": {
       summary: "Invalid credentials.",
       description:
@@ -101,24 +103,7 @@ registry.registerPath({
         },
       },
     },
-    "400": {
-      summary: "Invalid inputs.",
-      description: "User entered invalid inputs.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
-    "500": {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    "500": serverErrorResponse,
   },
 });
 
@@ -165,15 +150,7 @@ registry.registerPath({
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
 
@@ -228,15 +205,7 @@ registry.registerPath({
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
 
@@ -246,22 +215,14 @@ registry.registerPath({
   tags: ["auth"],
   responses: {
     200: {
-      description: "Successfully signing in as a guest.",
       summary: "OK",
+      description: "Successfully signing in as a guest.",
       content: {
         "application/json": {
           schema: authenticatedResponse,
         },
       },
     },
-    500: {
-      summary: "Internal server error.",
-      description: "Unexpected error occurred.",
-      content: {
-        "application/json": {
-          schema: serverError,
-        },
-      },
-    },
+    500: serverErrorResponse,
   },
 });
