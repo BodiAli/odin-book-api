@@ -60,6 +60,14 @@ export default defineConfig([
         { allowInterfaces: "with-single-extends" },
       ],
       "@typescript-eslint/explicit-function-return-type": "error",
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          checksVoidReturn: {
+            arguments: false,
+          },
+        },
+      ],
       "n/no-process-env": "error",
       "unicorn/comment-content": "error",
       "unicorn/consistent-boolean-name": "error",
