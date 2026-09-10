@@ -68,6 +68,10 @@ export default defineConfig([
           },
         },
       ],
+      "@typescript-eslint/no-invalid-void-type": [
+        "error",
+        { allowAsThisParameter: true },
+      ],
       "n/no-process-env": "error",
       "unicorn/comment-content": "error",
       "unicorn/consistent-boolean-name": "error",
