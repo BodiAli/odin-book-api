@@ -1,8 +1,8 @@
-import type { EventTypes } from "./event-type.js";
+import type { EventType } from "./event-type.js";
 
 export interface DataFrame {
   success: boolean;
-  type: EventTypes;
+  type: EventType;
   data: {
     message: string;
   };

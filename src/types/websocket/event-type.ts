@@ -1,0 +1,3 @@
+export enum EventType {
+  NOTIFICATION_FOLLOW = "NOTIFICATION_FOLLOW",
+}
