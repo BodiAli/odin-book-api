@@ -7,12 +7,12 @@ import openapiRouter from "./routes/openapi-router.js";
 import resourceNotFound from "./errors/resource-not-found.js";
 import errorHandler from "./errors/error-handler.js";
 import config from "./config/config.js";
-import webSocketApp from "./websocket/index.js";
+import WebSocketApp from "./websocket/index.js";
 
 const app = express();
 const server = http.createServer(app);
 
-new webSocketApp().serverUpgrade(server);
+new WebSocketApp(server);
 
 app.disable("x-powered-by");
 
