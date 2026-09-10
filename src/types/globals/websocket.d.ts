@@ -1,7 +1,7 @@
 import type { User } from "../routes/users.ts";
 
-declare module "node:http" {
-  interface IncomingMessage {
+declare module "ws" {
+  interface WebSocket {
     user: User;
   }
 }
