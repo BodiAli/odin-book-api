@@ -12,7 +12,7 @@ describe("authorization", () => {
     initiateWebSocketServer();
   });
 
-  it("should send 1008 close code when token is invalid", async () => {
+  it("should close connection with code 1008 when token is invalid", async () => {
     expect.hasAssertions();
 
     const ws = new WebSocket("ws://localhost:8080?token=invalid-token");

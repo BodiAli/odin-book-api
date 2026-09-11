@@ -11,7 +11,7 @@ describe("send notification", () => {
     initiateWebSocketServer();
   });
 
-  it("should send 1007 close code when received message is not valid", async () => {
+  it("should close connection with code 1007 when received message is invalid", async () => {
     expect.hasAssertions();
 
     const currentUser = await userQueries.createUserLocal({
