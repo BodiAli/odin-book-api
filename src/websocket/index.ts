@@ -32,11 +32,14 @@ class WebSocketApp {
 
   handleMessage = (ws: WebSocket, data: Buffer): void => {
     try {
-      validateMessage(data);
+      const validMessage = validateMessage(data);
     } catch (error) {
       if (error instanceof CustomWebSocketError) {
         ws.close(error.code, error.message);
+        return;
       }
+      ws.close(1006, "Unexpected error occurred.");
+      return;
     }
   };
 }
