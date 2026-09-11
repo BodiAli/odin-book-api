@@ -27,21 +27,18 @@ class WebSocketApp {
       return;
     }
 
-    ws.on("message", (data) => {
-      console.log("received");
-      ws.send(data);
-    });
+    ws.on("message", this.handleMessage.bind(this, ws));
   };
 
-  handleMessage(this: WebSocket, data: Buffer): void {
+  handleMessage = (ws: WebSocket, data: Buffer): void => {
     try {
       validateMessage(data);
     } catch (error) {
       if (error instanceof CustomWebSocketError) {
-        this.close(error.code, error.message);
+        ws.close(error.code, error.message);
       }
     }
-  }
+  };
 }
 
 export default WebSocketApp;
