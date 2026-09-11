@@ -1,19 +1,40 @@
-import isMessageValid from "#src/websocket/validate-message.js";
+import CustomWebSocketError from "#src/errors/websocket-error.js";
+import validateMessage from "#src/websocket/validate-message.js";
 
 describe("validate message", () => {
-  it("should return false when message is not JSON", () => {
+  it("should throw error when message is not JSON", () => {
     expect.hasAssertions();
 
-    const isValid = isMessageValid(Buffer.from("invalid JSON"));
-
-    expect(isValid).toBe(false);
+    expect(() => {
+      validateMessage(Buffer.from("invalid JSON"));
+    }).toThrow(new CustomWebSocketError(1007, "Invalid JSON"));
   });
 
-  it("should return false when message is not valid schema", () => {
+  it("should throw error when message event is not supported", () => {
     expect.hasAssertions();
 
-    const isValid = isMessageValid(Buffer.from('{"JSON": true}'));
+    expect(() => {
+      validateMessage(Buffer.from('{"type": "invalid event"}'));
+    }).toThrow("Invalid event type.");
+  });
 
-    expect(isValid).toBe(true);
+  it("should throw error when message data is empty", () => {
+    expect.hasAssertions();
+
+    expect(() => {
+      validateMessage(
+        Buffer.from('{"type": "NOTIFICATION_FOLLOW", "data": ""}'),
+      );
+    }).toThrow("Data cannot be empty.");
+  });
+
+  it("should not throw an error when data is valid", () => {
+    expect.hasAssertions();
+
+    expect(() => {
+      validateMessage(
+        Buffer.from('{"type": "NOTIFICATION_FOLLOW", "data": "valid data"}'),
+      );
+    }).not.toThrow();
   });
 });
