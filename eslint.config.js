@@ -77,6 +77,7 @@ export default defineConfig([
       "unicorn/consistent-boolean-name": "error",
       "unicorn/text-encoding-identifier-case": ["error", { withDash: true }],
       "unicorn/no-top-level-side-effects": "off",
+      "unicorn/prefer-event-target": "off",
     },
   },
   {
