@@ -7,7 +7,7 @@ import {
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 
-describe("authentication", () => {
+describe("authorization", () => {
   beforeAll(() => {
     initiateWebSocketServer();
   });
