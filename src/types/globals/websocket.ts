@@ -3,5 +3,3 @@ declare module "ws" {
     userId: string;
   }
 }
-
-export {};
