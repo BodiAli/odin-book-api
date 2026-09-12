@@ -1,6 +1,5 @@
 import prisma from "#src/db/prisma-client.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
-import * as userQueries from "#src/queries/user-queries.js";
 import type { ProfileModel } from "#src/generated/prisma/models.js";
 
 describe("profile queries", () => {
@@ -99,13 +98,15 @@ describe("profile queries", () => {
   });
 
   describe(profileQueries.getProfilePicture, () => {
-    it("should null when user doesn't have a profile picture", async () => {
+    it("should return null when user doesn't have a profile picture", async () => {
       expect.hasAssertions();
 
-      const user = await userQueries.createUserLocal({
-        email: "test-email@test.com",
-        fullName: "test: fullname",
-        password: "test: password",
+      const user = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: fullname",
+          password: "test: password",
+        },
       });
       await profileQueries.createProfile({
         userId: user.id,
@@ -121,10 +122,12 @@ describe("profile queries", () => {
     it("should return user's profile picture when user has a profile picture", async () => {
       expect.hasAssertions();
 
-      const user = await userQueries.createUserLocal({
-        email: "test-email@test.com",
-        fullName: "test: fullname",
-        password: "test: password",
+      const user = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: fullname",
+          password: "test: password",
+        },
       });
       await profileQueries.createProfile({
         userId: user.id,
