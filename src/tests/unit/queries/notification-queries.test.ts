@@ -2,7 +2,7 @@ import * as notificationQueries from "#src/queries/notification-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
-import type { Notification } from "#src/types/routes/notifications.js";
+import type { SentNotification } from "#src/types/routes/notifications.js";
 import type { User } from "#src/types/routes/users.js";
 
 describe("notification queries", () => {
@@ -31,21 +31,9 @@ describe("notification queries", () => {
       password: "test: password",
     });
 
-    await profileQueries.createProfile({
-      userId: userA.id,
-      description: null,
-      imageUrl: userAImageUrl,
-    });
-    await profileQueries.createProfile({
-      userId: userB.id,
-      description: null,
-      imageUrl: userBImageUrl,
-    });
-    await profileQueries.createProfile({
-      userId: userC.id,
-      description: null,
-      imageUrl: userCImageUrl,
-    });
+    await profileQueries.createOrUpdateProfilePicture(userA.id, userAImageUrl);
+    await profileQueries.createOrUpdateProfilePicture(userB.id, userBImageUrl);
+    await profileQueries.createOrUpdateProfilePicture(userC.id, userCImageUrl);
   });
 
   describe(notificationQueries.createNotification, () => {
@@ -98,7 +86,7 @@ describe("notification queries", () => {
 
       expect(userANotifications).toHaveLength(0);
       expect(userBNotifications).toHaveLength(0);
-      expect(userCNotifications).toStrictEqual<Notification[]>([
+      expect(userCNotifications).toStrictEqual<SentNotification[]>([
         {
           id: notificationCreatedByUserB.id,
           actorProfilePicture: userBImageUrl,
