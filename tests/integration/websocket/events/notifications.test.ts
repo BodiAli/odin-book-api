@@ -4,7 +4,7 @@ import {
   initiateWebSocketServer,
   waitForClose,
   waitForMessage,
-} from "#src/tests/setup/websocket-utils.js";
+} from "#test-utils/websocket-utils.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { emitter, events } from "#src/events/index.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
