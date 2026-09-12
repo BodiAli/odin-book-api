@@ -22,9 +22,7 @@ describe("validate message", () => {
     expect.hasAssertions();
 
     expect(() => {
-      validateMessage(
-        Buffer.from('{"type": "NOTIFICATION_FOLLOW", "data": ""}'),
-      );
+      validateMessage(Buffer.from('{"type": "NOTIFICATION", "data": ""}'));
     }).toThrow("Data cannot be empty.");
   });
 
@@ -33,7 +31,7 @@ describe("validate message", () => {
 
     expect(() => {
       validateMessage(
-        Buffer.from('{"type": "NOTIFICATION_FOLLOW", "data": "valid data"}'),
+        Buffer.from('{"type": "NOTIFICATION", "data": "valid data"}'),
       );
     }).not.toThrow();
   });
