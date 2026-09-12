@@ -1,5 +1,6 @@
 import * as bcrypt from "bcrypt";
 import * as userQueries from "#src/queries/user-queries.js";
+import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type { User } from "#src/types/routes/users.js";
@@ -154,6 +155,23 @@ describe("user queries", () => {
         picture: null,
         isOnline: true,
         isGuest: false,
+      });
+    });
+
+    it("should call createProfile", async () => {
+      expect.hasAssertions();
+
+      const mockCreateProfile = vi.spyOn(profileQueries, "createProfile");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test: password",
+      });
+
+      expect(mockCreateProfile).toHaveBeenCalledExactlyOnceWith({
+        userId: user.id,
+        imageUrl: null,
+        description: null,
       });
     });
   });
