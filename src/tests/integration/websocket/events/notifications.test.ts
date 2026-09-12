@@ -3,24 +3,40 @@ import {
   connectClient,
   initiateWebSocketServer,
   waitForClose,
+  waitForMessage,
 } from "#src/tests/setup/websocket-utils.js";
 import issueJwt from "#src/utils/issue-jwt.js";
+import { emitter, events } from "#src/events/index.js";
+import * as notificationQueries from "#src/queries/notification-queries.js";
+import type { User } from "#src/types/routes/users.js";
+import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 
 describe("send notification", () => {
   beforeAll(() => {
     initiateWebSocketServer();
   });
 
+  let userA: User;
+  let userB: User;
+
+  beforeEach(async () => {
+    userA = await userQueries.createUserLocal({
+      email: "test-userA@test.com",
+      fullName: "test: userA",
+      password: "test-userA-password",
+    });
+    userB = await userQueries.createUserLocal({
+      email: "test-userB@test.com",
+      fullName: "test: userB",
+      password: "test-userB-password",
+    });
+  });
+
   it("should close connection with code 1007 when received message is invalid", async () => {
     expect.hasAssertions();
 
-    const currentUser = await userQueries.createUserLocal({
-      email: "test-emasil@test.com",
-      fullName: "test: full name",
-      password: "test-password",
-    });
-    const token = issueJwt(currentUser.id, "10m");
-    const ws = await connectClient(token);
+    const userAToken = issueJwt(userA.id, "10m");
+    const ws = await connectClient(userAToken);
     ws.send("invalid JSON");
 
     const { code, reason } = await waitForClose(ws);
@@ -29,5 +45,30 @@ describe("send notification", () => {
     expect(reason).toBe("Invalid JSON");
   });
 
-  it.todo("send notification...");
+  it("should send notification to target notifier", async () => {
+    expect.hasAssertions();
+
+    const userBToken = issueJwt(userB.id, "10m");
+    const notification = await notificationQueries.createNotification({
+      actorId: userA.id,
+      notifierId: userB.id,
+      type: "FOLLOW",
+    });
+    const wsUserB = await connectClient(userBToken);
+
+    emitter.emit(events.NOTIFICATION, notification);
+    const message = await waitForMessage(wsUserB);
+
+    expect(message).toStrictEqual<ServerDataFrame>({
+      type: events.NOTIFICATION,
+      success: true,
+      data: {
+        id: notification.id,
+        actorProfilePicture: userA.picture,
+        createdAt: expect.any(String) as string,
+        type: notification.type,
+        message: "test: userA started following you.",
+      },
+    });
+  });
 });
