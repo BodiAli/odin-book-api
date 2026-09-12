@@ -6,17 +6,14 @@ interface NotificationData {
   entityId: string | null;
 }
 
-export default function generateNotification({
+export default function generateNotificationMessage({
   actorName,
   type,
-  entityId,
 }: NotificationData): string {
   switch (type) {
     case "FOLLOW": {
       return `${actorName} started following you.`;
     }
-    case "COMMENT": {
-      // TODO: get post title and generate a notification
-    }
   }
+  return "NOT IMPLEMENTED";
 }
