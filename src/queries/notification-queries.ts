@@ -1,8 +1,10 @@
 import prisma from "#src/db/prisma-client.js";
-import generateNotification from "#src/utils/generate-notification.js";
-import type { Notification } from "#src/types/routes/notifications.js";
+import generateNotificationMessage from "#src/utils/generate-notification-message.js";
+import type {
+  SentNotification,
+  NotificationModel,
+} from "#src/types/routes/notifications.js";
 import type { NotificationType } from "#src/generated/prisma/enums.js";
-import type { NotificationModel } from "#src/generated/prisma/models.js";
 
 export async function createNotification({
   actorId,
@@ -15,14 +17,29 @@ export async function createNotification({
       actorId,
       notifierId,
     },
+    include: {
+      actor: {
+        select: {
+          id: true,
+          fullName: true,
+        },
+      },
+    },
   });
 
-  return createdNotification;
+  return {
+    id: createdNotification.id,
+    actorId: createdNotification.actorId,
+    actorName: createdNotification.actor.fullName,
+    createdAt: createdNotification.createdAt,
+    notifierId: createdNotification.notifierId,
+    type: createdNotification.type,
+  };
 }
 
 export async function getUserNotifications(
   currentUserId: string,
-): Promise<Notification[]> {
+): Promise<SentNotification[]> {
   const currentUserNotifications = await prisma.notification.findMany({
     where: {
       notifierId: currentUserId,
@@ -44,14 +61,14 @@ export async function getUserNotifications(
     },
   });
 
-  const notificationsResponse = currentUserNotifications.map<Notification>(
+  const notificationsResponse = currentUserNotifications.map<SentNotification>(
     ({ id, actor, createdAt, type }) => {
-      const message = generateNotification({
+      const message = generateNotificationMessage({
+        type,
         actorName: actor.fullName,
-        type: "FOLLOW",
         entityId: null,
       });
-      const actorProfilePicture = actor.profile ? actor.profile.imageUrl : null;
+      const actorProfilePicture = actor.profile?.imageUrl ?? null;
 
       return {
         id,
