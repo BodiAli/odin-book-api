@@ -2,6 +2,7 @@ import * as bcrypt from "bcrypt";
 import prisma from "#src/db/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import * as profileQueries from "./profile-queries.js";
 import type { User } from "#src/types/routes/users.js";
 import type { Provider } from "#src/generated/prisma/enums.js";
 
@@ -97,27 +98,22 @@ export async function createUserLocal({
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const {
-      profile,
-      lastSeen: _lastSeen,
-      ...user
-    } = await prisma.user.create({
+    const { lastSeen: _lastSeen, ...user } = await prisma.user.create({
       data: {
         email,
         fullName,
         password: hashedPassword,
         isOnline: true,
       },
-      include: {
-        profile: {
-          select: {
-            imageUrl: true,
-          },
-        },
-      },
     });
 
-    return { ...user, picture: profile?.imageUrl ?? null };
+    const profile = await profileQueries.createProfile({
+      userId: user.id,
+      description: null,
+      imageUrl: null,
+    });
+
+    return { ...user, picture: profile.imageUrl };
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
