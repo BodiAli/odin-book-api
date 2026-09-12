@@ -4,7 +4,7 @@ import indexRouter from "#src/routes/index-router.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
-import type { Notification } from "#src/types/routes/notifications.js";
+import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("/notifications endpoint", () => {
   const app = express();
@@ -14,7 +14,9 @@ describe("/notifications endpoint", () => {
   });
 
   interface JsonNotificationsResponse {
-    notifications: (Omit<Notification, "createdAt"> & { createdAt: string })[];
+    notifications: (Omit<SentNotification, "createdAt"> & {
+      createdAt: string;
+    })[];
   }
 
   describe("get current user notifications GET", () => {
