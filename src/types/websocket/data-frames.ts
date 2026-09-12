@@ -1,12 +1,12 @@
 import type z from "zod";
 import type { events } from "#src/events/index.js";
 import type { clientMessageData } from "#src/schemas/websocket/message-data.js";
-import type { Notification } from "../routes/notifications.js";
+import type { SentNotification } from "../routes/notifications.js";
 
 interface NotificationFrame {
   success: boolean;
   type: events.NOTIFICATION;
-  data: Notification;
+  data: SentNotification;
 }
 interface MessageFrame {
   success: boolean;
