@@ -59,4 +59,5 @@ enum Provider {
 
 enum NotificationType {
   FOLLOW
+  COMMENT
 }
