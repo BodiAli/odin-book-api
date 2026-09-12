@@ -10,11 +10,19 @@ import { emitter, events } from "#src/events/index.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import type { User } from "#src/types/routes/users.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
+import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("send notification", () => {
   beforeAll(() => {
     initiateWebSocketServer();
   });
+
+  interface JsonSentNotification extends Omit<SentNotification, "createdAt"> {
+    createdAt: string;
+  }
+  interface JsonServerFrame extends Omit<ServerDataFrame, "data"> {
+    data: JsonSentNotification;
+  }
 
   let userA: User;
   let userB: User;
@@ -59,7 +67,7 @@ describe("send notification", () => {
     emitter.emit(events.NOTIFICATION, notification);
     const message = await waitForMessage(wsUserB);
 
-    expect(message).toStrictEqual<ServerDataFrame>({
+    expect(message).toStrictEqual<JsonServerFrame>({
       type: events.NOTIFICATION,
       success: true,
       data: {
