@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: true,
     fileParallelism: false,
-    setupFiles: "./src/tests/setup/setup.ts",
+    setupFiles: "./tests/setup/setup.ts",
     alias: [
       { find: "#src", replacement: path.resolve(import.meta.dirname, "src") },
     ],

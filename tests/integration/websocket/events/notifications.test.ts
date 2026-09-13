@@ -4,7 +4,7 @@ import {
   initiateWebSocketServer,
   waitForClose,
   waitForMessage,
-} from "#src/tests/setup/websocket-utils.js";
+} from "#test-utils/websocket-utils.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { emitter, events } from "#src/events/index.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
@@ -20,7 +20,7 @@ describe("send notification", () => {
   interface JsonSentNotification extends Omit<SentNotification, "createdAt"> {
     createdAt: string;
   }
-  interface JsonServerDataFrame extends Omit<ServerDataFrame, "data"> {
+  interface JsonServerFrame extends Omit<ServerDataFrame, "data"> {
     data: JsonSentNotification;
   }
 
@@ -67,7 +67,7 @@ describe("send notification", () => {
     emitter.emit(events.NOTIFICATION, notification);
     const message = await waitForMessage(wsUserB);
 
-    expect(message).toStrictEqual<JsonServerDataFrame>({
+    expect(message).toStrictEqual<JsonServerFrame>({
       type: events.NOTIFICATION,
       success: true,
       data: {

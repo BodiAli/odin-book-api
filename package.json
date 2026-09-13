@@ -5,7 +5,8 @@
   "main": "./dist/app.ts",
   "type": "module",
   "imports": {
-    "#src/*": "./dist/*"
+    "#src/*": "./dist/*",
+    "#test-utils/*": "./tests/utils/*"
   },
   "scripts": {
     "test": "NODE_ENV=test vitest",

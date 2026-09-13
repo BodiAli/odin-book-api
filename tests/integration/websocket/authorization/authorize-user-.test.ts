@@ -3,7 +3,7 @@ import {
   connectClient,
   initiateWebSocketServer,
   waitForClose,
-} from "#src/tests/setup/websocket-utils.js";
+} from "#test-utils/websocket-utils.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 
