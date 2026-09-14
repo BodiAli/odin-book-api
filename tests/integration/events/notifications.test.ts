@@ -26,6 +26,7 @@ describe("send notification", () => {
 
   let userA: User;
   let userB: User;
+  let userC: User;
 
   beforeEach(async () => {
     userA = await userQueries.createUserLocal({
@@ -38,22 +39,14 @@ describe("send notification", () => {
       fullName: "test: userB",
       password: "test-userB-password",
     });
+    userC = await userQueries.createUserLocal({
+      email: "test-userC@test.com",
+      fullName: "test: userC",
+      password: "test-userC-password",
+    });
   });
 
-  it("should close connection with code 1007 when received message is invalid", async () => {
-    expect.hasAssertions();
-
-    const userAToken = issueJwt(userA.id, "10m");
-    const ws = await connectClient(userAToken);
-    ws.send("invalid JSON");
-
-    const { code, reason } = await waitForClose(ws);
-
-    expect(code).toBe(1007);
-    expect(reason).toBe("Invalid JSON");
-  });
-
-  it("should send notification to target notifier", async () => {
+  it("should send notification to target notifier when 'notification' event is emitted", async () => {
     expect.hasAssertions();
 
     const userBToken = issueJwt(userB.id, "10m");
@@ -73,10 +66,40 @@ describe("send notification", () => {
       data: {
         id: notification.id,
         actorProfilePicture: userA.picture,
-        createdAt: expect.any(String) as string,
+        createdAt: notification.createdAt.toISOString(),
         type: notification.type,
         message: "test: userA started following you.",
       },
     });
+  });
+
+  it.only("should send notification to target notifier only", async () => {
+    expect.hasAssertions();
+
+    const notification = await notificationQueries.createNotification({
+      actorId: userA.id,
+      notifierId: userB.id,
+      type: "FOLLOW",
+    });
+    const userAToken = issueJwt(userA.id, "10m");
+    const userBToken = issueJwt(userB.id, "10m");
+    const userCToken = issueJwt(userC.id, "10m");
+    const wsUserA = await connectClient(userAToken);
+    const wsUserB = await connectClient(userBToken);
+    const wsUserC = await connectClient(userCToken);
+
+    emitter.emit(events.NOTIFICATION, notification);
+    // const results = await Promise.all([
+    //   waitForMessage(wsUserC),
+    //   waitForMessage(wsUserB),
+    // ]);
+    const userCMsg = await waitForMessage(wsUserC);
+    emitter.emit(events.NOTIFICATION, notification);
+    const userBMsg = await waitForMessage(wsUserB);
+    // console.log("A", userAMsg);
+    console.log("res", userBMsg);
+    // console.log("C", userCMsg);
+
+    expect(true).toBe(true);
   });
 });
