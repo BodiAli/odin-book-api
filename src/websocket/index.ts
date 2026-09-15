@@ -51,7 +51,7 @@ class WebSocketApp {
         ws.close(error.code, error.message);
         return;
       }
-      ws.close(1006, "Unexpected error occurred.");
+      ws.close(1011, "Unexpected error occurred.");
       return;
     }
   };
