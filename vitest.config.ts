@@ -9,5 +9,6 @@ export default defineConfig({
     alias: [
       { find: "#src", replacement: path.resolve(import.meta.dirname, "src") },
     ],
+    reporters: ["dot"],
   },
 });
