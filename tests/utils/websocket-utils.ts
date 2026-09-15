@@ -2,9 +2,13 @@ import { createServer } from "node:http";
 import WebSocket from "ws";
 import WebSocketApp from "#src/websocket/index.js";
 
-export function waitForMessage<T>(ws: WebSocket): Promise<T> {
-  return new Promise((resolve) => {
+export function waitForMessage<T>(ws: WebSocket, timeout = 3000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error("No message received"));
+    }, timeout);
     ws.on("message", (rawData: Buffer) => {
+      clearTimeout(timer);
       const stringData = rawData.toString("utf-8");
       const data = JSON.parse(stringData) as T;
       resolve(data);
