@@ -2,11 +2,9 @@ import * as userQueries from "#src/queries/user-queries.js";
 import {
   connectClient,
   initiateWebSocketServer,
-  waitForClose,
   waitForMessage,
 } from "#test-utils/websocket-utils.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import { emitter, events } from "#src/events/index.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import type { User } from "#src/types/routes/users.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
