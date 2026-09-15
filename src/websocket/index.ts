@@ -31,7 +31,7 @@ class WebSocketApp {
     ws.on("message", this.handleMessage.bind(this, ws));
   };
 
-  handleAuthorization(ws: WebSocket, req: IncomingMessage): boolean {
+  private handleAuthorization(ws: WebSocket, req: IncomingMessage): boolean {
     assert(req.url, "Url is not defined");
     try {
       const userId = authorizeUser(req.url);
@@ -43,7 +43,7 @@ class WebSocketApp {
     }
   }
 
-  handleMessage = (ws: WebSocket, data: Buffer): void => {
+  private handleMessage = (ws: WebSocket, data: Buffer): void => {
     try {
       const validMessage = validateMessage(data);
     } catch (error) {
