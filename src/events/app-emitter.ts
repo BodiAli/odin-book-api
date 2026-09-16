@@ -9,7 +9,7 @@ class AppEmitter {
   }
 
   listenForNotification(): void {
-    this.#appEmitter.on("notification", this.notificationListener);
+    this.#appEmitter.once("notification", this.notificationListener);
   }
 
   private async notificationListener(
@@ -21,14 +21,6 @@ class AppEmitter {
 
   emitNotification(notification: NotificationModel): void {
     this.#appEmitter.emit("notification", notification);
-  }
-
-  listeners(eventName: string): ((...args: unknown[]) => void)[] {
-    return this.#appEmitter.listeners(eventName);
-  }
-
-  removeListeners(): void {
-    this.#appEmitter.removeAllListeners();
   }
 }
 

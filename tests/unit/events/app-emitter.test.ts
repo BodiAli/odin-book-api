@@ -14,31 +14,26 @@ vi.mock(import("#src/services/send-notification.js"), () => {
 
 describe("app-emitter class", () => {
   afterEach(() => {
-    appEmitter.removeListeners();
     vi.resetAllMocks();
   });
 
   describe("listenForNotification", () => {
-    it("should listen for 'notification' event", () => {
+    it("should listen for 'notification' event once", () => {
       expect.hasAssertions();
 
+      const notification = {
+        id: "test-notificationId",
+        actorId: "test-actorId",
+        actorName: "test: actorName",
+        createdAt: new Date(),
+        notifierId: "test-notifierId",
+        type: "FOLLOW" as const,
+      };
       appEmitter.listenForNotification();
-      const listeners = appEmitter.listeners("notification");
+      appEmitter.emitNotification(notification);
+      appEmitter.emitNotification(notification);
 
-      expect(listeners).toHaveLength(1);
-    });
-  });
-
-  describe("listeners", () => {
-    it("should return an array of listeners for the given event", () => {
-      expect.hasAssertions();
-
-      appEmitter.listenForNotification();
-      const notificationListeners = appEmitter.listeners("notification");
-      const otherListeners = appEmitter.listeners("other");
-
-      expect(notificationListeners).toHaveLength(1);
-      expect(otherListeners).toHaveLength(0);
+      expect(sendNotification).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -58,18 +53,6 @@ describe("app-emitter class", () => {
       appEmitter.emitNotification(notification);
 
       expect(sendNotification).toHaveBeenCalledExactlyOnceWith(notification);
-    });
-  });
-
-  describe("removeListeners", () => {
-    it("should remove all registered listeners", () => {
-      expect.hasAssertions();
-
-      appEmitter.listenForNotification();
-
-      appEmitter.removeListeners();
-
-      expect(appEmitter.listeners("notification")).toHaveLength(0);
     });
   });
 });
