@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { WebSocket, WebSocketServer } from "ws";
 import CustomWebSocketError from "#src/errors/websocket-error.js";
-import appEmitter from "#src/events/app-emitter.js";
+import AppEmitter from "#src/events/app-emitter.js";
 import authorizeUser from "./authorize-user.js";
 import validateMessage from "./validate-message.js";
 import clients from "./clients.js";
@@ -17,7 +17,7 @@ class WebSocketApp {
 
   private init(): void {
     this.wss.on("connection", this.handleConnection);
-    appEmitter.listenForNotification();
+    AppEmitter.getInstance().listenForNotification();
   }
 
   private handleConnection = (ws: WebSocket, req: IncomingMessage): void => {

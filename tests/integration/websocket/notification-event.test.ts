@@ -6,7 +6,7 @@ import {
 } from "#test-utils/websocket-utils.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
-import appEmitter from "#src/events/app-emitter.js";
+import AppEmitter from "#src/events/app-emitter.js";
 import { EventType } from "#src/types/websocket/event-type.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
@@ -44,7 +44,7 @@ describe("send notification with WebSocketApp, AppEmitter, and sendNotification 
     });
     const wsUserB = await connectClient(userBToken);
 
-    appEmitter.emitNotification(notification);
+    AppEmitter.getInstance().emitNotification(notification);
     const message = await waitForMessage(wsUserB);
 
     expect(message).toStrictEqual<JsonServerFrame>({
