@@ -1,4 +1,4 @@
-import appEmitter from "#src/events/app-emitter.js";
+import AppEmitter from "#src/events/app-emitter.js";
 import sendNotification from "#src/services/send-notification.js";
 import type { NotificationModel } from "#src/types/routes/notifications.js";
 
@@ -17,6 +17,25 @@ describe("app-emitter class", () => {
     vi.resetAllMocks();
   });
 
+  describe("getInstance", () => {
+    it("should create a new instance if none exists", () => {
+      expect.hasAssertions();
+
+      const instance = AppEmitter.getInstance();
+
+      expect(instance).toBeDefined();
+    });
+
+    it("should return the existing instance if it exists", () => {
+      expect.hasAssertions();
+
+      const instance1 = AppEmitter.getInstance();
+      const instance2 = AppEmitter.getInstance();
+
+      expect(instance1).toBe(instance2);
+    });
+  });
+
   describe("listenForNotification", () => {
     it("should listen for 'notification' event once", () => {
       expect.hasAssertions();
@@ -29,9 +48,9 @@ describe("app-emitter class", () => {
         notifierId: "test-notifierId",
         type: "FOLLOW" as const,
       };
-      appEmitter.listenForNotification();
-      appEmitter.emitNotification(notification);
-      appEmitter.emitNotification(notification);
+      AppEmitter.getInstance().listenForNotification();
+      AppEmitter.getInstance().emitNotification(notification);
+      AppEmitter.getInstance().emitNotification(notification);
 
       expect(sendNotification).toHaveBeenCalledTimes(1);
     });
@@ -41,7 +60,7 @@ describe("app-emitter class", () => {
     it("should emit the notification event with notification argument", () => {
       expect.hasAssertions();
 
-      appEmitter.listenForNotification();
+      AppEmitter.getInstance().listenForNotification();
       const notification = {
         id: "test-notificationId",
         actorId: "test-actorId",
@@ -50,7 +69,7 @@ describe("app-emitter class", () => {
         notifierId: "test-notifierId",
         type: "FOLLOW" as const,
       };
-      appEmitter.emitNotification(notification);
+      AppEmitter.getInstance().emitNotification(notification);
 
       expect(sendNotification).toHaveBeenCalledExactlyOnceWith(notification);
     });
