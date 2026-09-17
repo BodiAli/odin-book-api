@@ -4,8 +4,21 @@ import type { NotificationModel } from "#src/types/routes/notifications.js";
 
 class AppEmitter {
   #appEmitter: EventEmitter;
-  constructor() {
+  private static instance: AppEmitter | null = null;
+
+  private constructor() {
     this.#appEmitter = new EventEmitter();
+    if (AppEmitter.instance) {
+      throw new Error(
+        "Use AppEmitter.getInstance() to get the appEmitter instance.",
+      );
+    }
+    AppEmitter.instance = this;
+  }
+
+  static getInstance(): AppEmitter {
+    this.instance ??= new this();
+    return this.instance;
   }
 
   listenForNotification(): void {
@@ -24,4 +37,4 @@ class AppEmitter {
   }
 }
 
-export default new AppEmitter();
+export default AppEmitter;
