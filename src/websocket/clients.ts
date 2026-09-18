@@ -3,6 +3,19 @@ import type WebSocket from "ws";
 class Clients {
   #clients = new Map<string, WebSocket>();
 
+  private static instance: Clients | null = null;
+  constructor() {
+    if (Clients.instance !== null) {
+      throw new Error("Use Clients.getInstance() to get the clients instance.");
+    }
+    Clients.instance = this;
+  }
+
+  static getInstance(): Clients {
+    this.instance ??= new this();
+    return this.instance;
+  }
+
   get clients(): Map<string, WebSocket> {
     return this.#clients;
   }
@@ -17,4 +30,4 @@ class Clients {
   }
 }
 
-export default new Clients();
+export default Clients;
