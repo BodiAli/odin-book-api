@@ -13,6 +13,10 @@ vi.mock(import("#src/services/send-notification.js"), () => {
 });
 
 describe("app-emitter class", () => {
+  beforeEach(() => {
+    Reflect.set(AppEmitter, "instance", null);
+  });
+
   afterEach(() => {
     vi.resetAllMocks();
   });
