@@ -4,11 +4,12 @@ import CustomWebSocketError from "#src/errors/websocket-error.js";
 import AppEmitter from "#src/events/app-emitter.js";
 import authorizeUser from "./authorize-user.js";
 import validateMessage from "./validate-message.js";
-import clients from "./clients.js";
+import Clients from "./clients.js";
 import type { IncomingMessage, Server } from "node:http";
 
 class WebSocketApp {
   wss: WebSocketServer;
+  clients: Clients = Clients.getInstance();
 
   constructor(server: Server) {
     this.wss = new WebSocketServer({ server });
@@ -35,8 +36,8 @@ class WebSocketApp {
     assert(req.url, "Url is not defined");
     try {
       const userId = authorizeUser(req.url);
-      ws.id = userId;
-      clients.insertClient(ws);
+      this.clients.createUserConnection(userId);
+      this.clients.insertClient(userId, ws);
       return true;
     } catch {
       return false;
