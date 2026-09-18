@@ -1,4 +1,5 @@
 import Clients from "#src/websocket/clients.js";
+import type WebSocket from "ws";
 
 describe("clients class", () => {
   beforeEach(() => {
@@ -40,10 +41,150 @@ describe("clients class", () => {
     });
   });
 
-  describe("get clients", () => {
-    it.todo(
-      "should return map of clients where each key is an array of websockets",
-      () => {},
-    );
+  describe("createUserConnection", () => {
+    it("should throw an error when user has a connection", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      instance.createUserConnection(userId);
+
+      expect(() => {
+        instance.createUserConnection(userId);
+      }).toThrow(new Error("User already has a connection established."));
+    });
+
+    it("should create an array of clients to user", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+
+      instance.createUserConnection(userId);
+      const userClients = instance.getUserClients(userId);
+
+      expect(userClients).toStrictEqual([]);
+    });
+  });
+
+  describe("insertClient", () => {
+    it("should throw an error when inserting a client to a non-existing user connection", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      const ws = {} as WebSocket;
+
+      expect(() => {
+        instance.insertClient(userId, ws);
+      }).toThrow(new Error("No user connection is found."));
+    });
+
+    it("should return true when inserting a client to an existing user connection", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      const ws = {} as WebSocket;
+      instance.createUserConnection(userId);
+
+      const isInserted = instance.insertClient(userId, ws);
+
+      expect(isInserted).toBe(true);
+    });
+
+    it("should insert new client to user's clients", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      const ws = {} as WebSocket;
+      instance.createUserConnection(userId);
+
+      instance.insertClient(userId, ws);
+
+      expect(instance.clients).toHaveLength(1);
+      expect(instance.clients).toHaveLength(1);
+      expect(instance.getUserClients(userId)).toStrictEqual([{}]);
+    });
+  });
+
+  describe("getUserClients", () => {
+    it("should return an empty array when user connection has no clients", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      instance.createUserConnection(userId);
+
+      const userClients = instance.getUserClients(userId);
+
+      expect(userClients).toStrictEqual([]);
+    });
+
+    it("should return an array of user's clients", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      instance.createUserConnection(userId);
+      const ws1 = {} as WebSocket;
+      const ws2 = {} as WebSocket;
+      instance.insertClient(userId, ws1);
+      instance.insertClient(userId, ws2);
+
+      const userClients = instance.getUserClients(userId);
+
+      expect(userClients).toStrictEqual([{}, {}]);
+    });
+
+    it("should throw an error when user has no connection", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+
+      expect(() => {
+        instance.getUserClients(userId);
+      }).toThrow(new Error("No user connection is found."));
+    });
+  });
+
+  describe("hasConnection", () => {
+    it("should return false when user has no connection", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+
+      const isConnected = instance.hasConnection("test-userId");
+
+      expect(isConnected).toBe(false);
+    });
+
+    it("should return false when user has no clients connected", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      instance.createUserConnection(userId);
+
+      const isConnected = instance.hasConnection(userId);
+
+      expect(isConnected).toBe(false);
+    });
+
+    it("should return true when user has a connection established", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      instance.createUserConnection(userId);
+      const ws = {} as WebSocket;
+      instance.insertClient(userId, ws);
+
+      const isConnected = instance.hasConnection(userId);
+
+      expect(isConnected).toBe(true);
+    });
   });
 });
