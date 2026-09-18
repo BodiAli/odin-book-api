@@ -1,7 +1,7 @@
 import type WebSocket from "ws";
 
 class Clients {
-  #clients = new Map<string, WebSocket>();
+  #clients = new Map<string, WebSocket[]>();
 
   private static instance: Clients | null = null;
   constructor() {
@@ -16,17 +16,40 @@ class Clients {
     return this.instance;
   }
 
-  get clients(): Map<string, WebSocket> {
-    return this.#clients;
+  get clients(): WebSocket[] {
+    return this.#clients.values().toArray().flat();
   }
 
-  getClient(id: string): WebSocket | undefined {
-    const ws = this.#clients.get(id);
-    return ws;
+  createUserConnection(id: string): void {
+    if (this.#clients.has(id)) {
+      throw new Error("User already has a connection established.");
+    }
+    this.#clients.set(id, []);
   }
 
-  insertClient(ws: WebSocket): void {
-    this.#clients.set(ws.id, ws);
+  getUserClients(id: string): WebSocket[] {
+    const userClients = this.#clients.get(id);
+    if (!userClients) {
+      throw new Error("No user connection is found.");
+    }
+
+    return userClients;
+  }
+
+  insertClient(id: string, ws: WebSocket): boolean {
+    const user = this.getUserClients(id);
+    user.push(ws);
+    return true;
+  }
+
+  hasConnection(id: string): boolean {
+    const userClients = this.#clients.get(id);
+
+    if (!userClients) {
+      return false;
+    }
+
+    return userClients.length !== 0;
   }
 }
 
