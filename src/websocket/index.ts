@@ -31,7 +31,6 @@ class WebSocketApp {
 
     ws.on("message", this.handleMessage.bind(this, ws));
     ws.on("close", (code, reason) => {
-      console.log("server close", this.clients.clients.length);
       this.clients.removeConnection(req.id, ws);
     });
   };
