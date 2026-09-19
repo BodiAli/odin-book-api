@@ -8,12 +8,20 @@ import issueJwt from "#src/utils/issue-jwt.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import AppEmitter from "#src/events/app-emitter.js";
 import { EventType } from "#src/types/websocket/event-type.js";
+import Clients from "#src/websocket/clients.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("send notification with WebSocketApp, AppEmitter, and sendNotification service", () => {
   beforeAll(() => {
     initiateWebSocketServer();
+  });
+
+  afterEach(() => {
+    const clientsInstance = Clients.getInstance();
+    for (const ws of clientsInstance.clients) {
+      ws.close();
+    }
   });
 
   interface JsonSentNotification extends Omit<SentNotification, "createdAt"> {
