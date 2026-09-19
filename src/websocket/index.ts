@@ -30,14 +30,23 @@ class WebSocketApp {
     }
 
     ws.on("message", this.handleMessage.bind(this, ws));
+    ws.on("close", (code, reason) => {
+      console.log("server close", this.clients.clients.length);
+      this.clients.removeConnection(req.id, ws);
+    });
   };
 
   private handleAuthorization(ws: WebSocket, req: IncomingMessage): boolean {
     assert(req.url, "Url is not defined");
     try {
       const userId = authorizeUser(req.url);
-      this.clients.createUserConnection(userId);
-      this.clients.insertClient(userId, ws);
+      req.id = userId;
+      if (this.clients.hasConnection(userId)) {
+        this.clients.insertClient(userId, ws);
+      } else {
+        this.clients.createUserConnection(userId);
+        this.clients.insertClient(userId, ws);
+      }
       return true;
     } catch {
       return false;
