@@ -187,4 +187,42 @@ describe("clients class", () => {
       expect(isConnected).toBe(true);
     });
   });
+
+  describe("removeConnection", () => {
+    it("should remove user client", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId = "test-userId";
+      const ws1 = { OPEN: 1 } as WebSocket;
+      const ws2 = { CLOSED: 3 } as WebSocket;
+      instance.createUserConnection(userId);
+      instance.insertClient(userId, ws1);
+      instance.insertClient(userId, ws2);
+
+      instance.removeConnection(userId, ws2);
+      const userClients = instance.getUserClients(userId);
+
+      expect(userClients).toStrictEqual([{ OPEN: 1 }]);
+    });
+  });
+
+  it("should remove the user connection when removing the last user client", () => {
+    expect.hasAssertions();
+
+    const instance = Clients.getInstance();
+    const userId = "test-userId";
+    const ws1 = { OPEN: 1 } as WebSocket;
+    const ws2 = { CLOSED: 3 } as WebSocket;
+    instance.createUserConnection(userId);
+    instance.insertClient(userId, ws1);
+    instance.insertClient(userId, ws2);
+
+    instance.removeConnection(userId, ws2);
+    instance.removeConnection(userId, ws1);
+
+    expect(() => {
+      instance.getUserClients(userId);
+    }).toThrow(new Error("No user connection is found."));
+  });
 });
