@@ -51,6 +51,15 @@ class Clients {
 
     return userClients.length !== 0;
   }
+
+  removeConnection(id: string, ws: WebSocket): void {
+    const userClients = this.getUserClients(id);
+    const index = userClients.indexOf(ws);
+    userClients.splice(index, 1);
+    if (userClients.length === 0) {
+      this.#clients.delete(id);
+    }
+  }
 }
 
 export default Clients;
