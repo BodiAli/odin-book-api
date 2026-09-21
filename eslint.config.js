@@ -78,6 +78,7 @@ export default defineConfig([
       "unicorn/text-encoding-identifier-case": ["error", { withDash: true }],
       "unicorn/no-top-level-side-effects": "off",
       "unicorn/prefer-event-target": "off",
+      "unicorn/numeric-separators-style": "off",
     },
   },
   {
