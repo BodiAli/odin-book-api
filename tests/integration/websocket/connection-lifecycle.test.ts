@@ -105,7 +105,7 @@ describe("websocket connection", () => {
           throw new Error("Client was not removed.");
         }
         await new Promise((resolve) => {
-          setTimeout(resolve, 10);
+          setImmediate(resolve);
         });
       }
     }
