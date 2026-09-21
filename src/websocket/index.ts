@@ -35,6 +35,19 @@ class WebSocketApp {
     });
   };
 
+  private handleMessage = (ws: WebSocket, data: Buffer): void => {
+    try {
+      const validMessage = validateMessage(data);
+    } catch (error) {
+      if (error instanceof CustomWebSocketError) {
+        ws.close(error.code, error.message);
+        return;
+      }
+      ws.close(1011, "Unexpected error occurred.");
+      return;
+    }
+  };
+
   private handleAuthorization(ws: WebSocket, req: IncomingMessage): boolean {
     assert(req.url, "Url is not defined");
     try {
@@ -51,19 +64,6 @@ class WebSocketApp {
       return false;
     }
   }
-
-  private handleMessage = (ws: WebSocket, data: Buffer): void => {
-    try {
-      const validMessage = validateMessage(data);
-    } catch (error) {
-      if (error instanceof CustomWebSocketError) {
-        ws.close(error.code, error.message);
-        return;
-      }
-      ws.close(1011, "Unexpected error occurred.");
-      return;
-    }
-  };
 }
 
 export default WebSocketApp;
