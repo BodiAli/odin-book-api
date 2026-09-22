@@ -28,14 +28,18 @@ class WebSocketApp {
       ws.close(1008, "Access token is missing or invalid.");
       return;
     }
+    ws.isAlive = true;
 
     ws.on("message", this.handleMessage.bind(this, ws));
-    ws.on("close", (code, reason) => {
+    ws.on("pong", this.heartbeat.bind(this, ws));
+    ws.on("close", (code) => {
       this.clients.removeConnection(req.id, ws);
     });
+
+    this.checkHeartbeat(ws);
   };
 
-  private handleMessage = (ws: WebSocket, data: Buffer): void => {
+  private handleMessage(ws: WebSocket, data: Buffer): void {
     try {
       const validMessage = validateMessage(data);
     } catch (error) {
@@ -46,7 +50,7 @@ class WebSocketApp {
       ws.close(1011, "Unexpected error occurred.");
       return;
     }
-  };
+  }
 
   private handleAuthorization(ws: WebSocket, req: IncomingMessage): boolean {
     assert(req.url, "Url is not defined");
@@ -63,6 +67,21 @@ class WebSocketApp {
     } catch {
       return false;
     }
+  }
+
+  private checkHeartbeat(ws: WebSocket): void {
+    setInterval(() => {
+      if (!ws.isAlive) {
+        ws.terminate();
+        return;
+      }
+      ws.ping();
+      ws.isAlive = false;
+    }, 3000);
+  }
+
+  private heartbeat(ws: WebSocket): void {
+    ws.isAlive = true;
   }
 }
 
