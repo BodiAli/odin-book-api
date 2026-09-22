@@ -33,6 +33,8 @@ class WebSocketApp {
     ws.on("message", this.handleMessage.bind(this, ws));
     ws.on("pong", this.heartbeat.bind(this, ws));
     ws.on("close", (code) => {
+      console.log("closed", code);
+
       this.clients.removeConnection(req.id, ws);
     });
 
@@ -71,13 +73,15 @@ class WebSocketApp {
 
   private checkHeartbeat(ws: WebSocket): void {
     setInterval(() => {
+      console.log("ws", ws);
+
       if (!ws.isAlive) {
         ws.terminate();
         return;
       }
       ws.ping();
       ws.isAlive = false;
-    }, 3000);
+    }, 30000);
   }
 
   private heartbeat(ws: WebSocket): void {
