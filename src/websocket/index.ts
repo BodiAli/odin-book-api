@@ -33,7 +33,7 @@ class WebSocketApp {
 
     ws.on("message", this.handleMessage.bind(this, ws));
     ws.on("pong", this.heartbeat.bind(this, ws));
-    ws.on("close", (code) => {
+    ws.on("close", () => {
       this.clients.removeConnection(req.id, ws);
     });
   };
