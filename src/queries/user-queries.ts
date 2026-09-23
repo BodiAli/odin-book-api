@@ -6,6 +6,17 @@ import * as profileQueries from "./profile-queries.js";
 import type { User } from "#src/types/routes/users.js";
 import type { Provider } from "#src/generated/prisma/enums.js";
 
+interface CreateUserLocalArguments {
+  email: string;
+  fullName: string;
+  password: string;
+}
+interface CreateUserOauth2 {
+  email: string;
+  fullName: string;
+  provider: Provider;
+}
+
 export async function getUserWithPasswordByEmail(
   email: string,
 ): Promise<(User & { password: string | null }) | null> {
@@ -172,15 +183,4 @@ export async function getOrCreateGuestUser(): Promise<User> {
   });
 
   return { ...guest, picture: null };
-}
-
-export interface CreateUserLocalArguments {
-  email: string;
-  fullName: string;
-  password: string;
-}
-export interface CreateUserOauth2 {
-  email: string;
-  fullName: string;
-  provider: Provider;
 }

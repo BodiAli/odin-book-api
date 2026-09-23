@@ -109,11 +109,7 @@ describe("user queries", () => {
     it("should throw error when creating user with already existing email", async () => {
       expect.hasAssertions();
 
-      const {
-        email,
-        fullName,
-        password,
-      }: userQueries.CreateUserLocalArguments = {
+      const { email, fullName, password } = {
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
