@@ -285,4 +285,50 @@ describe("user queries", () => {
       expect(guestUser.id).toBe(guestExists.id);
     });
   });
+
+  describe(userQueries.updateIsOnline, () => {
+    it("should update isOnline field to true", async () => {
+      expect.hasAssertions();
+
+      const user = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          isOnline: false,
+        },
+      });
+
+      await userQueries.updateIsOnline(user.id, true);
+      const updatedUser = await prisma.user.findUnique({
+        where: {
+          id: user.id,
+        },
+      });
+      assert(updatedUser);
+
+      expect(updatedUser.isOnline).toBe(true);
+    });
+
+    it("should update isOnline field to false", async () => {
+      expect.hasAssertions();
+
+      const user = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          isOnline: true,
+        },
+      });
+
+      await userQueries.updateIsOnline(user.id, false);
+      const updatedUser = await prisma.user.findUnique({
+        where: {
+          id: user.id,
+        },
+      });
+      assert(updatedUser);
+
+      expect(updatedUser.isOnline).toBe(false);
+    });
+  });
 });
