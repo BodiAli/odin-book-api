@@ -19,6 +19,7 @@ class WebSocketApp {
   private init(): void {
     this.wss.on("connection", this.handleConnection);
     AppEmitter.getInstance().listenForNotification();
+    this.checkHeartbeat(this.clients);
   }
 
   private handleConnection = (ws: WebSocket, req: IncomingMessage): void => {
@@ -33,12 +34,8 @@ class WebSocketApp {
     ws.on("message", this.handleMessage.bind(this, ws));
     ws.on("pong", this.heartbeat.bind(this, ws));
     ws.on("close", (code) => {
-      console.log("closed", code);
-
       this.clients.removeConnection(req.id, ws);
     });
-
-    this.checkHeartbeat(ws);
   };
 
   private handleMessage(ws: WebSocket, data: Buffer): void {
@@ -71,17 +68,20 @@ class WebSocketApp {
     }
   }
 
-  private checkHeartbeat(ws: WebSocket): void {
-    setInterval(() => {
-      console.log("ws", ws);
+  private checkHeartbeat(clients: Clients): NodeJS.Timeout {
+    const interval = setInterval(() => {
+      for (const client of clients.clients) {
+        if (!client.isAlive) {
+          client.terminate();
+          continue;
+        }
 
-      if (!ws.isAlive) {
-        ws.terminate();
-        return;
+        client.ping();
+        client.isAlive = false;
       }
-      ws.ping();
-      ws.isAlive = false;
     }, 30000);
+
+    return interval;
   }
 
   private heartbeat(ws: WebSocket): void {
