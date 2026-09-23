@@ -1,9 +1,5 @@
 import * as userQueries from "#src/queries/user-queries.js";
-import {
-  connectClient,
-  initiateWebSocketServer,
-  waitForMessage,
-} from "#test-utils/websocket-utils.js";
+import utils from "#test-utils/websocket-utils.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import AppEmitter from "#src/events/app-emitter.js";
@@ -13,8 +9,8 @@ import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("send notification with WebSocketApp, AppEmitter, and sendNotification service", () => {
-  beforeAll(() => {
-    initiateWebSocketServer();
+  beforeEach(() => {
+    utils.initiateWebSocketServer();
   });
 
   afterEach(() => {
@@ -22,6 +18,7 @@ describe("send notification with WebSocketApp, AppEmitter, and sendNotification 
     for (const ws of clientsInstance.clients) {
       ws.close();
     }
+    utils.closeServer();
   });
 
   interface JsonSentNotification extends Omit<SentNotification, "createdAt"> {
@@ -50,10 +47,10 @@ describe("send notification with WebSocketApp, AppEmitter, and sendNotification 
       notifierId: userB.id,
       type: "FOLLOW",
     });
-    const wsUserB = await connectClient(userBToken);
+    const wsUserB = await utils.connectClient(userBToken);
 
     AppEmitter.getInstance().emitNotification(notification);
-    const message = await waitForMessage(wsUserB);
+    const message = await utils.waitForMessage(wsUserB);
 
     expect(message).toStrictEqual<JsonServerFrame>({
       type: EventType.NOTIFICATION,

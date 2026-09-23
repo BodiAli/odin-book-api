@@ -1,7 +1,4 @@
-import {
-  connectClient,
-  initiateWebSocketServer,
-} from "#test-utils/websocket-utils.js";
+import utils from "#test-utils/websocket-utils.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import Clients from "#src/websocket/clients.js";
@@ -11,11 +8,8 @@ describe("websocket connection", () => {
   let userA: User;
   let userB: User;
 
-  beforeAll(() => {
-    initiateWebSocketServer();
-  });
-
   beforeEach(async () => {
+    utils.initiateWebSocketServer();
     userA = await userQueries.createUserLocal({
       email: "userA@test.com",
       fullName: "test: userA",
@@ -33,6 +27,7 @@ describe("websocket connection", () => {
     for (const ws of clientsInstance.clients) {
       ws.close();
     }
+    utils.closeServer();
   });
 
   describe("client connection", () => {
@@ -41,7 +36,7 @@ describe("websocket connection", () => {
 
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
-      await connectClient(userAToken);
+      await utils.connectClient(userAToken);
 
       expect(clients.hasConnection(userA.id)).toBe(true);
       expect(clients.getUserClients(userA.id)).toHaveLength(1);
@@ -52,9 +47,9 @@ describe("websocket connection", () => {
 
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
-      await connectClient(userAToken);
-      await connectClient(userAToken);
-      await connectClient(userAToken);
+      await utils.connectClient(userAToken);
+      await utils.connectClient(userAToken);
+      await utils.connectClient(userAToken);
 
       expect(clients.hasConnection(userA.id)).toBe(true);
       expect(clients.getUserClients(userA.id)).toHaveLength(3);
@@ -66,8 +61,8 @@ describe("websocket connection", () => {
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       const userBToken = issueJwt(userB.id);
-      await connectClient(userAToken);
-      await connectClient(userBToken);
+      await utils.connectClient(userAToken);
+      await utils.connectClient(userBToken);
 
       const isUserAConnected = clients.hasConnection(userA.id);
       const isUserBConnected = clients.hasConnection(userB.id);
@@ -82,9 +77,9 @@ describe("websocket connection", () => {
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       const userBToken = issueJwt(userB.id);
-      await connectClient(userAToken);
-      await connectClient(userBToken);
-      await connectClient(userBToken);
+      await utils.connectClient(userAToken);
+      await utils.connectClient(userBToken);
+      await utils.connectClient(userBToken);
 
       const userAClients = clients.getUserClients(userA.id);
       const userBClients = clients.getUserClients(userB.id);
@@ -115,7 +110,7 @@ describe("websocket connection", () => {
 
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
-      const ws1UserA = await connectClient(userAToken);
+      const ws1UserA = await utils.connectClient(userAToken);
 
       ws1UserA.terminate();
       await waitForClientRemoval(clients, 0);

@@ -1,16 +1,12 @@
 import WebSocket from "ws";
-import {
-  connectClient,
-  initiateWebSocketServer,
-  waitForClose,
-} from "#test-utils/websocket-utils.js";
+import utils from "#test-utils/websocket-utils.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import Clients from "#src/websocket/clients.js";
 
 describe("authorization", () => {
-  beforeAll(() => {
-    initiateWebSocketServer();
+  beforeEach(() => {
+    utils.initiateWebSocketServer();
   });
 
   afterEach(() => {
@@ -18,13 +14,14 @@ describe("authorization", () => {
     for (const ws of clientsInstance.clients) {
       ws.close();
     }
+    utils.closeServer();
   });
 
   it("should close connection with code 1008 when token is invalid", async () => {
     expect.hasAssertions();
 
     const ws = new WebSocket("ws://localhost:8080?token=invalid-token");
-    const { code, reason } = await waitForClose(ws);
+    const { code, reason } = await utils.waitForClose(ws);
 
     expect(code).toBe(1008);
     expect(reason).toBe("Access token is missing or invalid.");
@@ -39,7 +36,7 @@ describe("authorization", () => {
       password: "test-password",
     });
     const token = issueJwt(user.id, "10m");
-    const ws = await connectClient(token);
+    const ws = await utils.connectClient(token);
 
     expect(ws.readyState).toBe(WebSocket.OPEN);
   });

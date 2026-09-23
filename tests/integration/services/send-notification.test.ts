@@ -3,17 +3,17 @@ import * as notificationQueries from "#src/queries/notification-queries.js";
 import sendNotification from "#src/services/send-notification.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { EventType } from "#src/types/websocket/event-type.js";
-import {
-  connectClient,
-  initiateWebSocketServer,
-  waitForMessage,
-} from "#test-utils/websocket-utils.js";
+import utils from "#test-utils/websocket-utils.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("send notification", () => {
-  beforeAll(() => {
-    initiateWebSocketServer();
+  beforeEach(() => {
+    utils.initiateWebSocketServer();
+  });
+
+  afterEach(() => {
+    utils.closeServer();
   });
 
   interface JsonSentNotification extends Omit<SentNotification, "createdAt"> {
@@ -42,10 +42,10 @@ describe("send notification", () => {
       type: "FOLLOW",
     });
     const notifierToken = issueJwt(notifier.id, "10m");
-    const ws = await connectClient(notifierToken);
+    const ws = await utils.connectClient(notifierToken);
 
     await sendNotification(notification);
-    const notifierMsg = await waitForMessage(ws);
+    const notifierMsg = await utils.waitForMessage(ws);
 
     expect(notifierMsg).toStrictEqual<JsonServerFrame>({
       type: EventType.NOTIFICATION,
@@ -86,12 +86,12 @@ describe("send notification", () => {
     const userAToken = issueJwt(userA.id, "10m");
     const userBToken = issueJwt(userB.id, "10m");
     const userCToken = issueJwt(userC.id, "10m");
-    const wsUserA = await connectClient(userAToken);
-    const wsUserB = await connectClient(userBToken);
-    const wsUserC = await connectClient(userCToken);
-    const userAPromise = waitForMessage(wsUserA, 200);
-    const userBPromise = waitForMessage(wsUserB, 200);
-    const userCPromise = waitForMessage(wsUserC, 200);
+    const wsUserA = await utils.connectClient(userAToken);
+    const wsUserB = await utils.connectClient(userBToken);
+    const wsUserC = await utils.connectClient(userCToken);
+    const userAPromise = utils.waitForMessage(wsUserA, 200);
+    const userBPromise = utils.waitForMessage(wsUserB, 200);
+    const userCPromise = utils.waitForMessage(wsUserC, 200);
 
     await sendNotification(notification);
 
