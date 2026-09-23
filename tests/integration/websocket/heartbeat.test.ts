@@ -1,27 +1,20 @@
 import Clients from "#src/websocket/clients.js";
-import {
-  connectClient,
-  initiateWebSocketServer,
-  waitForClose,
-} from "#test-utils/websocket-utils.js";
+import utils from "#test-utils/websocket-utils.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import type { User } from "#src/types/routes/users.js";
 
 describe("heartbeat mechanism", () => {
-  beforeAll(() => {
-    initiateWebSocketServer();
-  });
-
   let user: User;
 
   beforeEach(async () => {
-    vi.useFakeTimers();
     user = await userQueries.createUserLocal({
       email: "test-email@test.com",
       fullName: "test: full name",
       password: "test-password",
     });
+    vi.useFakeTimers();
+    utils.initiateWebSocketServer();
   });
 
   afterEach(() => {
@@ -30,13 +23,14 @@ describe("heartbeat mechanism", () => {
     for (const client of clientsInstance.clients) {
       client.close();
     }
+    utils.closeServer();
   });
 
   it("should send ping client every 30 seconds", async () => {
     expect.hasAssertions();
 
     const token = issueJwt(user.id);
-    const ws = await connectClient(token, false);
+    const ws = await utils.connectClient(token, false);
     let pings = 0;
     ws.on("ping", () => {
       pings++;
@@ -44,10 +38,10 @@ describe("heartbeat mechanism", () => {
 
     // use async to wait for asynchronous code to execute
     // first iteration
-    await vi.advanceTimersToNextTimerAsync();
+    await vi.advanceTimersByTimeAsync(30000);
     ws.pong();
     // second iteration
-    await vi.advanceTimersToNextTimerAsync();
+    await vi.advanceTimersByTimeAsync(30000);
 
     expect(pings).toBe(2);
   });
@@ -57,9 +51,10 @@ describe("heartbeat mechanism", () => {
 
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
-    await connectClient(token, false);
+    await utils.connectClient(token, false);
 
-    await vi.runOnlyPendingTimersAsync();
+    await vi.advanceTimersByTimeAsync(30000);
+    await vi.advanceTimersByTimeAsync(30000);
     const userClients = clientsInstance.clients;
     const isUserConnected = clientsInstance.hasConnection(user.id);
 
@@ -72,10 +67,11 @@ describe("heartbeat mechanism", () => {
 
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
-    await connectClient(token, false);
-    await connectClient(token, false);
+    await utils.connectClient(token, false);
+    await utils.connectClient(token, false);
 
-    await vi.runOnlyPendingTimersAsync();
+    await vi.advanceTimersByTimeAsync(30000);
+    await vi.advanceTimersByTimeAsync(30000);
     const userClients = clientsInstance.clients;
     const isUserConnected = clientsInstance.hasConnection(user.id);
 
@@ -88,7 +84,7 @@ describe("heartbeat mechanism", () => {
 
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
-    const ws = await connectClient(token, false);
+    const ws = await utils.connectClient(token, false);
 
     // first iteration
     await vi.advanceTimersToNextTimerAsync();
@@ -107,8 +103,8 @@ describe("heartbeat mechanism", () => {
 
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
-    const ws1 = await connectClient(token, false);
-    const ws2 = await connectClient(token, false);
+    const ws1 = await utils.connectClient(token, false);
+    const ws2 = await utils.connectClient(token, false);
 
     // first iteration
     await vi.advanceTimersToNextTimerAsync();
@@ -117,7 +113,7 @@ describe("heartbeat mechanism", () => {
     await vi.advanceTimersToNextTimerAsync();
     // use real timers so the timer in waitForClose will run
     vi.useRealTimers();
-    const { code } = await waitForClose(ws2);
+    const { code } = await utils.waitForClose(ws2);
     const userClients = clientsInstance.clients;
     const isUserConnected = clientsInstance.hasConnection(user.id);
 
