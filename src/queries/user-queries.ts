@@ -184,3 +184,17 @@ export async function getOrCreateGuestUser(): Promise<User> {
 
   return { ...guest, picture: null };
 }
+
+export async function updateIsOnline(
+  userId: string,
+  isOnline: boolean,
+): Promise<void> {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      isOnline,
+    },
+  });
+}
