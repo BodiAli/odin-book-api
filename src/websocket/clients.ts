@@ -2,8 +2,8 @@ import type WebSocket from "ws";
 
 class Clients {
   #clients = new Map<string, WebSocket[]>();
-
   private static instance: Clients | null = null;
+
   constructor() {
     if (Clients.instance !== null) {
       throw new Error("Use Clients.getInstance() to get the clients instance.");
@@ -16,7 +16,7 @@ class Clients {
     return this.instance;
   }
 
-  get clients(): WebSocket[] {
+  get clients(): readonly WebSocket[] {
     return this.#clients.values().toArray().flat();
   }
 
