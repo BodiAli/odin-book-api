@@ -1,4 +1,3 @@
-import { WebSocket } from "ws";
 import generateNotificationMessage from "#src/utils/generate-notification-message.js";
 import Clients from "#src/websocket/clients.js";
 import { EventType } from "#src/types/websocket/event-type.js";
@@ -11,10 +10,8 @@ export default async function sendNotification(
 ): Promise<void> {
   const clients = Clients.getInstance();
   const isConnected = clients.hasConnection(notification.notifierId);
-
   if (!isConnected) {
-    console.log("ws not found");
-
+    console.log("User is not connected");
     return;
   }
 
@@ -39,7 +36,6 @@ export default async function sendNotification(
   };
 
   const notifierClients = clients.getUserClients(notification.notifierId);
-
   for (const client of notifierClients) {
     client.send(JSON.stringify(notificationFrame));
   }
