@@ -8,7 +8,7 @@ import Clients from "#src/websocket/clients.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
-describe("send notification with WebSocketApp, AppEmitter, and sendNotification service", () => {
+describe("notification event", () => {
   beforeEach(() => {
     utils.initiateWebSocketServer();
   });
