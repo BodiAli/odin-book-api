@@ -64,17 +64,17 @@ describe("send notification", () => {
     expect.hasAssertions();
 
     const userA = await userQueries.createUserLocal({
-      email: "test-userA@email.com",
+      email: "test-userA@test.com",
       fullName: "test: userA",
       password: "test-userA",
     });
     const userB = await userQueries.createUserLocal({
-      email: "test-userB@email.com",
+      email: "test-userB@test.com",
       fullName: "test: userB",
       password: "test-userB",
     });
     const userC = await userQueries.createUserLocal({
-      email: "test-userC@email.com",
+      email: "test-userC@test.com",
       fullName: "test: userC",
       password: "test-userC",
     });
@@ -112,5 +112,52 @@ describe("send notification", () => {
         type: "FOLLOW",
       },
     });
+  });
+
+  it("should send notification to all clients of target notifier", async () => {
+    expect.hasAssertions();
+
+    const actor = await userQueries.createUserLocal({
+      email: "test-actor@test.com",
+      fullName: "test: actor",
+      password: "test-actor-password",
+    });
+    const notifier = await userQueries.createUserLocal({
+      email: "test-notifier@test.com",
+      fullName: "test: notifier",
+      password: "test-notifier-password",
+    });
+    const notification = await notificationQueries.createNotification({
+      actorId: actor.id,
+      notifierId: notifier.id,
+      type: "FOLLOW",
+    });
+    const notifierToken = issueJwt(notifier.id);
+    const ws1Notifier = await utils.connectClient(notifierToken);
+    const ws2Notifier = await utils.connectClient(notifierToken);
+    const ws3Notifier = await utils.connectClient(notifierToken);
+    const ws1MsgPromise = utils.waitForMessage(ws1Notifier);
+    const ws2MsgPromise = utils.waitForMessage(ws2Notifier);
+    const ws3MsgPromise = utils.waitForMessage(ws3Notifier);
+
+    await sendNotification(notification);
+    const ws1Msg = await ws1MsgPromise;
+    const ws2Msg = await ws2MsgPromise;
+    const ws3Msg = await ws3MsgPromise;
+    const notificationDataFrame: JsonServerFrame = {
+      success: true,
+      type: EventType.NOTIFICATION,
+      data: {
+        id: notification.id,
+        type: "FOLLOW",
+        actorProfilePicture: actor.picture,
+        createdAt: notification.createdAt.toISOString(),
+        message: "test: actor started following you.",
+      },
+    };
+
+    expect(ws1Msg).toStrictEqual(notificationDataFrame);
+    expect(ws2Msg).toStrictEqual(notificationDataFrame);
+    expect(ws3Msg).toStrictEqual(notificationDataFrame);
   });
 });
