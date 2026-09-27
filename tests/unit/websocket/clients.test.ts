@@ -225,4 +225,27 @@ describe("clients class", () => {
       instance.getUserClients(userId);
     }).toThrow(new Error("No user connection is found."));
   });
+
+  describe("deleteAllConnections", () => {
+    it("should delete all connections", () => {
+      expect.hasAssertions();
+
+      const instance = Clients.getInstance();
+      const userId1 = "test-userId1";
+      const userId2 = "test-userId2";
+      const ws1UserId1 = {} as WebSocket;
+      const ws2UserId1 = {} as WebSocket;
+      const wsUserId2 = {} as WebSocket;
+      instance.createUserConnection(userId1);
+      instance.createUserConnection(userId2);
+      instance.insertClient(userId1, ws1UserId1);
+      instance.insertClient(userId1, ws2UserId1);
+      instance.insertClient(userId2, wsUserId2);
+
+      instance.deleteAllConnections();
+
+      expect(instance.hasConnection(userId1)).toBe(false);
+      expect(instance.hasConnection(userId2)).toBe(false);
+    });
+  });
 });
