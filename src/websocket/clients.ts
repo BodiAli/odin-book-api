@@ -60,6 +60,10 @@ class Clients {
       this.#clients.delete(id);
     }
   }
+
+  deleteAllConnections(): void {
+    this.#clients.clear();
+  }
 }
 
 export default Clients;
