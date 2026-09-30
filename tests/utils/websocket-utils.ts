@@ -1,6 +1,7 @@
 import { createServer, Server } from "node:http";
 import WebSocket from "ws";
 import WebSocketApp from "#src/websocket/index.js";
+import Clients from "#src/websocket/clients.js";
 
 const utils: {
   server: Server | null;
@@ -15,7 +16,9 @@ const utils: {
     ws: WebSocket,
   ): Promise<{ code: number; reason: string }>;
   initiateWebSocketServer(): void;
-  closeServer(): void;
+  closeServer(): Promise<void>;
+  cleanupConnection(): Promise<void>;
+  waitForClientsToBeLength(length: number): Promise<void>;
 } = {
   server: null,
   connectClient(token, isAutoPong = true) {
@@ -58,9 +61,50 @@ const utils: {
     new WebSocketApp(this.server);
     this.server.listen(8080);
   },
-  closeServer() {
-    if (this.server) {
-      this.server.close();
+  async closeServer() {
+    await new Promise<void>((resolve, reject) => {
+      if (this.server) {
+        this.server.close((error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      }
+    });
+  },
+  async cleanupConnection() {
+    const clients = Clients.getInstance();
+    for (const client of clients.clients) {
+      client.close();
+    }
+
+    const now = Date.now();
+    while (clients.clients.length > 0) {
+      const timePassed = Date.now() - now;
+      console.log("time passed", timePassed);
+
+      if (timePassed >= 1000) {
+        throw new Error("Cleanup failed.");
+      }
+      await new Promise(setImmediate);
+    }
+
+    await this.closeServer();
+  },
+  async waitForClientsToBeLength(length): Promise<void> {
+    const clients = Clients.getInstance();
+
+    const now = Date.now();
+    while (clients.clients.length !== length) {
+      const timePassed = Date.now() - now;
+      if (timePassed - now >= 500) {
+        throw new Error("Client was not removed.");
+      }
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
     }
   },
 };
