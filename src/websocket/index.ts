@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { WebSocket, WebSocketServer } from "ws";
 import CustomWebSocketError from "#src/errors/websocket-error.js";
 import AppEmitter from "#src/events/app-emitter.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import authorizeUser from "./authorize-user.js";
 import validateMessage from "./validate-message.js";
 import Clients from "./clients.js";
@@ -22,7 +23,10 @@ class WebSocketApp {
     this.checkHeartbeat(this.clients);
   }
 
-  private handleConnection = (ws: WebSocket, req: IncomingMessage): void => {
+  private handleConnection = async (
+    ws: WebSocket,
+    req: IncomingMessage,
+  ): Promise<void> => {
     assert(req.url, "Url is not defined");
     const isAuthorized = this.handleAuthorization(ws, req);
     if (!isAuthorized) {
@@ -30,13 +34,14 @@ class WebSocketApp {
       return;
     }
 
-    ws.isAlive = true;
-
     ws.on("message", this.handleMessage.bind(this, ws));
     ws.on("pong", this.heartbeat.bind(this, ws));
     ws.on("close", () => {
       this.clients.removeConnection(req.userId, ws);
     });
+    ws.isAlive = true;
+
+    await userQueries.updateIsOnline(req.userId, true);
   };
 
   private handleMessage(ws: WebSocket, data: Buffer): void {
