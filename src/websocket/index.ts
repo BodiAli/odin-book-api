@@ -29,6 +29,7 @@ class WebSocketApp {
       ws.close(1008, "Access token is missing or invalid.");
       return;
     }
+
     ws.isAlive = true;
 
     ws.on("message", this.handleMessage.bind(this, ws));
@@ -55,7 +56,7 @@ class WebSocketApp {
     assert(req.url, "Url is not defined");
     try {
       const userId = authorizeUser(req.url);
-      req.id = userId;
+      req.userId = userId;
       if (this.clients.hasConnection(userId)) {
         this.clients.insertClient(userId, ws);
       } else {
