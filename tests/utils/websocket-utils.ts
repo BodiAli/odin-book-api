@@ -93,11 +93,11 @@ const utils: {
   },
   async waitForClientsToBeLength(length): Promise<void> {
     const clients = Clients.getInstance();
-
     const now = Date.now();
+
     while (clients.clients.length !== length) {
       const timePassed = Date.now() - now;
-      if (timePassed - now >= 500) {
+      if (timePassed >= 500) {
         throw new Error("Client was not removed.");
       }
       await new Promise((resolve) => {
