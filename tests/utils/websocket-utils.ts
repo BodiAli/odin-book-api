@@ -83,8 +83,6 @@ const utils: {
     const now = Date.now();
     while (clients.clients.length > 0) {
       const timePassed = Date.now() - now;
-      console.log("time passed", timePassed);
-
       if (timePassed >= 1000) {
         throw new Error("Cleanup failed.");
       }
