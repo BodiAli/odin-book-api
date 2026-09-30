@@ -87,10 +87,10 @@ describe("heartbeat mechanism", () => {
     const ws = await utils.connectClient(token, false);
 
     // first iteration
-    await vi.advanceTimersToNextTimerAsync();
+    await vi.advanceTimersByTimeAsync(30000);
     ws.pong();
     // second iteration
-    await vi.advanceTimersToNextTimerAsync();
+    await vi.advanceTimersByTimeAsync(30000);
     const userClients = clientsInstance.clients;
     const isUserConnected = clientsInstance.hasConnection(user.id);
 
@@ -107,10 +107,10 @@ describe("heartbeat mechanism", () => {
     const ws2 = await utils.connectClient(token, false);
 
     // first iteration
-    await vi.advanceTimersToNextTimerAsync();
+    await vi.advanceTimersByTimeAsync(30000);
     ws1.pong();
     // second iteration
-    await vi.advanceTimersToNextTimerAsync();
+    await vi.advanceTimersByTimeAsync(30000);
     // use real timers so the timer in waitForClose will run
     vi.useRealTimers();
     const { code } = await utils.waitForClose(ws2);
