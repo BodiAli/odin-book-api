@@ -36,7 +36,18 @@ class WebSocketApp {
 
     ws.on("message", this.handleMessage.bind(this, ws));
     ws.on("pong", this.heartbeat.bind(this, ws));
-    ws.on("close", () => {
+    ws.on("close", async () => {
+      const userClients = this.clients.getUserClients(req.userId);
+
+      if (userClients.length === 1) {
+        try {
+          await userQueries.updateIsOnline(req.userId, false);
+        } catch (error) {
+          // TODO: test
+          console.log("err", error);
+        }
+      }
+
       this.clients.removeConnection(req.userId, ws);
     });
     ws.isAlive = true;
