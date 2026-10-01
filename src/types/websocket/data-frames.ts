@@ -3,12 +3,12 @@ import type { EventType } from "./event-type.js";
 import type { clientMessageData } from "#src/schemas/websocket/message-data.js";
 import type { SentNotification } from "../routes/notifications.js";
 
-interface NotificationFrame {
+export interface ServerNotificationFrame {
   success: boolean;
   type: EventType.NOTIFICATION;
   data: SentNotification;
 }
-interface MessageFrame {
+export interface ServerMessageFrame {
   success: boolean;
   type: EventType.MESSAGE;
   data: {
@@ -16,6 +16,6 @@ interface MessageFrame {
   };
 }
 
-export type ServerDataFrame = NotificationFrame | MessageFrame;
+export type ServerDataFrame = ServerNotificationFrame | ServerMessageFrame;
 
 export type ClientDataFrame = z.infer<typeof clientMessageData>;
