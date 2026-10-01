@@ -2,19 +2,14 @@ import WebSocket from "ws";
 import utils from "#test-utils/websocket-utils.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
-import Clients from "#src/websocket/clients.js";
 
 describe("authorization", () => {
   beforeEach(() => {
     utils.initiateWebSocketServer();
   });
 
-  afterEach(() => {
-    const clientsInstance = Clients.getInstance();
-    for (const ws of clientsInstance.clients) {
-      ws.close();
-    }
-    utils.closeServer();
+  afterEach(async () => {
+    await utils.cleanupConnection();
   });
 
   it("should close connection with code 1008 when token is invalid", async () => {
