@@ -32,7 +32,7 @@ const utils: {
       ws.on("error", reject);
     });
   },
-  waitForMessage<T>(ws: WebSocket, timeout = 3000): Promise<T> {
+  waitForMessage<T>(ws: WebSocket, timeout = 1000): Promise<T> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         reject(new Error("No message received"));
