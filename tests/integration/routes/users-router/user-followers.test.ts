@@ -4,8 +4,11 @@ import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
+import * as userQueries from "#src/queries/user-queries.js";
+import utils from "#test-utils/websocket-utils.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { FollowersResponse, PublicUser } from "#src/types/routes/users.js";
+import type { ServerNotificationFrame } from "#src/types/websocket/data-frames.js";
 
 describe("/users/:userId/followers endpoint", () => {
   const app = express();
@@ -67,6 +70,39 @@ describe("/users/:userId/followers endpoint", () => {
         .auth(userAToken, { type: "bearer" });
 
       expect(response.noContent).toBe(true);
+    });
+
+    it("should send a notification to followed user", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
+      const userAToken = issueJwt(userA.id, "10m");
+      const userBToken = issueJwt(userB.id, "10m");
+      await utils.initiateWebSocketServer();
+      const ws = await utils.connectClient(userBToken);
+      const waitForMessage = utils.waitForMessage<ServerNotificationFrame>(
+        ws,
+        3000,
+      );
+
+      await request(app)
+        .post(`/users/${userB.id}/followers`)
+        .auth(userAToken, { type: "bearer" })
+        .expect(204);
+      const msg = await waitForMessage;
+
+      expect(msg.data.message).toBe("test: userA started following you.");
+
+      await utils.cleanupConnection();
     });
   });
 
