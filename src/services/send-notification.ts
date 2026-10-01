@@ -2,6 +2,7 @@ import generateNotificationMessage from "#src/utils/generate-notification-messag
 import Clients from "#src/websocket/clients.js";
 import { EventType } from "#src/types/websocket/event-type.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
+import sendFrame from "#src/websocket/send-frame.js";
 import type { NotificationModel } from "#src/types/routes/notifications.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 
@@ -11,7 +12,6 @@ export default async function sendNotification(
   const clients = Clients.getInstance();
   const isConnected = clients.hasConnection(notification.notifierId);
   if (!isConnected) {
-    console.log("User is not connected");
     return;
   }
 
@@ -34,9 +34,5 @@ export default async function sendNotification(
       message: notificationMessage,
     },
   };
-
-  const notifierClients = clients.getUserClients(notification.notifierId);
-  for (const client of notifierClients) {
-    client.send(JSON.stringify(notificationFrame));
-  }
+  sendFrame(notification.notifierId, notificationFrame);
 }
