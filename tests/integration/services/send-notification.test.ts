@@ -4,16 +4,20 @@ import sendNotification from "#src/services/send-notification.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import { EventType } from "#src/types/websocket/event-type.js";
 import utils from "#test-utils/websocket-utils.js";
+import sendFrame from "#src/websocket/send-frame.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
+vi.mock(import("#src/websocket/send-frame.js"), { spy: true });
+
 describe("send notification", () => {
-  beforeEach(() => {
-    utils.initiateWebSocketServer();
+  beforeEach(async () => {
+    await utils.initiateWebSocketServer();
   });
 
-  afterEach(() => {
-    utils.closeServer();
+  afterEach(async () => {
+    vi.resetAllMocks();
+    await utils.cleanupConnection();
   });
 
   interface JsonSentNotification extends Omit<SentNotification, "createdAt"> {
@@ -159,5 +163,29 @@ describe("send notification", () => {
     expect(ws1Msg).toStrictEqual(notificationDataFrame);
     expect(ws2Msg).toStrictEqual(notificationDataFrame);
     expect(ws3Msg).toStrictEqual(notificationDataFrame);
+  });
+
+  it("should not send to target notifier when target notifier has no connection", async () => {
+    expect.hasAssertions();
+
+    const notifier = await userQueries.createUserLocal({
+      email: "test-notifier@test.com",
+      fullName: "test: notifier",
+      password: "test-notifier-password",
+    });
+    const actor = await userQueries.createUserLocal({
+      email: "test-actor@test.com",
+      fullName: "test: actor",
+      password: "test-actor-password",
+    });
+    const notification = await notificationQueries.createNotification({
+      actorId: actor.id,
+      notifierId: notifier.id,
+      type: "FOLLOW",
+    });
+
+    await sendNotification(notification);
+
+    expect(sendFrame).not.toHaveBeenCalled();
   });
 });
