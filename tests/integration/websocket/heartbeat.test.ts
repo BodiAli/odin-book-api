@@ -4,6 +4,11 @@ import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 
 describe("heartbeat mechanism", () => {
+  afterEach(async () => {
+    vi.useRealTimers();
+    await utils.cleanupConnection();
+  });
+
   it("should ping client every 30 seconds", async () => {
     expect.hasAssertions();
 
@@ -29,9 +34,6 @@ describe("heartbeat mechanism", () => {
     await vi.advanceTimersByTimeAsync(30000);
 
     expect(pings).toBe(2);
-
-    vi.useRealTimers();
-    await utils.cleanupConnection();
   });
 
   it("should remove client when client doesn't respond to the ping", async () => {
@@ -57,8 +59,6 @@ describe("heartbeat mechanism", () => {
 
     expect(userClients).toHaveLength(0);
     expect(isUserConnected).toBe(false);
-
-    await utils.cleanupConnection();
   });
 
   it("should remove all clients that are not responding", async () => {
@@ -85,8 +85,6 @@ describe("heartbeat mechanism", () => {
 
     expect(userClients).toHaveLength(0);
     expect(isUserConnected).toBe(false);
-
-    await utils.cleanupConnection();
   });
 
   it("should not remove client when client responds to ping with pong", async () => {
@@ -114,8 +112,6 @@ describe("heartbeat mechanism", () => {
 
     expect(userClients).toHaveLength(1);
     expect(isUserConnected).toBe(true);
-
-    await utils.cleanupConnection();
   });
 
   it("should only remove the client that is not responding", async () => {
@@ -147,7 +143,5 @@ describe("heartbeat mechanism", () => {
     expect(userClients).toHaveLength(1);
     expect(isUserConnected).toBe(true);
     expect(code).toBe(1006);
-
-    await utils.cleanupConnection();
   });
 });
