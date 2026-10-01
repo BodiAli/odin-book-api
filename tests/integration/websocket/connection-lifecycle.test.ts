@@ -2,49 +2,37 @@ import utils from "#test-utils/websocket-utils.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import Clients from "#src/websocket/clients.js";
-import type { User } from "#src/types/routes/users.js";
 
 describe("websocket connection", () => {
-  let userA: User;
-  let userB: User;
-
-  beforeEach(async () => {
-    utils.initiateWebSocketServer();
-    userA = await userQueries.createUserLocal({
-      email: "userA@test.com",
-      fullName: "test: userA",
-      password: "test-userA-password",
-    });
-    userB = await userQueries.createUserLocal({
-      email: "userB@test.com",
-      fullName: "test: userB",
-      password: "test-userB-password",
-    });
-  });
-
-  afterEach(() => {
-    const clientsInstance = Clients.getInstance();
-    for (const ws of clientsInstance.clients) {
-      ws.close();
-    }
-    utils.closeServer();
-  });
-
   describe("client connection", () => {
     it("should create user connection and add new connected client", async () => {
       expect.hasAssertions();
 
+      utils.initiateWebSocketServer();
+      const userA = await userQueries.createUserLocal({
+        email: "userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       await utils.connectClient(userAToken);
 
       expect(clients.hasConnection(userA.id)).toBe(true);
       expect(clients.getUserClients(userA.id)).toHaveLength(1);
+
+      await utils.cleanupConnection();
     });
 
     it("should add multiple clients to the same user when the user connects using multiple clients", async () => {
       expect.hasAssertions();
 
+      utils.initiateWebSocketServer();
+      const userA = await userQueries.createUserLocal({
+        email: "userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       await utils.connectClient(userAToken);
@@ -53,11 +41,24 @@ describe("websocket connection", () => {
 
       expect(clients.hasConnection(userA.id)).toBe(true);
       expect(clients.getUserClients(userA.id)).toHaveLength(3);
+
+      await utils.cleanupConnection();
     });
 
     it("should handle connecting multiple users", async () => {
       expect.hasAssertions();
 
+      utils.initiateWebSocketServer();
+      const userA = await userQueries.createUserLocal({
+        email: "userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       const userBToken = issueJwt(userB.id);
@@ -69,11 +70,24 @@ describe("websocket connection", () => {
 
       expect(isUserAConnected).toBe(true);
       expect(isUserBConnected).toBe(true);
+
+      await utils.cleanupConnection();
     });
 
     it("should handle adding multiple clients to multiple users", async () => {
       expect.hasAssertions();
 
+      utils.initiateWebSocketServer();
+      const userA = await userQueries.createUserLocal({
+        email: "userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       const userBToken = issueJwt(userB.id);
@@ -86,6 +100,8 @@ describe("websocket connection", () => {
 
       expect(userAClients).toHaveLength(1);
       expect(userBClients).toHaveLength(2);
+
+      await utils.cleanupConnection();
     });
   });
 
@@ -108,6 +124,12 @@ describe("websocket connection", () => {
     it("should remove client for the connected user when connection closes abnormally", async () => {
       expect.hasAssertions();
 
+      utils.initiateWebSocketServer();
+      const userA = await userQueries.createUserLocal({
+        email: "userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
       const clients = Clients.getInstance();
       const userAToken = issueJwt(userA.id);
       const ws1UserA = await utils.connectClient(userAToken);
@@ -116,6 +138,8 @@ describe("websocket connection", () => {
       await waitForClientRemoval(clients, 0);
 
       expect(clients.clients).toHaveLength(0);
+
+      await utils.cleanupConnection();
     });
   });
 });
