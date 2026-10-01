@@ -18,7 +18,7 @@ describe("heartbeat mechanism", () => {
       password: "test-password",
     });
     vi.useFakeTimers();
-    utils.initiateWebSocketServer();
+    await utils.initiateWebSocketServer();
     const token = issueJwt(user.id);
     const ws = await utils.connectClient(token, false);
     let pings = 0;
@@ -45,7 +45,7 @@ describe("heartbeat mechanism", () => {
       password: "test-password",
     });
     vi.useFakeTimers();
-    utils.initiateWebSocketServer();
+    await utils.initiateWebSocketServer();
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
     await utils.connectClient(token, false);
@@ -70,7 +70,7 @@ describe("heartbeat mechanism", () => {
       password: "test-password",
     });
     vi.useFakeTimers();
-    utils.initiateWebSocketServer();
+    await utils.initiateWebSocketServer();
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
     await utils.connectClient(token, false);
@@ -96,7 +96,7 @@ describe("heartbeat mechanism", () => {
       password: "test-password",
     });
     vi.useFakeTimers();
-    utils.initiateWebSocketServer();
+    await utils.initiateWebSocketServer();
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
     const ws = await utils.connectClient(token, false);
@@ -123,7 +123,7 @@ describe("heartbeat mechanism", () => {
       password: "test-password",
     });
     vi.useFakeTimers();
-    utils.initiateWebSocketServer();
+    await utils.initiateWebSocketServer();
     const clientsInstance = Clients.getInstance();
     const token = issueJwt(user.id);
     const ws1 = await utils.connectClient(token, false);

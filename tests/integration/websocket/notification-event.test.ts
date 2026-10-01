@@ -8,8 +8,8 @@ import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("notification event", () => {
-  beforeEach(() => {
-    utils.initiateWebSocketServer();
+  beforeEach(async () => {
+    await utils.initiateWebSocketServer();
   });
 
   afterEach(async () => {

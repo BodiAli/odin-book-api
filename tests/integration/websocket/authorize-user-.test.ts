@@ -4,8 +4,8 @@ import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 
 describe("authorization", () => {
-  beforeEach(() => {
-    utils.initiateWebSocketServer();
+  beforeEach(async () => {
+    await utils.initiateWebSocketServer();
   });
 
   afterEach(async () => {

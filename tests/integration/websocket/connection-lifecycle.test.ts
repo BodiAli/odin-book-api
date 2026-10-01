@@ -5,8 +5,8 @@ import Clients from "#src/websocket/clients.js";
 import prisma from "#src/db/prisma-client.js";
 
 describe("websocket connection", () => {
-  beforeEach(() => {
-    utils.initiateWebSocketServer();
+  beforeEach(async () => {
+    await utils.initiateWebSocketServer();
   });
 
   afterEach(async () => {

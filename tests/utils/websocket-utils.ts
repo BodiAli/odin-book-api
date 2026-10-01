@@ -15,7 +15,7 @@ const utils: {
     this: void,
     ws: WebSocket,
   ): Promise<{ code: number; reason: string }>;
-  initiateWebSocketServer(): void;
+  initiateWebSocketServer(): Promise<void>;
   closeServer(): Promise<void>;
   cleanupConnection(): Promise<void>;
   waitForClientsToBeLength(length: number): Promise<void>;
@@ -56,10 +56,14 @@ const utils: {
       });
     });
   },
-  initiateWebSocketServer() {
+  async initiateWebSocketServer() {
     this.server = createServer();
     new WebSocketApp(this.server);
-    this.server.listen(8080);
+    await new Promise<void>((resolve) => {
+      if (this.server) {
+        this.server.listen(8080, resolve);
+      }
+    });
   },
   async closeServer() {
     await new Promise<void>((resolve, reject) => {
