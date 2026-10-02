@@ -28,6 +28,7 @@ model User {
   following             UserFollow[]   @relation("Following")
   notificationsSent     Notification[] @relation("Actor")
   notificationsReceived Notification[] @relation("Notifier")
+  posts                 Post[]
 }
 
 model Profile {
@@ -60,4 +61,14 @@ model Notification {
   notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
   type       NotificationType
   createdAt  DateTime         @default(now())
+}
+
+model Post {
+  id       String  @id @default(uuid())
+  title    String  @db.VarChar(255)
+  content  String
+  userId   String
+  user     User    @relation(references: [id], fields: [userId])
+  imageUrl String?
+  imageId  String?
 }
