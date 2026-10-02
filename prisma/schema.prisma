@@ -8,6 +8,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Provider {
+  GOOGLE
+  GITHUB
+  LOCAL
+}
+
 model User {
   id                    String         @id @default(uuid())
   email                 String         @unique @db.VarChar(254)
@@ -41,6 +47,11 @@ model UserFollow {
   @@id([followedById, followingId])
 }
 
+enum NotificationType {
+  FOLLOW
+  COMMENT
+}
+
 model Notification {
   id         String           @id @default(uuid())
   actorId    String
@@ -49,15 +60,4 @@ model Notification {
   notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
   type       NotificationType
   createdAt  DateTime         @default(now())
-}
-
-enum Provider {
-  GOOGLE
-  GITHUB
-  LOCAL
-}
-
-enum NotificationType {
-  FOLLOW
-  COMMENT
 }
