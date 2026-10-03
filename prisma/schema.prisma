@@ -67,8 +67,8 @@ model Post {
   id       String  @id @default(uuid())
   title    String  @db.VarChar(255)
   content  String
-  userId   String
-  user     User    @relation(references: [id], fields: [userId])
   imageUrl String?
   imageId  String?
+  userId   String
+  user     User    @relation(references: [id], fields: [userId])
 }
