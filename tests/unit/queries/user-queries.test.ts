@@ -3,7 +3,7 @@ import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { User } from "#src/types/routes/users.js";
+import type { PublicUser, User } from "#src/types/routes/users.js";
 
 describe("user queries", () => {
   describe(userQueries.getUserWithPasswordByEmail, () => {
@@ -329,6 +329,28 @@ describe("user queries", () => {
       assert(updatedUser);
 
       expect(updatedUser.isOnline).toBe(false);
+    });
+  });
+
+  describe(userQueries.getPublicUser, () => {
+    it("should return the public user data", async () => {
+      expect.hasAssertions();
+
+      const createdUser = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+
+      const publicUser = await userQueries.getPublicUser(createdUser.id);
+
+      expect(publicUser).toStrictEqual<PublicUser>({
+        id: createdUser.id,
+        fullName: "test: full name",
+        isOnline: true,
+        picture: null,
+        lastSeen: expect.any(Date) as Date,
+      });
     });
   });
 });
