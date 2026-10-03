@@ -1,9 +1,10 @@
+import assert from "node:assert";
 import * as bcrypt from "bcrypt";
 import prisma from "#src/db/prisma-client.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as profileQueries from "./profile-queries.js";
-import type { User } from "#src/types/routes/users.js";
+import type { PublicUser, User } from "#src/types/routes/users.js";
 import type { Provider } from "#src/generated/prisma/enums.js";
 
 interface CreateUserLocalArguments {
@@ -197,4 +198,23 @@ export async function updateIsOnline(
       isOnline,
     },
   });
+}
+
+export async function getPublicUser(userId: string): Promise<PublicUser> {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+  assert(user, "Public user not found.");
+
+  const profilePicture = await profileQueries.getProfilePicture(user.id);
+
+  return {
+    id: user.id,
+    fullName: user.fullName,
+    picture: profilePicture,
+    isOnline: user.isOnline,
+    lastSeen: user.lastSeen,
+  };
 }
