@@ -1,5 +1,7 @@
 import prisma from "#src/db/prisma-client.js";
+import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as postQueries from "#src/queries/post-queries.js";
+import * as userQueries from "#src/queries/user-queries.js";
 import type { Post } from "#src/types/routes/posts.js";
 
 describe("post queries", () => {
@@ -7,11 +9,10 @@ describe("post queries", () => {
     it("should create a new post", async () => {
       expect.hasAssertions();
 
-      const user = await prisma.user.create({
-        data: {
-          email: "test-email@test.com",
-          fullName: "test: full name",
-        },
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
       });
 
       await postQueries.createPost({
@@ -30,15 +31,15 @@ describe("post queries", () => {
       expect(post).not.toBeNull();
     });
 
-    it("should return the created post", async () => {
+    it("should return the created post with the author", async () => {
       expect.hasAssertions();
 
-      const user = await prisma.user.create({
-        data: {
-          email: "test-email@test.com",
-          fullName: "test: full name",
-        },
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
       });
+      const publicUser = await userQueries.getPublicUser(user.id);
 
       const createdPost = await postQueries.createPost({
         userId: user.id,
@@ -55,7 +56,46 @@ describe("post queries", () => {
         title: "test: post title",
         imageUrl: "test-image-url",
         imageId: "test-image-id",
+        author: {
+          id: publicUser.id,
+          fullName: "test: full name",
+          isOnline: true,
+          lastSeen: publicUser.lastSeen,
+          picture: null,
+        },
       });
+    });
+  });
+
+  describe(postQueries.getPost, () => {
+    it("throw an error when the post is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(postQueries.getPost("non-existing-id")).rejects.toThrow(
+        new CustomHttpStatusError(404, "Post not found."),
+      );
+    });
+
+    it("should return the requested post with the author", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      const publicUser = await userQueries.getPublicUser(user.id);
+      const createdPost = await prisma.post.create({
+        data: {
+          userId: user.id,
+          content: "test-post-content",
+          title: "test-post-title",
+        },
+      });
+
+      const post = await postQueries.getPost(createdPost.id);
+
+      expect(post).toStrictEqual<Post>({ ...createdPost, author: publicUser });
     });
   });
 });
