@@ -32,6 +32,10 @@ const openApiDocument = generator.generateDocument({
       name: "notifications",
       description: "Notification operations",
     },
+    {
+      name: "posts",
+      description: "Posts operations",
+    },
   ],
   servers: [{ url: "http://localhost:3000" }],
 });
