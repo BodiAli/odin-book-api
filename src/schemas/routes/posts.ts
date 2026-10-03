@@ -1,13 +1,16 @@
 import z from "zod";
+import { publicUser } from "./users.js";
 import type { PostModel } from "#src/generated/prisma/models.js";
+import type { PublicUser } from "#src/types/routes/users.js";
 
-export const post: z.ZodType<PostModel> = z.object({
+export const post: z.ZodType<PostModel & { author: PublicUser }> = z.object({
   id: z.string(),
   title: z.string(),
   content: z.string(),
   imageId: z.string().nullable(),
   imageUrl: z.string().nullable(),
   userId: z.string(),
+  author: publicUser,
 });
 
 export const createPostRequestBody = z.object({
