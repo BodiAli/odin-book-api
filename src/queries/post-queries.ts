@@ -1,5 +1,6 @@
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import { Prisma } from "#src/generated/prisma/client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { Post } from "#src/types/routes/posts.js";
 
@@ -175,4 +176,32 @@ export async function getIndexPosts(
   };
 }
 
-export async function updatePost(postId: string): Promise<void> {}
+type UpdatePostArgument = Partial<Omit<CreatePostArgument, "userId">>;
+
+export async function updatePost(
+  postId: string,
+  postData: UpdatePostArgument,
+): Promise<void> {
+  const normalizeData = {
+    ...(postData.title && { title: postData.title }),
+    ...(postData.content && { content: postData.content }),
+    ...(postData.imageUrl && { imageUrl: postData.imageUrl }),
+    ...(postData.imageId && { imageId: postData.imageId }),
+  };
+  try {
+    await prisma.post.update({
+      where: {
+        id: postId,
+      },
+      data: normalizeData,
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new CustomHttpStatusError(404, "No post found to update.");
+    }
+    throw error;
+  }
+}
