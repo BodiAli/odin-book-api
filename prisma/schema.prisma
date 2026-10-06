@@ -64,11 +64,12 @@ model Notification {
 }
 
 model Post {
-  id       String  @id @default(uuid())
-  title    String  @db.VarChar(255)
-  content  String
-  imageUrl String?
-  imageId  String?
-  userId   String
-  user     User    @relation(references: [id], fields: [userId])
+  id        String   @id @default(uuid())
+  title     String   @db.VarChar(255)
+  content   String
+  imageUrl  String?
+  imageId   String?
+  createdAt DateTime @default(now())
+  userId    String
+  user      User     @relation(references: [id], fields: [userId])
 }
