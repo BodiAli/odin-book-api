@@ -613,4 +613,40 @@ describe("post queries", () => {
       });
     });
   });
+
+  describe(postQueries.deletePost, () => {
+    it("should throw an error when post is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(postQueries.deletePost("non-existing-id")).rejects.toThrow(
+        new CustomHttpStatusError(404, "No post found to delete."),
+      );
+    });
+
+    it("should delete post", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      const createdPost = await postQueries.createPost({
+        userId: user.id,
+        content: "test: post content",
+        title: "test: post title",
+        imageId: null,
+        imageUrl: null,
+      });
+
+      await postQueries.deletePost(createdPost.id);
+      const deletedPost = await prisma.post.findUnique({
+        where: {
+          id: createdPost.id,
+        },
+      });
+
+      expect(deletedPost).toBeNull();
+    });
+  });
 });
