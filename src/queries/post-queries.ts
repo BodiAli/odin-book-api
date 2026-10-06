@@ -46,7 +46,10 @@ export async function getPost(postId: string): Promise<Post> {
   return { ...post, author: publicUser };
 }
 
-export async function getIndexPosts(userId: string): Promise<Post[]> {
+export async function getIndexPosts(
+  userId: string,
+  lastCursorId?: string,
+): Promise<Post[]> {
   const indexPosts = await prisma.post.findMany({
     where: {
       OR: [
@@ -74,7 +77,15 @@ export async function getIndexPosts(userId: string): Promise<Post[]> {
     orderBy: {
       createdAt: "desc",
     },
+    take: 10,
+    ...(lastCursorId && { skip: 1 }),
+    ...(lastCursorId && {
+      cursor: {
+        id: lastCursorId,
+      },
+    }),
   });
+
   const result = indexPosts.map<Post>((post) => {
     const {
       user: { profile, ...user },
