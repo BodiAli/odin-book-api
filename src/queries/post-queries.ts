@@ -45,3 +45,50 @@ export async function getPost(postId: string): Promise<Post> {
 
   return { ...post, author: publicUser };
 }
+
+export async function getIndexPosts(userId: string): Promise<Post[]> {
+  const indexPosts = await prisma.post.findMany({
+    where: {
+      OR: [
+        {
+          userId,
+        },
+        {
+          user: {
+            following: { every: { followedById: userId } },
+          },
+        },
+      ],
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          isOnline: true,
+          lastSeen: true,
+          profile: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  const result = indexPosts.map<Post>((post) => {
+    const {
+      user: { profile, ...user },
+      ...postWithoutUser
+    } = post;
+    const picture = profile ? profile.imageUrl : null;
+    return {
+      ...postWithoutUser,
+      author: {
+        ...user,
+        picture,
+      },
+    };
+  });
+
+  return result;
+}
