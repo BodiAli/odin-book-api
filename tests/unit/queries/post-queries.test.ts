@@ -532,6 +532,85 @@ describe("post queries", () => {
   });
 
   describe(postQueries.updatePost, () => {
-    it.todo("should throw an error when post is not found");
+    it("should throw an error when post is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        postQueries.updatePost("non-existing-id", {}),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No post found to update."),
+      );
+    });
+
+    it("should update post with specified fields", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      const createdPost = await postQueries.createPost({
+        userId: user.id,
+        content: "test: post content",
+        title: "test: post title",
+        imageId: null,
+        imageUrl: null,
+      });
+
+      await postQueries.updatePost(createdPost.id, {
+        title: "test: updated post title",
+        content: "test: updated post content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+      const { author: _, ...updatedPost } = await postQueries.getPost(
+        createdPost.id,
+      );
+
+      expect(updatedPost).toStrictEqual<Omit<Post, "author">>({
+        id: createdPost.id,
+        userId: user.id,
+        title: "test: updated post title",
+        content: "test: updated post content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+        createdAt: createdPost.createdAt,
+      });
+    });
+
+    it("should leave unspecified fields as is", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      const createdPost = await postQueries.createPost({
+        userId: user.id,
+        content: "test: post content",
+        title: "test: post title",
+        imageId: null,
+        imageUrl: null,
+      });
+
+      await postQueries.updatePost(createdPost.id, {
+        content: "test: updated post content",
+      });
+      const { author: _, ...updatedPost } = await postQueries.getPost(
+        createdPost.id,
+      );
+
+      expect(updatedPost).toStrictEqual<Omit<Post, "author">>({
+        id: createdPost.id,
+        userId: user.id,
+        title: "test: post title",
+        content: "test: updated post content",
+        imageUrl: null,
+        imageId: null,
+        createdAt: createdPost.createdAt,
+      });
+    });
   });
 });
