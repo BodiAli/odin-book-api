@@ -46,10 +46,75 @@ export async function getPost(postId: string): Promise<Post> {
   return { ...post, author: publicUser };
 }
 
+async function nextPageMetadata(
+  userId: string,
+  lastPost: Post | undefined,
+): Promise<{
+  nextCursorId: string | null;
+  hasNextPage: boolean;
+}> {
+  const nextCursorId = lastPost ? lastPost.id : null;
+  const nextPage = await prisma.post.findMany({
+    where: {
+      OR: [
+        {
+          userId,
+        },
+        {
+          user: {
+            following: { some: { followedById: userId } },
+          },
+        },
+      ],
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 10,
+    ...(nextCursorId && { skip: 1 }),
+    ...(nextCursorId && {
+      cursor: {
+        id: nextCursorId,
+      },
+    }),
+  });
+
+  if (nextPage.length > 0) {
+    return {
+      hasNextPage: true,
+      nextCursorId,
+    };
+  }
+
+  return {
+    nextCursorId: null,
+    hasNextPage: false,
+  };
+}
+
 export async function getIndexPosts(
   userId: string,
   lastCursorId?: string,
-): Promise<Post[]> {
+): Promise<{
+  posts: Post[];
+  metadata: {
+    nextCursorId: string | null;
+    hasNextPage: boolean;
+  };
+}> {
+  let cursorId: string | undefined;
+  if (lastCursorId) {
+    try {
+      const cursor = await getPost(lastCursorId);
+      cursorId = cursor.id;
+    } catch (error) {
+      if (error instanceof CustomHttpStatusError) {
+        throw new CustomHttpStatusError(404, "Cursor not found.");
+      }
+      throw error;
+    }
+  }
+
   const indexPosts = await prisma.post.findMany({
     where: {
       OR: [
@@ -78,10 +143,10 @@ export async function getIndexPosts(
       createdAt: "desc",
     },
     take: 10,
-    ...(lastCursorId && { skip: 1 }),
-    ...(lastCursorId && {
+    ...(cursorId && { skip: 1 }),
+    ...(cursorId && {
       cursor: {
-        id: lastCursorId,
+        id: cursorId,
       },
     }),
   });
@@ -101,5 +166,13 @@ export async function getIndexPosts(
     };
   });
 
-  return result;
+  const lastPost = result.at(-1);
+  const metadata = await nextPageMetadata(userId, lastPost);
+
+  return {
+    posts: result,
+    metadata,
+  };
 }
+
+export async function updatePost(postId: string): Promise<void> {}
