@@ -58,7 +58,7 @@ export async function getIndexPosts(
         },
         {
           user: {
-            following: { every: { followedById: userId } },
+            following: { some: { followedById: userId } },
           },
         },
       ],

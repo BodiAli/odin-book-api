@@ -143,6 +143,11 @@ describe("post queries", () => {
         fullName: "test: userB",
         password: "test-userB-password",
       });
+      const userC = await userQueries.createUserLocal({
+        email: "test-userC@test.com",
+        fullName: "test: userC",
+        password: "test-userC-password",
+      });
       const currentUser = await userQueries.createUserLocal({
         email: "test-currentUser@test.com",
         fullName: "test: currentUser",
@@ -161,6 +166,13 @@ describe("post queries", () => {
         userId: userB.id,
         title: "test: userB post title",
         content: "test: userB post content",
+        imageUrl: null,
+        imageId: null,
+      });
+      await postQueries.createPost({
+        userId: userC.id,
+        title: "test: userC post title",
+        content: "test: userC post content",
         imageUrl: null,
         imageId: null,
       });
