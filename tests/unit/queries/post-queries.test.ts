@@ -127,7 +127,7 @@ describe("post queries", () => {
 
       const result = await postQueries.getIndexPosts(user.id);
 
-      expect(result).toStrictEqual<Post[]>([post2, post1]);
+      expect(result.posts).toStrictEqual<Post[]>([post2, post1]);
     });
 
     it("should return posts created by users the current user follows while sorted by creation date", async () => {
@@ -179,7 +179,7 @@ describe("post queries", () => {
 
       const result = await postQueries.getIndexPosts(currentUser.id);
 
-      expect(result).toStrictEqual<Post[]>([userBPost, userAPost]);
+      expect(result.posts).toStrictEqual<Post[]>([userBPost, userAPost]);
     });
 
     it("should return only 10 posts", async () => {
@@ -204,7 +204,7 @@ describe("post queries", () => {
 
       const result = await postQueries.getIndexPosts(user.id);
 
-      expect(result).toHaveLength(10);
+      expect(result.posts).toHaveLength(10);
     });
 
     it("should return the next (n<=10) posts after the given cursor", async () => {
@@ -238,9 +238,9 @@ describe("post queries", () => {
 
       const result = await postQueries.getIndexPosts(user.id, cursorPost.id);
 
-      expect(result).toHaveLength(4);
-      expect(result[0]?.title).toBe("test: post title 3");
-      expect(result[3]?.title).toBe("test: post title 0");
+      expect(result.posts).toHaveLength(4);
+      expect(result.posts[0]?.title).toBe("test: post title 3");
+      expect(result.posts[3]?.title).toBe("test: post title 0");
     });
 
     it("should return the newest 10 posts when cursor is not passed", async () => {
@@ -269,9 +269,269 @@ describe("post queries", () => {
 
       const result = await postQueries.getIndexPosts(user.id);
 
-      expect(result).toHaveLength(10);
-      expect(result[0]?.title).toBe("test: post title 23");
-      expect(result[9]?.title).toBe("test: post title 14");
+      expect(result.posts).toHaveLength(10);
+      expect(result.posts[0]?.title).toBe("test: post title 23");
+      expect(result.posts[9]?.title).toBe("test: post title 14");
     });
+
+    it("should throw an error when cursor is not found", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+
+      await expect(
+        postQueries.getIndexPosts(user.id, "non-existing-id"),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Cursor not found."));
+    });
+
+    it("should return the next cursor id when there are remaining posts to be fetched", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const firstResult = await postQueries.getIndexPosts(user.id);
+      assert(firstResult.metadata.nextCursorId);
+      const secondResult = await postQueries.getIndexPosts(
+        user.id,
+        firstResult.metadata.nextCursorId,
+      );
+      assert(secondResult.metadata.nextCursorId);
+
+      const firstCursor = firstResult.posts[9];
+      const secondCursor = secondResult.posts[9];
+      assert(firstCursor);
+      assert(secondCursor);
+
+      expect(firstResult.metadata.nextCursorId).toBe(firstCursor.id);
+      expect(secondResult.metadata.nextCursorId).toBe(secondCursor.id);
+    });
+
+    it("should return the next cursor id as null when there are no remaining posts to be fetched", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const firstResult = await postQueries.getIndexPosts(user.id);
+      assert(firstResult.metadata.nextCursorId);
+      const secondResult = await postQueries.getIndexPosts(
+        user.id,
+        firstResult.metadata.nextCursorId,
+      );
+      assert(secondResult.metadata.nextCursorId);
+      const thirdResult = await postQueries.getIndexPosts(
+        user.id,
+        secondResult.metadata.nextCursorId,
+      );
+
+      expect(thirdResult.metadata.nextCursorId).toBeNull();
+    });
+
+    it("should return hasNextPage as true when there are remaining posts to fetch", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const firstResult = await postQueries.getIndexPosts(user.id);
+      assert(firstResult.metadata.nextCursorId);
+      const secondResult = await postQueries.getIndexPosts(
+        user.id,
+        firstResult.metadata.nextCursorId,
+      );
+      assert(secondResult.metadata.nextCursorId);
+
+      const firstCursor = firstResult.posts[9];
+      const secondCursor = secondResult.posts[9];
+      assert(firstCursor);
+      assert(secondCursor);
+
+      expect(firstResult.metadata.hasNextPage).toBe(true);
+      expect(secondResult.metadata.hasNextPage).toBe(true);
+    });
+
+    it("should return hasNextPage as false when there are no remaining posts to fetch", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const firstResult = await postQueries.getIndexPosts(user.id);
+      assert(firstResult.metadata.nextCursorId);
+      const secondResult = await postQueries.getIndexPosts(
+        user.id,
+        firstResult.metadata.nextCursorId,
+      );
+      assert(secondResult.metadata.nextCursorId);
+      const thirdResult = await postQueries.getIndexPosts(
+        user.id,
+        secondResult.metadata.nextCursorId,
+      );
+
+      expect(thirdResult.metadata.hasNextPage).toBe(false);
+    });
+
+    it("should return 10 posts after the cursor", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+
+      const firstResult = await postQueries.getIndexPosts(user.id);
+      assert(firstResult.metadata.nextCursorId);
+      const secondResult = await postQueries.getIndexPosts(
+        user.id,
+        firstResult.metadata.nextCursorId,
+      );
+      assert(secondResult.metadata.nextCursorId);
+      const thirdResult = await postQueries.getIndexPosts(
+        user.id,
+        secondResult.metadata.nextCursorId,
+      );
+
+      expect(firstResult.posts).toHaveLength(10);
+      expect(secondResult.posts).toHaveLength(10);
+      expect(thirdResult.posts).toHaveLength(4);
+    });
+
+    it("should skip the cursor in subsequent calls", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const firstResult = await postQueries.getIndexPosts(user.id);
+      assert(firstResult.metadata.nextCursorId);
+      const secondResult = await postQueries.getIndexPosts(
+        user.id,
+        firstResult.metadata.nextCursorId,
+      );
+      assert(secondResult.metadata.nextCursorId);
+      const thirdResult = await postQueries.getIndexPosts(
+        user.id,
+        secondResult.metadata.nextCursorId,
+      );
+
+      const firstCursor = firstResult.posts[9];
+      const secondCursor = secondResult.posts[9];
+      assert(firstCursor);
+      assert(secondCursor);
+
+      expect(secondResult.posts).not.toContainEqual(firstCursor);
+      expect(thirdResult.posts).not.toContainEqual(secondCursor);
+      expect(thirdResult.posts).toHaveLength(4);
+    });
+  });
+
+  describe(postQueries.updatePost, () => {
+    it.todo("should throw an error when post is not found");
   });
 });
