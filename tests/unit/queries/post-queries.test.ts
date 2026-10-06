@@ -2,6 +2,7 @@ import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as postQueries from "#src/queries/post-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
+import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import type { Post } from "#src/types/routes/posts.js";
 
 describe("post queries", () => {
@@ -56,6 +57,7 @@ describe("post queries", () => {
         title: "test: post title",
         imageUrl: "test-image-url",
         imageId: "test-image-id",
+        createdAt: expect.any(Date) as Date,
         author: {
           id: publicUser.id,
           fullName: "test: full name",
@@ -97,5 +99,77 @@ describe("post queries", () => {
 
       expect(post).toStrictEqual<Post>({ ...createdPost, author: publicUser });
     });
+  });
+
+  describe(postQueries.getIndexPosts, () => {
+    it("should return posts created by current user while sorted by creation date", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      const post1 = await postQueries.createPost({
+        userId: user.id,
+        title: "test: post1 title",
+        content: "test: post1 content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+      const post2 = await postQueries.createPost({
+        userId: user.id,
+        title: "test: post2 title",
+        content: "test: post2 content",
+        imageUrl: null,
+        imageId: null,
+      });
+
+      const result = await postQueries.getIndexPosts(user.id);
+
+      expect(result).toStrictEqual<Post[]>([post2, post1]);
+    });
+
+    it("should return posts created by users the current user follows while sorted by creation date", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
+      const currentUser = await userQueries.createUserLocal({
+        email: "test-currentUser@test.com",
+        fullName: "test: currentUser",
+        password: "test-currentUser-password",
+      });
+      await userFollowsQueries.followUser(currentUser.id, userA.id);
+      await userFollowsQueries.followUser(currentUser.id, userB.id);
+      const userAPost = await postQueries.createPost({
+        userId: userA.id,
+        title: "test: userA post title",
+        content: "test: userA post content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+      const userBPost = await postQueries.createPost({
+        userId: userB.id,
+        title: "test: userB post title",
+        content: "test: userB post content",
+        imageUrl: null,
+        imageId: null,
+      });
+
+      const result = await postQueries.getIndexPosts(currentUser.id);
+
+      expect(result).toStrictEqual<Post[]>([userBPost, userAPost]);
+    });
+
+    it.todo("should return only 10 posts");
   });
 });
