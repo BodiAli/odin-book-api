@@ -170,6 +170,96 @@ describe("post queries", () => {
       expect(result).toStrictEqual<Post[]>([userBPost, userAPost]);
     });
 
-    it.todo("should return only 10 posts");
+    it("should return only 10 posts", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 11 }, (_, i) => {
+          return postQueries.createPost({
+            userId: user.id,
+            title: `test: post title ${String(i)}`,
+            content: `test: post content ${String(i)}`,
+            imageId: null,
+            imageUrl: null,
+          });
+        }),
+      );
+
+      const result = await postQueries.getIndexPosts(user.id);
+
+      expect(result).toHaveLength(10);
+    });
+
+    it("should return the next (n<=10) posts after the given cursor", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const cursorPost = await prisma.post.findFirstOrThrow({
+        where: {
+          title: "test: post title 4",
+        },
+      });
+
+      const result = await postQueries.getIndexPosts(user.id, cursorPost.id);
+
+      expect(result).toHaveLength(4);
+      expect(result[0]?.title).toBe("test: post title 3");
+      expect(result[3]?.title).toBe("test: post title 0");
+    });
+
+    it("should return the newest 10 posts when cursor is not passed", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2026-01-01T00:00:00.000Z");
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+      await Promise.all(
+        Array.from({ length: 24 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              userId: user.id,
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              imageId: null,
+              imageUrl: null,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+
+      const result = await postQueries.getIndexPosts(user.id);
+
+      expect(result).toHaveLength(10);
+      expect(result[0]?.title).toBe("test: post title 23");
+      expect(result[9]?.title).toBe("test: post title 14");
+    });
   });
 });
