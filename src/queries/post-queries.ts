@@ -205,3 +205,21 @@ export async function updatePost(
     throw error;
   }
 }
+
+export async function deletePost(postId: string): Promise<void> {
+  try {
+    await prisma.post.delete({
+      where: {
+        id: postId,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new CustomHttpStatusError(404, "No post found to delete.");
+    }
+    throw error;
+  }
+}
