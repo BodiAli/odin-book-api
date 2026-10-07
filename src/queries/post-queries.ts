@@ -179,6 +179,7 @@ export async function getIndexPosts(
 type UpdatePostArgument = Partial<Omit<CreatePostArgument, "userId">>;
 
 export async function updatePost(
+  currentUserId: string,
   postId: string,
   postData: UpdatePostArgument,
 ): Promise<void> {
@@ -189,6 +190,17 @@ export async function updatePost(
     ...(postData.imageId && { imageId: postData.imageId }),
   };
   try {
+    const post = await prisma.post.findUniqueOrThrow({
+      where: {
+        id: postId,
+      },
+    });
+    if (post.userId !== currentUserId) {
+      throw new CustomHttpStatusError(
+        403,
+        "You do not have permission to update this post.",
+      );
+    }
     await prisma.post.update({
       where: {
         id: postId,
@@ -206,8 +218,22 @@ export async function updatePost(
   }
 }
 
-export async function deletePost(postId: string): Promise<void> {
+export async function deletePost(
+  currentUserId: string,
+  postId: string,
+): Promise<void> {
   try {
+    const post = await prisma.post.findUniqueOrThrow({
+      where: {
+        id: postId,
+      },
+    });
+    if (post.userId !== currentUserId) {
+      throw new CustomHttpStatusError(
+        403,
+        "You do not have permission to delete this post.",
+      );
+    }
     await prisma.post.delete({
       where: {
         id: postId,

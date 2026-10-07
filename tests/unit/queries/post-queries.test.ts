@@ -535,8 +535,14 @@ describe("post queries", () => {
     it("should throw an error when post is not found", async () => {
       expect.hasAssertions();
 
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+
       await expect(
-        postQueries.updatePost("non-existing-id", {}),
+        postQueries.updatePost(user.id, "non-existing-id", {}),
       ).rejects.toThrow(
         new CustomHttpStatusError(404, "No post found to update."),
       );
@@ -558,7 +564,7 @@ describe("post queries", () => {
         imageUrl: null,
       });
 
-      await postQueries.updatePost(createdPost.id, {
+      await postQueries.updatePost(user.id, createdPost.id, {
         title: "test: updated post title",
         content: "test: updated post content",
         imageUrl: "test-image-url",
@@ -595,7 +601,7 @@ describe("post queries", () => {
         imageUrl: null,
       });
 
-      await postQueries.updatePost(createdPost.id, {
+      await postQueries.updatePost(user.id, createdPost.id, {
         content: "test: updated post content",
       });
       const { author: _, ...updatedPost } = await postQueries.getPost(
@@ -612,13 +618,52 @@ describe("post queries", () => {
         createdAt: createdPost.createdAt,
       });
     });
+
+    it("should throw an error when another user tries to update the post", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@email.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@email.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
+      const post = await postQueries.createPost({
+        userId: userA.id,
+        title: "test: userA post title",
+        content: "test: userA post content",
+        imageId: null,
+        imageUrl: null,
+      });
+
+      await expect(
+        postQueries.updatePost(userB.id, post.id, {}),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(
+          403,
+          "You do not have permission to update this post.",
+        ),
+      );
+    });
   });
 
   describe(postQueries.deletePost, () => {
     it("should throw an error when post is not found", async () => {
       expect.hasAssertions();
 
-      await expect(postQueries.deletePost("non-existing-id")).rejects.toThrow(
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+
+      await expect(
+        postQueries.deletePost(user.id, "non-existing-id"),
+      ).rejects.toThrow(
         new CustomHttpStatusError(404, "No post found to delete."),
       );
     });
@@ -639,7 +684,7 @@ describe("post queries", () => {
         imageUrl: null,
       });
 
-      await postQueries.deletePost(createdPost.id);
+      await postQueries.deletePost(user.id, createdPost.id);
       const deletedPost = await prisma.post.findUnique({
         where: {
           id: createdPost.id,
@@ -647,6 +692,35 @@ describe("post queries", () => {
       });
 
       expect(deletedPost).toBeNull();
+    });
+
+    it("should throw an error when another user tries to delete the post", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@email.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@email.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
+      const post = await postQueries.createPost({
+        userId: userA.id,
+        title: "test: userA post title",
+        content: "test: userA post content",
+        imageId: null,
+        imageUrl: null,
+      });
+
+      await expect(postQueries.deletePost(userB.id, post.id)).rejects.toThrow(
+        new CustomHttpStatusError(
+          403,
+          "You do not have permission to delete this post.",
+        ),
+      );
     });
   });
 });
