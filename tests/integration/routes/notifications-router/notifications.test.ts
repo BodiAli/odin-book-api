@@ -6,7 +6,7 @@ import * as notificationQueries from "#src/queries/notification-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
-describe("/notifications endpoint", () => {
+describe("/notifications path", () => {
   const app = express();
 
   beforeAll(() => {

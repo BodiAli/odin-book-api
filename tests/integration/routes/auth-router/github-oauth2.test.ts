@@ -8,7 +8,7 @@ import type {
   Oauth2RequestBody,
 } from "#src/types/routes/auth.js";
 
-describe("/auth/github endpoint", () => {
+describe("/auth/github path", () => {
   const app = express();
 
   beforeAll(() => {

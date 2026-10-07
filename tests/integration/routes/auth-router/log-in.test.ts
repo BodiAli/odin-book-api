@@ -9,7 +9,7 @@ import type {
 } from "#src/types/routes/auth.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 
-describe("/auth/log-in endpoint", () => {
+describe("/auth/log-in path", () => {
   const app = express();
 
   beforeAll(() => {

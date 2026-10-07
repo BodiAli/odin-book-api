@@ -3,7 +3,7 @@ import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
 import type { AuthenticatedResponse } from "#src/types/routes/auth.js";
 
-describe("/auth/guest endpoint", () => {
+describe("/auth/guest path", () => {
   const app = express();
 
   beforeAll(() => {
