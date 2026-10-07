@@ -5,10 +5,9 @@ import * as postsController from "#src/controllers/posts-controller.js";
 
 const postsRouter = Router();
 
-postsRouter.post(
-  "/",
-  validateBody(createPostRequestBody),
-  postsController.createPost,
-);
+postsRouter
+  .route("/")
+  .post(validateBody(createPostRequestBody), postsController.createPost)
+  .get(postsController.getIndexPosts);
 
 export default postsRouter;
