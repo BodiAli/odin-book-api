@@ -6,6 +6,7 @@ import "./components/security-scheme.js";
 import "./paths/auth-path.js";
 import "./paths/users-path.js";
 import "./paths/notifications-path.js";
+import "./paths/posts-path.js";
 
 const generator = new OpenApiGeneratorV31(registry.definitions);
 
