@@ -10,6 +10,7 @@ export const post: z.ZodType<PostModel & { author: PublicUser }> = z.object({
   imageId: z.string().nullable(),
   imageUrl: z.string().nullable(),
   userId: z.string(),
+  createdAt: z.date(),
   author: publicUser,
 });
 
@@ -27,4 +28,12 @@ export const createPostRequestBody = z.object({
 
 export const createPostResponseBody = z.object({
   post: post,
+});
+
+export const getIndexPostsResponseBody = z.object({
+  posts: z.array(post),
+  metadata: z.object({
+    nextCursorId: z.string().nullable(),
+    hasNextPage: z.boolean(),
+  }),
 });
