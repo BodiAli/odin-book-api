@@ -1,5 +1,6 @@
 import assert from "node:assert";
 import * as postQueries from "#src/queries/post-queries.js";
+import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
@@ -10,8 +11,8 @@ export async function createPost(
   req: Request<unknown, unknown, CreatePostRequestBody>,
   res: Response<CreatePostResponseBody>,
 ): Promise<void> {
-  const { title, content } = req.body;
   assert(req.user, "User not found.");
+  const { title, content } = req.body;
 
   const post = await postQueries.createPost({
     userId: req.user.id,
@@ -22,4 +23,22 @@ export async function createPost(
   });
 
   res.status(201).json({ post });
+}
+
+export async function getIndexPosts(
+  req: Request<unknown, unknown, unknown, { last_cursor_id?: string }>,
+  res: Response,
+): Promise<void> {
+  assert(req.user, "User not found");
+  try {
+    const result = await postQueries.getIndexPosts(
+      req.user.id,
+      req.query.last_cursor_id,
+    );
+    res.json("hello");
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+    }
+  }
 }
