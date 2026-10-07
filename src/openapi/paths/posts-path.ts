@@ -3,6 +3,7 @@ import {
   createPostRequestBody,
   createPostResponseBody,
   getIndexPostsResponseBody,
+  post,
 } from "#src/schemas/routes/posts.js";
 import {
   serverErrorResponse,
@@ -70,6 +71,46 @@ registry.registerPath({
     404: {
       summary: "Not found",
       description: "Cursor post not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    401: unauthorizedResponse,
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}",
+  method: "get",
+  tags: ["posts"],
+  description: "Get a post.",
+  security,
+  parameters: [
+    {
+      in: "path",
+      name: "postId",
+      required: true,
+      schema: {
+        type: "string",
+      },
+    },
+  ],
+  responses: {
+    200: {
+      summary: "OK",
+      description: "Post fetched successfully.",
+      content: {
+        "application/json": {
+          schema: post,
+        },
+      },
+    },
+    404: {
+      summary: "Not found",
+      description: "Post not found.",
       content: {
         "application/json": {
           schema: clientError,
