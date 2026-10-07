@@ -181,7 +181,7 @@ describe("/posts path", () => {
       });
     });
 
-    it("should return whether there are remaining posts or not", async () => {
+    it("should return metadata about whether there are remaining posts or not", async () => {
       expect.hasAssertions();
 
       const baseDate = new Date("2025-01-01T01:00:00Z");
@@ -268,6 +268,76 @@ describe("/posts path", () => {
         userId: currentUser.id,
         title: "test: post title 10",
         content: "test: post content 10",
+        createdAt: expect.any(String) as Date,
+        imageId: null,
+        imageUrl: null,
+        author: {
+          id: currentUser.id,
+          fullName: "test: currentUser",
+          lastSeen: expect.any(String) as Date,
+          isOnline: true,
+          picture: null,
+        },
+      });
+    });
+
+    it("should return remaining posts when chaining calls when passing las_cursor_id", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2025-01-01T01:00:00Z");
+      await Promise.all(
+        Array.from({ length: 20 }, (_, i) => {
+          return prisma.post.create({
+            data: {
+              title: `test: post title ${String(i)}`,
+              content: `test: post content ${String(i)}`,
+              createdAt: new Date(baseDate.getTime() + i),
+              userId: currentUser.id,
+            },
+          });
+        }),
+      );
+
+      const firstResponse = await request(app)
+        .get("/posts")
+        .auth(currentUserToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(200);
+      const typedFirstResponseBody =
+        firstResponse.body as GetIndexPostsResponseBody;
+      assert(typedFirstResponseBody.metadata.nextCursorId);
+      const secondResponse = await request(app)
+        .get(
+          `/posts?last_cursor_id=${typedFirstResponseBody.metadata.nextCursorId}`,
+        )
+        .auth(currentUserToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(200);
+      const typedSecondResponseBody =
+        secondResponse.body as GetIndexPostsResponseBody;
+
+      expect(typedSecondResponseBody.posts).toHaveLength(10);
+      expect(typedSecondResponseBody.posts[0]).toStrictEqual<Post>({
+        id: expect.any(String) as string,
+        userId: currentUser.id,
+        title: "test: post title 9",
+        content: "test: post content 9",
+        createdAt: expect.any(String) as Date,
+        imageId: null,
+        imageUrl: null,
+        author: {
+          id: currentUser.id,
+          fullName: "test: currentUser",
+          lastSeen: expect.any(String) as Date,
+          isOnline: true,
+          picture: null,
+        },
+      });
+      expect(typedSecondResponseBody.posts[9]).toStrictEqual<Post>({
+        id: expect.any(String) as string,
+        userId: currentUser.id,
+        title: "test: post title 0",
+        content: "test: post content 0",
         createdAt: expect.any(String) as Date,
         imageId: null,
         imageUrl: null,
