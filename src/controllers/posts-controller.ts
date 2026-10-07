@@ -4,8 +4,10 @@ import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
+  GetIndexPostsResponseBody,
 } from "#src/types/routes/posts.js";
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 export async function createPost(
   req: Request<unknown, unknown, CreatePostRequestBody>,
@@ -27,7 +29,8 @@ export async function createPost(
 
 export async function getIndexPosts(
   req: Request<unknown, unknown, unknown, { last_cursor_id?: string }>,
-  res: Response,
+  res: Response<GetIndexPostsResponseBody | ClientError>,
+  next: NextFunction,
 ): Promise<void> {
   assert(req.user, "User not found");
   try {
@@ -35,10 +38,12 @@ export async function getIndexPosts(
       req.user.id,
       req.query.last_cursor_id,
     );
-    res.json("hello");
+    res.json(result);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
     }
+    next(error);
   }
 }
