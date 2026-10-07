@@ -87,7 +87,7 @@ export async function authenticateWithGoogle(
       });
       return;
     }
-    next("error");
+    next(error);
   }
 }
 
