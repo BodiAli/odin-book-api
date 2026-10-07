@@ -35,6 +35,17 @@ vi.mock(import("#src/routes/notifications-router.js"), () => {
   };
 });
 
+vi.mock(import("#src/routes/posts-router.js"), () => {
+  const router = express.Router();
+  router.get("/", (_req, res) => {
+    res.json({ mocked: true });
+  });
+
+  return {
+    default: router,
+  };
+});
+
 describe("index-router mount endpoints", () => {
   const app = express();
 
@@ -114,6 +125,37 @@ describe("index-router mount endpoints", () => {
         .auth(currentUserToken, {
           type: "bearer",
         })
+        .expect(200);
+
+      expect(response.body).toStrictEqual<Mocked>({
+        mocked: true,
+      });
+    });
+  });
+
+  describe("posts-router", () => {
+    it("should authenticate JWT", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app).get("/posts");
+
+      expect(response.unauthorized).toBe(true);
+    });
+
+    it("should mount postsRouter on /posts path", async () => {
+      expect.hasAssertions();
+
+      const currentUser = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+        },
+      });
+      const currentUserToken = issueJwt(currentUser.id);
+
+      const response = await request(app)
+        .get("/posts")
+        .auth(currentUserToken, { type: "bearer" })
         .expect(200);
 
       expect(response.body).toStrictEqual<Mocked>({
