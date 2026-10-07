@@ -91,5 +91,23 @@ describe("/posts path", () => {
         },
       });
     });
+
+    it.todo("multipart form");
+  });
+
+  describe.only("get index posts for index page GET", () => {
+    it("should throw an error when lastCursorId is not a valid post id", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .get("/posts?last_cursor_id=non-existing-id")
+        .auth(currentUserToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Cursor not found." }],
+      });
+    });
   });
 });
