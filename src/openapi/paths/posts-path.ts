@@ -44,6 +44,15 @@ registry.registerPath({
       },
     },
     401: unauthorizedResponse,
+    502: {
+      summary: "Bad gateway",
+      description: "Server received an unexpected response from Cloudinary.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     500: serverErrorResponse,
   },
 });
