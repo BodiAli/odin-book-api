@@ -5,6 +5,7 @@ import issueJwt from "#src/utils/issue-jwt.js";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import uploadImage from "#src/services/upload-image.js";
+import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
@@ -151,7 +152,9 @@ describe("/posts path", () => {
         .attach("postImage", file, {
           contentType: "image/png",
           filename: "test-filename",
-        });
+        })
+        .expect("Content-type", /json/)
+        .expect(201);
 
       expect(response.body).toStrictEqual<CreatePostResponseBody>({
         post: {
@@ -170,6 +173,38 @@ describe("/posts path", () => {
             picture: null,
           },
         },
+      });
+    });
+
+    it("should return 502 status with error message when upload fails", async () => {
+      expect.hasAssertions();
+
+      const file = Buffer.alloc(1024);
+      const requestBody: CreatePostRequestBody = {
+        content: "test: post content",
+        title: "test: post title",
+      };
+      vi.mocked(uploadImage).mockRejectedValue(
+        new CustomHttpStatusError(502, "Failed to upload file."),
+      );
+
+      const response = await request(app)
+        .post("/posts")
+        .auth(currentUserToken, { type: "bearer" })
+        .field(requestBody)
+        .attach("postImage", file, {
+          contentType: "image/png",
+          filename: "test-filename",
+        })
+        .expect("Content-type", /json/)
+        .expect(502);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "Failed to upload file.",
+          },
+        ],
       });
     });
   });
