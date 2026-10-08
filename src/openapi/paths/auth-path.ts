@@ -152,7 +152,7 @@ registry.registerPath({
     },
     502: {
       summary: "Bad gateway",
-      description: "Server received an unexpected response Google.",
+      description: "Server received an unexpected response from Google.",
       content: {
         "application/json": {
           schema: clientError,
@@ -207,7 +207,7 @@ registry.registerPath({
     },
     502: {
       summary: "Bad gateway",
-      description: "Server received an unexpected response Github.",
+      description: "Server received an unexpected response from Github.",
       content: {
         "application/json": {
           schema: clientError,
