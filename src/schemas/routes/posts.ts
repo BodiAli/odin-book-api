@@ -44,3 +44,7 @@ export const postImage = z
     mimetype: z.string().startsWith("image/", "File must be of type image."),
   })
   .optional();
+
+export const getPostResponseBody = z.object({
+  post: post,
+});
