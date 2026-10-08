@@ -5,7 +5,7 @@ import type { UploadApiResponse } from "cloudinary";
 
 export default async function uploadImage(
   imageBuffer: Buffer,
-): Promise<UploadApiResponse> {
+): Promise<{ imageId: string; imageUrl: string }> {
   const response = await new Promise<UploadApiResponse>((resolve, reject) => {
     cloudinary.uploader
       .upload_stream({ resource_type: "image" }, (err, uploadResult) => {
@@ -20,5 +20,8 @@ export default async function uploadImage(
       .end(imageBuffer);
   });
 
-  return response;
+  return {
+    imageUrl: response.secure_url,
+    imageId: response.public_id,
+  };
 }
