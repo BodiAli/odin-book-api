@@ -10,7 +10,7 @@ import type {
   PublicUser,
 } from "#src/types/routes/users.js";
 
-describe("/users/:userId/followings endpoint", () => {
+describe("/users/:userId/followings path", () => {
   const app = express();
 
   beforeAll(() => {

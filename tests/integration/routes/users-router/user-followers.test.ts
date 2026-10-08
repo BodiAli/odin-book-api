@@ -10,7 +10,7 @@ import type { ClientError } from "#src/types/errors/errors.js";
 import type { FollowersResponse, PublicUser } from "#src/types/routes/users.js";
 import type { ServerNotificationFrame } from "#src/types/websocket/data-frames.js";
 
-describe("/users/:userId/followers endpoint", () => {
+describe("/users/:userId/followers path", () => {
   const app = express();
 
   beforeAll(() => {
