@@ -2,7 +2,7 @@ import z from "zod";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
 
-export default function validateFile(zodSchema: z.ZodObject) {
+export default function validateFile(zodSchema: z.ZodObject | z.ZodOptional) {
   return (
     req: Request,
     res: Response<ClientError>,
