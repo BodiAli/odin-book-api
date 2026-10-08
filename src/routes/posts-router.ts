@@ -17,4 +17,6 @@ postsRouter
   )
   .get(postsController.getIndexPosts);
 
+postsRouter.route("/:postId").get(postsController.getPost);
+
 export default postsRouter;
