@@ -14,7 +14,7 @@ export default async function uploadImage(
           return;
         }
 
-        assert(uploadResult);
+        assert(uploadResult, "Upload result not found.");
         resolve(uploadResult);
       })
       .end(imageBuffer);
