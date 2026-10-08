@@ -12,7 +12,8 @@ import type { ClientError } from "#src/types/errors/errors.js";
 
 export async function createPost(
   req: Request<unknown, unknown, CreatePostRequestBody>,
-  res: Response<CreatePostResponseBody>,
+  res: Response<CreatePostResponseBody | ClientError>,
+  next: NextFunction,
 ): Promise<void> {
   assert(req.user, "User not found.");
   const { title, content } = req.body;
@@ -20,21 +21,29 @@ export async function createPost(
   let imageUrl: string | null = null;
   let imageId: string | null = null;
 
-  if (req.file) {
-    const uploadResult = await uploadImage(req.file.buffer);
-    imageUrl = uploadResult.imageUrl;
-    imageId = uploadResult.imageId;
+  try {
+    if (req.file) {
+      const uploadResult = await uploadImage(req.file.buffer);
+      imageUrl = uploadResult.imageUrl;
+      imageId = uploadResult.imageId;
+    }
+
+    const post = await postQueries.createPost({
+      userId: req.user.id,
+      content,
+      title,
+      imageId,
+      imageUrl,
+    });
+
+    res.status(201).json({ post });
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
   }
-
-  const post = await postQueries.createPost({
-    userId: req.user.id,
-    content,
-    title,
-    imageId,
-    imageUrl,
-  });
-
-  res.status(201).json({ post });
 }
 
 export async function getIndexPosts(
