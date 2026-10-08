@@ -95,7 +95,33 @@ describe("/posts path", () => {
       });
     });
 
-    it.todo("multipart form");
+    it("should return 400 status with error message when post image is larger than 5MiB", async () => {
+      expect.hasAssertions();
+
+      const file = Buffer.alloc(5 * 2 ** 20 + 1);
+
+      const response = await request(app)
+        .post("/posts")
+        .auth(currentUserToken, { type: "bearer" })
+        .field({
+          content: "test: post content",
+          title: "test: post title",
+        })
+        .attach("postImage", file, {
+          contentType: "image/png",
+          filename: "test-file",
+        })
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          {
+            message: "File cannot exceed 5MiB.",
+          },
+        ],
+      });
+    });
   });
 
   describe("get index posts for index page GET", () => {
