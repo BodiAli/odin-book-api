@@ -10,7 +10,7 @@ export default async function uploadImage(
     cloudinary.uploader
       .upload_stream({ resource_type: "image" }, (err, uploadResult) => {
         if (err) {
-          reject(new CustomHttpStatusError(err.http_code, err.message));
+          reject(new CustomHttpStatusError(502, "Failed to upload file."));
           return;
         }
 

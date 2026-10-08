@@ -46,7 +46,7 @@ describe("upload image to cloudinary", () => {
     const buffer = Buffer.from("test");
 
     await expect(uploadImage(buffer)).rejects.toThrow(
-      new CustomHttpStatusError(400, "test: failed to upload"),
+      new CustomHttpStatusError(502, "Failed to upload file."),
     );
   });
 
