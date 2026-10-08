@@ -3,6 +3,7 @@ import cloudinary, {
   UploadStream,
   type UploadApiErrorResponse,
   type UploadApiOptions,
+  type UploadApiResponse,
   type UploadResponseCallback,
 } from "cloudinary";
 import uploadImage from "#src/services/upload-image.js";
@@ -24,6 +25,10 @@ describe("upload image to cloudinary", () => {
     ) => UploadStream
   >;
 
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
   it("should reject with an error when upload fails", async () => {
     expect.hasAssertions();
 
@@ -43,5 +48,28 @@ describe("upload image to cloudinary", () => {
     await expect(uploadImage(buffer)).rejects.toThrow(
       new CustomHttpStatusError(400, "test: failed to upload"),
     );
+  });
+
+  it("should return upload response on successful upload", async () => {
+    expect.hasAssertions();
+
+    const uploadResponse = {
+      public_id: "test-public-id",
+      secure_url: "test-secure-url",
+    } as UploadApiResponse;
+    mockCloudinary.mockImplementation((_options, cb) => {
+      assert(cb);
+      cb(undefined, uploadResponse);
+      const stream = new PassThrough();
+      return stream;
+    });
+    const buffer = Buffer.from("test");
+
+    const response = await uploadImage(buffer);
+
+    expect(response).toStrictEqual({
+      imageUrl: uploadResponse.secure_url,
+      imageId: uploadResponse.public_id,
+    });
   });
 });
