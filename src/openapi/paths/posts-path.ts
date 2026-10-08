@@ -5,6 +5,7 @@ import {
   getIndexPostsResponseBody,
   post,
 } from "#src/schemas/routes/posts.js";
+import addBinaryField from "../common/multipart-schema.js";
 import {
   serverErrorResponse,
   unauthorizedResponse,
@@ -21,8 +22,13 @@ registry.registerPath({
   request: {
     body: {
       content: {
-        "application/json": {
-          schema: createPostRequestBody,
+        "multipart/form-data": {
+          schema: addBinaryField(createPostRequestBody, "postImage", false),
+          encoding: {
+            postImage: {
+              contentType: "image/*",
+            },
+          },
         },
       },
     },
