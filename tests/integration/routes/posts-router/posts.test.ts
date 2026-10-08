@@ -4,6 +4,7 @@ import * as userQueries from "#src/queries/user-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
+import uploadImage from "#src/services/upload-image.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
@@ -12,6 +13,8 @@ import type {
 } from "#src/types/routes/posts.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { User } from "#src/types/routes/users.js";
+
+vi.mock(import("#src/services/upload-image.js"));
 
 describe("/posts path", () => {
   const app = express();
@@ -30,6 +33,10 @@ describe("/posts path", () => {
       password: "test-currentUser-password",
     });
     currentUserToken = issueJwt(currentUser.id);
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
   describe("create new post POST", () => {
@@ -99,14 +106,15 @@ describe("/posts path", () => {
       expect.hasAssertions();
 
       const file = Buffer.alloc(5 * 2 ** 20 + 1);
+      const requestBody: CreatePostRequestBody = {
+        content: "test: post content",
+        title: "test: post title",
+      };
 
       const response = await request(app)
         .post("/posts")
         .auth(currentUserToken, { type: "bearer" })
-        .field({
-          content: "test: post content",
-          title: "test: post title",
-        })
+        .field(requestBody)
         .attach("postImage", file, {
           contentType: "image/png",
           filename: "test-file",
@@ -120,6 +128,48 @@ describe("/posts path", () => {
             message: "File cannot exceed 5MiB.",
           },
         ],
+      });
+    });
+
+    it("should return post with uploaded image details when a post image is attached", async () => {
+      expect.hasAssertions();
+
+      const file = Buffer.alloc(1024);
+      const requestBody: CreatePostRequestBody = {
+        content: "test: post content",
+        title: "test: post title",
+      };
+      vi.mocked(uploadImage).mockResolvedValue({
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+
+      const response = await request(app)
+        .post("/posts")
+        .auth(currentUserToken, { type: "bearer" })
+        .field(requestBody)
+        .attach("postImage", file, {
+          contentType: "image/png",
+          filename: "test-filename",
+        });
+
+      expect(response.body).toStrictEqual<CreatePostResponseBody>({
+        post: {
+          id: expect.any(String) as string,
+          userId: currentUser.id,
+          title: "test: post title",
+          content: "test: post content",
+          createdAt: expect.any(String) as Date,
+          imageId: "test-image-id",
+          imageUrl: "test-image-url",
+          author: {
+            id: currentUser.id,
+            fullName: "test: currentUser",
+            lastSeen: expect.any(String) as Date,
+            isOnline: true,
+            picture: null,
+          },
+        },
       });
     });
   });
