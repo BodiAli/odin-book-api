@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import * as postQueries from "#src/queries/post-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import uploadImage from "#src/services/upload-image.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
@@ -16,12 +17,21 @@ export async function createPost(
   assert(req.user, "User not found.");
   const { title, content } = req.body;
 
+  let imageUrl: string | null = null;
+  let imageId: string | null = null;
+
+  if (req.file) {
+    const uploadResult = await uploadImage(req.file.buffer);
+    imageUrl = uploadResult.imageUrl;
+    imageId = uploadResult.imageId;
+  }
+
   const post = await postQueries.createPost({
     userId: req.user.id,
     content,
     title,
-    imageId: null,
-    imageUrl: null,
+    imageId,
+    imageUrl,
   });
 
   res.status(201).json({ post });
