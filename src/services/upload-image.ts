@@ -12,8 +12,8 @@ export default async function uploadImage(
         reject(new CustomHttpStatusError(err.http_code, err.message));
         return;
       }
-      assert(uploadResult);
 
+      assert(uploadResult);
       resolve(uploadResult);
     }).end(imageBuffer);
   });
