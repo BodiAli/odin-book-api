@@ -150,6 +150,15 @@ registry.registerPath({
         },
       },
     },
+    502: {
+      summary: "Bad gateway",
+      description: "Server received an unexpected response Google.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     500: serverErrorResponse,
   },
 });
