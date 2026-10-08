@@ -37,3 +37,10 @@ export const getIndexPostsResponseBody = z.object({
     hasNextPage: z.boolean(),
   }),
 });
+
+export const postImage = z
+  .object({
+    size: z.number().max(5 * 2 ** 20, "File cannot exceed 5MiB."),
+    mimetype: z.string().startsWith("image/", "File must be of type image."),
+  })
+  .optional();
