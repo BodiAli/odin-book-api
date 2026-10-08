@@ -6,6 +6,7 @@ import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
   GetIndexPostsResponseBody,
+  GetPostResponseBody,
 } from "#src/types/routes/posts.js";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
@@ -58,6 +59,26 @@ export async function getIndexPosts(
       req.query.last_cursor_id,
     );
     res.json(result);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function getPost(
+  req: Request<{ postId: string }>,
+  res: Response<GetPostResponseBody | ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user);
+  const { postId } = req.params;
+
+  try {
+    const post = await postQueries.getPost(postId);
+    res.json({ post });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
