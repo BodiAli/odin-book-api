@@ -31,6 +31,7 @@ describe("validate file middleware", () => {
     expect.hasAssertions();
 
     const file = Buffer.alloc(5 * 2 ** 20 + 1);
+
     const response = await request(app)
       .post("/test")
       .attach("testFile", file, {
@@ -56,6 +57,7 @@ describe("validate file middleware", () => {
     expect.hasAssertions();
 
     const file = Buffer.alloc(5 * 2 ** 20);
+
     const response = await request(app)
       .post("/test")
       .attach("testFile", file, {
