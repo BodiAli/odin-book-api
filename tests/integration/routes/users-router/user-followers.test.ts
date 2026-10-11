@@ -89,10 +89,7 @@ describe("/users/:userId/followers path", () => {
       const userBToken = issueJwt(userB.id, "10m");
       await utils.initiateWebSocketServer();
       const ws = await utils.connectClient(userBToken);
-      const waitForMessage = utils.waitForMessage<ServerNotificationFrame>(
-        ws,
-        3000,
-      );
+      const waitForMessage = utils.waitForMessage<ServerNotificationFrame>(ws);
 
       await request(app)
         .post(`/users/${userB.id}/followers`)
