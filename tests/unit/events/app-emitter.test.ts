@@ -41,7 +41,7 @@ describe("app-emitter class", () => {
   });
 
   describe("listenForNotification", () => {
-    it("should listen for 'notification' event once", () => {
+    it("should listen for 'notification' event", () => {
       expect.hasAssertions();
 
       const notification = {
@@ -56,7 +56,7 @@ describe("app-emitter class", () => {
       AppEmitter.getInstance().emitNotification(notification);
       AppEmitter.getInstance().emitNotification(notification);
 
-      expect(sendNotification).toHaveBeenCalledTimes(1);
+      expect(sendNotification).toHaveBeenCalledTimes(2);
     });
   });
 

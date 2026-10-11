@@ -22,7 +22,7 @@ class AppEmitter {
   }
 
   listenForNotification(): void {
-    this.#appEmitter.once("notification", this.notificationListener);
+    this.#appEmitter.on("notification", this.notificationListener);
   }
 
   private async notificationListener(
