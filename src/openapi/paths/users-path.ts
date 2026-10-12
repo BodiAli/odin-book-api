@@ -5,6 +5,7 @@ import {
   createUserRequestBody,
   followersResponse,
   followingsResponse,
+  getCurrentUserResponse,
 } from "#src/schemas/routes/users.js";
 import {
   serverErrorResponse,
@@ -15,7 +16,7 @@ import registry from "../registry.js";
 
 registry.registerPath({
   method: "post",
-  path: "/users/sign-up",
+  path: "/users",
   tags: ["users"],
   request: {
     body: {
@@ -58,6 +59,25 @@ registry.registerPath({
       },
     },
     "500": serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/users/me",
+  method: "get",
+  security,
+  responses: {
+    200: {
+      summary: "OK",
+      description: "Current user retrieved successfully.",
+      content: {
+        "application/json": {
+          schema: getCurrentUserResponse,
+        },
+      },
+    },
+    401: unauthorizedResponse,
+    500: serverErrorResponse,
   },
 });
 
