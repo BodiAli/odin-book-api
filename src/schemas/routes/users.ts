@@ -47,6 +47,10 @@ export const publicUser: z.ZodType<
   picture: z.string().nullable(),
 });
 
+export const getCurrentUserResponse = z.object({
+  user: user,
+});
+
 export const followersResponse = z.xor([
   z.object({ count: z.number() }),
   z.object({ followers: z.array(publicUser) }),
