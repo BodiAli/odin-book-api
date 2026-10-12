@@ -29,7 +29,11 @@ class AppEmitter {
     this: void,
     notification: NotificationModel,
   ): Promise<void> {
-    await sendNotification(notification);
+    try {
+      await sendNotification(notification);
+    } catch (error) {
+      console.error("Failed to send notification", error);
+    }
   }
 
   emitNotification(notification: NotificationModel): void {
