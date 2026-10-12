@@ -12,6 +12,8 @@ usersRouter.post(
   usersController.createUser,
 );
 
+usersRouter.get("/me", authenticateJwt, usersController.getCurrentUser);
+
 usersRouter
   .route("/:userId/followers")
   .all(authenticateJwt)
