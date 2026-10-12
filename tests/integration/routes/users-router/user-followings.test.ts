@@ -21,6 +21,25 @@ describe("/users/:userId/followings path", () => {
     followings: (Omit<PublicUser, "lastSeen"> & { lastSeen: string })[];
   }
 
+  describe("authenticate JWT", () => {
+    it("should authenticate JWT", async () => {
+      expect.hasAssertions();
+
+      const userA = await prisma.user.create({
+        data: {
+          email: "test-userA@test.com",
+          fullName: "test: userA",
+        },
+      });
+
+      const response = await request(app)
+        .get(`/users/${userA.id}/followings`)
+        .expect("Content-type", /json/);
+
+      expect(response.unauthorized).toBe(true);
+    });
+  });
+
   describe("get followings GET", () => {
     it("should return 404 status with error message when target user does not exist", async () => {
       expect.hasAssertions();

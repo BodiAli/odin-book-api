@@ -6,10 +6,10 @@ import * as userQueries from "#src/queries/user-queries.js";
 import type {
   LogInRequestBody,
   AuthenticatedResponse,
-} from "#src/types/routes/auth.js";
+} from "#src/types/routes/tokens.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 
-describe("/auth/log-in path", () => {
+describe("/tokens/local path", () => {
   const app = express();
 
   beforeAll(() => {
@@ -26,7 +26,7 @@ describe("/auth/log-in path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/log-in")
+        .post("/tokens/local")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -53,7 +53,7 @@ describe("/auth/log-in path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/log-in")
+        .post("/tokens/local")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -64,21 +64,21 @@ describe("/auth/log-in path", () => {
       });
     });
 
-    it("should return 200 status with token and user object when given valid data and correct credentials", async () => {
+    it("should return 200 status with token when given valid data and correct credentials", async () => {
       expect.hasAssertions();
 
       const requestBody: LogInRequestBody = {
         email: "test-email@test.com",
         password: "test: password",
       };
-      const user = await userQueries.createUserLocal({
+      await userQueries.createUserLocal({
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
       });
 
       const response = await request(app)
-        .post("/auth/log-in")
+        .post("/tokens/local")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -86,15 +86,6 @@ describe("/auth/log-in path", () => {
 
       expect(response.body).toStrictEqual<AuthenticatedResponse>({
         token: expect.any(String) as string,
-        user: {
-          email: "test-email@test.com",
-          fullName: "test: full name",
-          id: user.id,
-          provider: "LOCAL",
-          picture: null,
-          isOnline: true,
-          isGuest: false,
-        },
       });
     });
 
@@ -115,7 +106,7 @@ describe("/auth/log-in path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/log-in")
+        .post("/tokens/local")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)

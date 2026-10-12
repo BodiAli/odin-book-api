@@ -37,7 +37,8 @@ export async function createPost(
       imageUrl,
     });
 
-    res.status(201).json({ post });
+    res.location(`/posts/${post.id}`);
+    res.status(201).json({ id: post.id });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });

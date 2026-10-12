@@ -4,9 +4,9 @@ import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 
-vi.mock(import("#src/routes/auth-router.js"), () => {
+vi.mock(import("#src/routes/tokens-router.js"), () => {
   const router = express.Router();
-  router.post("/sign-up", (_req, res) => {
+  router.post("/", (_req, res) => {
     res.json({ mocked: true });
   });
   return {
@@ -57,11 +57,11 @@ describe("index-router mount endpoints", () => {
     mocked: true;
   }
 
-  describe("auth-router", () => {
-    it("should mount authRouter on the /auth path", async () => {
+  describe("tokens-router", () => {
+    it("should mount authRouter on the /tokens path", async () => {
       expect.hasAssertions();
 
-      const response = await request(app).post("/auth/sign-up").expect(200);
+      const response = await request(app).post("/tokens").expect(200);
 
       expect(response.body).toStrictEqual<Mocked>({
         mocked: true,
@@ -70,14 +70,6 @@ describe("index-router mount endpoints", () => {
   });
 
   describe("users-router", () => {
-    it("should authenticate JWT", async () => {
-      expect.hasAssertions();
-
-      const response = await request(app).get("/users");
-
-      expect(response.unauthorized).toBe(true);
-    });
-
     it("should mount usersRouter on /users path", async () => {
       expect.hasAssertions();
 

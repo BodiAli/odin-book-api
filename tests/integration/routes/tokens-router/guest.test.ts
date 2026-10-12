@@ -1,9 +1,9 @@
 import express from "express";
 import request from "supertest";
 import indexRouter from "#src/routes/index-router.js";
-import type { AuthenticatedResponse } from "#src/types/routes/auth.js";
+import type { AuthenticatedResponse } from "#src/types/routes/tokens.js";
 
-describe("/auth/guest path", () => {
+describe("/tokens/guest path", () => {
   const app = express();
 
   beforeAll(() => {
@@ -11,25 +11,16 @@ describe("/auth/guest path", () => {
   });
 
   describe("signing in as guest POST", () => {
-    it("should return jwt token with guest user", async () => {
+    it("should return jwt token", async () => {
       expect.hasAssertions();
 
       const response = await request(app)
-        .post("/auth/guest")
+        .post("/tokens/guest")
         .expect("Content-type", /json/)
         .expect(200);
 
       expect(response.body).toStrictEqual<AuthenticatedResponse>({
         token: expect.any(String) as string,
-        user: {
-          id: expect.any(String) as string,
-          email: "guest-user",
-          fullName: "Guest",
-          isOnline: true,
-          picture: null,
-          provider: "LOCAL",
-          isGuest: true,
-        },
       });
     });
   });

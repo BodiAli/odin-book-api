@@ -1,6 +1,6 @@
 import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
-import type { Oauth2UserData } from "#src/types/routes/auth.js";
+import type { Oauth2UserData } from "#src/types/routes/tokens.js";
 import type { User } from "#src/types/routes/users.js";
 import type { Provider } from "#src/generated/prisma/enums.js";
 

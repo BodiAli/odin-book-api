@@ -7,33 +7,13 @@ import { getOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
 import { getIdTokenGoogle } from "#src/lib/get-user-info-google.js";
 import { getUserInfoGithub } from "#src/lib/get-user-info-github.js";
 import type {
-  SignUpRequestBody,
   AuthenticatedResponse,
   Oauth2RequestBody,
   Oauth2UserData,
-} from "#src/types/routes/auth.js";
+} from "#src/types/routes/tokens.js";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { User } from "#src/types/routes/users.js";
-
-export async function createUser(
-  req: Request<unknown, unknown, SignUpRequestBody>,
-  res: Response<AuthenticatedResponse | ClientError>,
-): Promise<void> {
-  const { confirmPassword: _confirmPassword, ...userData } = req.body;
-
-  try {
-    const user = await userQueries.createUserLocal(userData);
-    const jwt = issueJwt(user.id);
-    res.json({ token: jwt, user });
-  } catch (error) {
-    if (error instanceof CustomHttpStatusError) {
-      res.status(error.code).json({ errors: [{ message: error.message }] });
-      return;
-    }
-    throw error;
-  }
-}
 
 export function authenticateWithLocal(
   req: Request,
@@ -55,7 +35,7 @@ export function authenticateWithLocal(
         }
 
         const jwt = issueJwt(user.id, "2w");
-        res.json({ token: jwt, user });
+        res.json({ token: jwt });
       },
     ) as RequestHandler
   )(req, res, next);
@@ -74,7 +54,6 @@ export async function authenticateWithGoogle(
 
     res.json({
       token: jwtToken,
-      user,
     });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
@@ -103,7 +82,6 @@ export async function authenticateWithGithub(
 
     res.json({
       token: jwtToken,
-      user,
     });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
@@ -123,7 +101,7 @@ export async function signInAsGuest(
     const guest = await userQueries.getOrCreateGuestUser();
     const token = issueJwt(guest.id, "30m");
 
-    res.json({ token, user: guest });
+    res.json({ token });
   } catch (error) {
     next(error);
   }

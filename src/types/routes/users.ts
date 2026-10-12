@@ -1,10 +1,13 @@
 import type {
+  createUserRequestBody,
   followersResponse,
   followingsResponse,
   publicUser,
   user,
 } from "#src/schemas/routes/users.js";
 import type { z } from "zod";
+
+export type CreateUserRequestBody = z.infer<typeof createUserRequestBody>;
 
 export type User = z.infer<typeof user>;
 export type PublicUser = z.infer<typeof publicUser>;

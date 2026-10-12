@@ -27,7 +27,7 @@ export const createPostRequestBody = z.object({
 });
 
 export const createPostResponseBody = z.object({
-  post: post,
+  id: z.string(),
 });
 
 export const getIndexPostsResponseBody = z.object({

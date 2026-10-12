@@ -1,6 +1,6 @@
 import config from "#src/config/config.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
-import type { Oauth2RequestBody } from "#src/types/routes/auth.js";
+import type { Oauth2RequestBody } from "#src/types/routes/tokens.js";
 
 interface IdToken {
   id_token: string;

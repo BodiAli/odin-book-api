@@ -1,14 +1,39 @@
 import assert from "node:assert";
+import * as userQueries from "#src/queries/user-queries.js";
 import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import AppEmitter from "#src/events/app-emitter.js";
+import issueJwt from "#src/utils/issue-jwt.js";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type {
+  CreateUserRequestBody,
   FollowersResponse,
   FollowingsResponse,
 } from "#src/types/routes/users.js";
+import type { AuthenticatedResponse } from "#src/types/routes/tokens.js";
+
+export async function createUser(
+  req: Request<unknown, unknown, CreateUserRequestBody>,
+  res: Response<AuthenticatedResponse | ClientError>,
+): Promise<void> {
+  const { confirmPassword: _confirmPassword, ...userData } = req.body;
+
+  try {
+    const user = await userQueries.createUserLocal(userData);
+    const jwt = issueJwt(user.id);
+
+    res.location("/users/me");
+    res.status(201).json({ token: jwt });
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    throw error;
+  }
+}
 
 export async function createFollowerForTargetUser(
   req: Request<{ userId: string }>,

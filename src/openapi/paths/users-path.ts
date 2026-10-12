@@ -1,5 +1,8 @@
+import z from "zod";
 import { clientError } from "#src/schemas/errors/errors.js";
+import { authenticatedResponse } from "#src/schemas/routes/tokens.js";
 import {
+  createUserRequestBody,
   followersResponse,
   followingsResponse,
 } from "#src/schemas/routes/users.js";
@@ -11,9 +14,57 @@ import { security } from "../common/security.js";
 import registry from "../registry.js";
 
 registry.registerPath({
+  method: "post",
+  path: "/users/sign-up",
+  tags: ["users"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: createUserRequestBody,
+        },
+      },
+    },
+  },
+  responses: {
+    "201": {
+      summary: "Account created.",
+      description: "User signed up and created an account successfully.",
+      content: {
+        "application/json": {
+          schema: authenticatedResponse,
+        },
+      },
+      headers: z.object({
+        location: z.string(),
+      }),
+    },
+    "409": {
+      summary: "Conflict with existing data.",
+      description: "User entered an existing email.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    "400": {
+      summary: "Invalid inputs.",
+      description: "User entered invalid inputs.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    "500": serverErrorResponse,
+  },
+});
+
+registry.registerPath({
   path: "/users/{userId}/followers",
   method: "post",
-  tags: ["user-follow"],
+  tags: ["users"],
   description: "Follows target user.",
   security,
   parameters: [
@@ -48,7 +99,7 @@ registry.registerPath({
 registry.registerPath({
   path: "/users/{userId}/followers",
   method: "get",
-  tags: ["user-follow"],
+  tags: ["users"],
   description: "Retrieves the followers of the target user.",
   security: [
     {
@@ -100,7 +151,7 @@ registry.registerPath({
 registry.registerPath({
   path: "/users/{userId}/followers",
   method: "delete",
-  tags: ["user-follow"],
+  tags: ["users"],
   description: "Unfollows target user.",
   security: [
     {
@@ -139,7 +190,7 @@ registry.registerPath({
 registry.registerPath({
   path: "/users/{userId}/followings",
   method: "get",
-  tags: ["user-follow"],
+  tags: ["users"],
   description: "Retrieves target user followings.",
   security: [
     {

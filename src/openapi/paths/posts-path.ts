@@ -1,3 +1,4 @@
+import z from "zod";
 import { clientError } from "#src/schemas/errors/errors.js";
 import {
   createPostRequestBody,
@@ -33,6 +34,7 @@ registry.registerPath({
       },
     },
   },
+
   responses: {
     201: {
       summary: "Created",
@@ -42,6 +44,9 @@ registry.registerPath({
           schema: createPostResponseBody,
         },
       },
+      headers: z.object({
+        location: z.string(),
+      }),
     },
     401: unauthorizedResponse,
     502: {

@@ -7,10 +7,10 @@ import type {
   Oauth2RequestBody,
   AuthenticatedResponse,
   Oauth2UserData,
-} from "#src/types/routes/auth.js";
+} from "#src/types/routes/tokens.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 
-describe("/auth/google path", () => {
+describe("/tokens/google path", () => {
   const app = express();
 
   beforeAll(() => {
@@ -26,7 +26,7 @@ describe("/auth/google path", () => {
       expect.hasAssertions();
 
       const response = await request(app)
-        .post("/auth/google")
+        .post("/tokens/google")
         .type("json")
         .send({})
         .expect("Content-type", /json/)
@@ -50,7 +50,7 @@ describe("/auth/google path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/google")
+        .post("/tokens/google")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -84,7 +84,7 @@ describe("/auth/google path", () => {
       );
 
       const response = await request(app)
-        .post("/auth/google")
+        .post("/tokens/google")
         .type("json")
         .send(requestBody);
 
@@ -112,7 +112,7 @@ describe("/auth/google path", () => {
       );
 
       const response = await request(app)
-        .post("/auth/google")
+        .post("/tokens/google")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -127,7 +127,7 @@ describe("/auth/google path", () => {
       });
     });
 
-    it("should create user and return JWT with user object when user does not exist", async () => {
+    it("should create user and return JWT when user does not exist", async () => {
       expect.hasAssertions();
 
       const googleUserData: Oauth2UserData = {
@@ -158,7 +158,7 @@ describe("/auth/google path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/google")
+        .post("/tokens/google")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -174,22 +174,13 @@ describe("/auth/google path", () => {
       expect(existingUser).not.toBeNull();
       expect(response.body).toStrictEqual<AuthenticatedResponse>({
         token: expect.any(String) as string,
-        user: {
-          id: existingUser.id,
-          email: googleUserData.email,
-          fullName: googleUserData.name,
-          picture: googleUserData.picture,
-          provider: "GOOGLE",
-          isOnline: true,
-          isGuest: false,
-        },
       });
     });
 
-    it("should return user object and JWT with updated picture when user is signed up using email and password", async () => {
+    it("should return JWT when user is signed up using email and password", async () => {
       expect.hasAssertions();
 
-      const createdUser = await prisma.user.create({
+      await prisma.user.create({
         data: {
           email: "test-email@test.com",
           fullName: "test: full name",
@@ -236,7 +227,7 @@ describe("/auth/google path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/google")
+        .post("/tokens/google")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -244,15 +235,6 @@ describe("/auth/google path", () => {
 
       expect(response.body).toStrictEqual<AuthenticatedResponse>({
         token: expect.any(String) as string,
-        user: {
-          email: createdUser.email,
-          fullName: createdUser.fullName,
-          id: createdUser.id,
-          picture: googleUserData.picture,
-          provider: "LOCAL",
-          isOnline: createdUser.isOnline,
-          isGuest: false,
-        },
       });
     });
   });

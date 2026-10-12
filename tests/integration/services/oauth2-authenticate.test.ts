@@ -2,7 +2,7 @@ import { getOrCreateOauth2User } from "#src/services/oauth2-authenticate.js";
 import prisma from "#src/db/prisma-client.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import type { User } from "#src/types/routes/users.js";
-import type { Oauth2UserData } from "#src/types/routes/auth.js";
+import type { Oauth2UserData } from "#src/types/routes/tokens.js";
 
 describe("oauth2 service", () => {
   describe("given a non-existing user", () => {

@@ -2,13 +2,11 @@ import request from "supertest";
 import express from "express";
 import prisma from "#src/db/prisma-client.js";
 import indexRouter from "#src/routes/index-router.js";
-import type {
-  SignUpRequestBody,
-  AuthenticatedResponse,
-} from "#src/types/routes/auth.js";
+import type { AuthenticatedResponse } from "#src/types/routes/tokens.js";
 import type { ClientError } from "#src/types/errors/errors.js";
+import type { CreateUserRequestBody } from "#src/types/routes/users.js";
 
-describe("/auth/sign-up path", () => {
+describe("/users path", () => {
   const app = express();
 
   beforeAll(() => {
@@ -19,7 +17,7 @@ describe("/auth/sign-up path", () => {
     it("should return 400 status with error messages when given invalid inputs", async () => {
       expect.hasAssertions();
 
-      const requestBody: Partial<SignUpRequestBody> = {
+      const requestBody: Partial<CreateUserRequestBody> = {
         email: "test-invalid-email",
         password: "test: valid password",
         confirmPassword: "test: invalid confirm password",
@@ -27,7 +25,7 @@ describe("/auth/sign-up path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/sign-up")
+        .post("/users")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -48,7 +46,7 @@ describe("/auth/sign-up path", () => {
     it("should return 409 status with error message when email already exists", async () => {
       expect.hasAssertions();
 
-      const requestBody: SignUpRequestBody = {
+      const requestBody: CreateUserRequestBody = {
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
@@ -63,7 +61,7 @@ describe("/auth/sign-up path", () => {
       });
 
       const response = await request(app)
-        .post("/auth/sign-up")
+        .post("/users")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -78,10 +76,10 @@ describe("/auth/sign-up path", () => {
       });
     });
 
-    it("should return 200 status with JWT and user object when given valid data", async () => {
+    it("should return 201 status with JWT when given valid data", async () => {
       expect.hasAssertions();
 
-      const requestBody: SignUpRequestBody = {
+      const requestBody: CreateUserRequestBody = {
         email: "test-email@test.com",
         fullName: "test: full name",
         password: "test: password",
@@ -89,24 +87,35 @@ describe("/auth/sign-up path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/sign-up")
+        .post("/users")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
-        .expect(200);
+        .expect(201);
 
       expect(response.body).toStrictEqual<AuthenticatedResponse>({
         token: expect.any(String) as string,
-        user: {
-          email: "test-email@test.com",
-          fullName: "test: full name",
-          id: expect.any(String) as string,
-          provider: "LOCAL",
-          picture: null,
-          isOnline: true,
-          isGuest: false,
-        },
       });
+    });
+
+    it("should set the location header", async () => {
+      expect.hasAssertions();
+
+      const requestBody: CreateUserRequestBody = {
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test: password",
+        confirmPassword: "test: password",
+      };
+
+      const response = await request(app)
+        .post("/users")
+        .type("json")
+        .send(requestBody)
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      expect(response.headers["location"]).toBe("/users/me");
     });
   });
 });

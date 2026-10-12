@@ -68,7 +68,7 @@ describe("/posts path", () => {
       });
     });
 
-    it("should return 201 with created post when given valid inputs", async () => {
+    it("should return 201 with created post id when given valid inputs", async () => {
       expect.hasAssertions();
 
       const requestBody: CreatePostRequestBody = {
@@ -82,24 +82,16 @@ describe("/posts path", () => {
         .send(requestBody)
         .expect("Content-type", /json/)
         .expect(201);
+      const typedBody = response.body as CreatePostResponseBody;
+      const createdPost = await prisma.post.findUnique({
+        where: {
+          id: typedBody.id,
+        },
+      });
+      assert(createdPost);
 
       expect(response.body).toStrictEqual<CreatePostResponseBody>({
-        post: {
-          id: expect.any(String) as string,
-          userId: currentUser.id,
-          title: "test: post title",
-          content: "test: post content",
-          createdAt: expect.any(String) as Date,
-          imageId: null,
-          imageUrl: null,
-          author: {
-            id: currentUser.id,
-            fullName: "test: currentUser",
-            lastSeen: expect.any(String) as Date,
-            isOnline: true,
-            picture: null,
-          },
-        },
+        id: createdPost.id,
       });
     });
 
@@ -132,7 +124,7 @@ describe("/posts path", () => {
       });
     });
 
-    it("should return post with uploaded image details when a post image is attached", async () => {
+    it("should return 201 status with post id when a post image is attached", async () => {
       expect.hasAssertions();
 
       const file = Buffer.alloc(1024);
@@ -155,24 +147,16 @@ describe("/posts path", () => {
         })
         .expect("Content-type", /json/)
         .expect(201);
+      const typedBody = response.body as CreatePostResponseBody;
+      const createdPost = await prisma.post.findUnique({
+        where: {
+          id: typedBody.id,
+        },
+      });
+      assert(createdPost);
 
       expect(response.body).toStrictEqual<CreatePostResponseBody>({
-        post: {
-          id: expect.any(String) as string,
-          userId: currentUser.id,
-          title: "test: post title",
-          content: "test: post content",
-          createdAt: expect.any(String) as Date,
-          imageId: "test-image-id",
-          imageUrl: "test-image-url",
-          author: {
-            id: currentUser.id,
-            fullName: "test: currentUser",
-            lastSeen: expect.any(String) as Date,
-            isOnline: true,
-            picture: null,
-          },
-        },
+        id: createdPost.id,
       });
     });
 
@@ -206,6 +190,24 @@ describe("/posts path", () => {
           },
         ],
       });
+    });
+
+    it("should set the location header", async () => {
+      expect.hasAssertions();
+
+      const requestBody: CreatePostRequestBody = {
+        content: "test: post content",
+        title: "test: post title",
+      };
+
+      const response = await request(app)
+        .post("/posts")
+        .auth(currentUserToken, { type: "bearer" })
+        .send(requestBody)
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      expect(response.headers["location"]).toMatch(/^\/posts\/.+$/);
     });
   });
 
@@ -392,7 +394,7 @@ describe("/posts path", () => {
       });
     });
 
-    it("should return remaining posts when chaining calls when passing las_cursor_id", async () => {
+    it("should return remaining posts when chaining calls when passing last_cursor_id", async () => {
       expect.hasAssertions();
 
       const baseDate = new Date("2025-01-01T01:00:00Z");

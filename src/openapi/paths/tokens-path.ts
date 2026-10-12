@@ -3,59 +3,13 @@ import {
   authenticatedResponse,
   logInRequestBody,
   oauth2RequestBody,
-  signUpRequestBody,
-} from "#src/schemas/routes/auth.js";
+} from "#src/schemas/routes/tokens.js";
 import { serverErrorResponse } from "../common/responses.js";
 import registry from "../registry.js";
 
 registry.registerPath({
   method: "post",
-  path: "/auth/sign-up",
-  tags: ["auth"],
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: signUpRequestBody,
-        },
-      },
-    },
-  },
-  responses: {
-    "201": {
-      summary: "Account created.",
-      description: "User signed up and created an account successfully.",
-      content: {
-        "application/json": {
-          schema: authenticatedResponse,
-        },
-      },
-    },
-    "409": {
-      summary: "Conflict with existing data.",
-      description: "User entered an existing email.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
-    "400": {
-      summary: "Invalid inputs.",
-      description: "User entered invalid inputs.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
-    "500": serverErrorResponse,
-  },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/auth/log-in",
+  path: "/tokens/local",
   tags: ["auth"],
   request: {
     body: {
@@ -102,7 +56,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/auth/google",
+  path: "/tokens/google",
   tags: ["auth"],
   request: {
     body: {
@@ -158,7 +112,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/auth/github",
+  path: "/tokens/github",
   tags: ["auth"],
   request: {
     body: {
@@ -213,7 +167,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "post",
-  path: "/auth/guest",
+  path: "/tokens/guest",
   tags: ["auth"],
   responses: {
     200: {

@@ -6,9 +6,9 @@ import type { ClientError } from "#src/types/errors/errors.js";
 import type {
   AuthenticatedResponse,
   Oauth2RequestBody,
-} from "#src/types/routes/auth.js";
+} from "#src/types/routes/tokens.js";
 
-describe("/auth/github path", () => {
+describe("/tokens/github path", () => {
   const app = express();
 
   beforeAll(() => {
@@ -35,7 +35,7 @@ describe("/auth/github path", () => {
       };
 
       const response = await request(app)
-        .post("/auth/github")
+        .post("/tokens/github")
         .type("json")
         .send(invalidRequestBody)
         .expect("Content-type", /json/)
@@ -63,7 +63,7 @@ describe("/auth/github path", () => {
       );
 
       const response = await request(app)
-        .post("/auth/github")
+        .post("/tokens/github")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -74,7 +74,7 @@ describe("/auth/github path", () => {
       });
     });
 
-    it("should return 200 status with token and user object when request is valid", async () => {
+    it("should return 200 status with token when request is valid", async () => {
       expect.hasAssertions();
 
       vi.spyOn(globalThis, "fetch")
@@ -117,7 +117,7 @@ describe("/auth/github path", () => {
       });
 
       const response = await request(app)
-        .post("/auth/github")
+        .post("/tokens/github")
         .type("json")
         .send(requestBody)
         .expect("Content-type", /json/)
@@ -131,15 +131,6 @@ describe("/auth/github path", () => {
 
       expect(response.body).toStrictEqual<AuthenticatedResponse>({
         token: expect.any(String) as string,
-        user: {
-          id: existingUser.id,
-          email: "test-primary-email@test.com",
-          fullName: "test: github name",
-          isOnline: true,
-          picture: "test-image-url",
-          provider: "GITHUB",
-          isGuest: false,
-        },
       });
       expect(nonExistingUser).toBeNull();
       expect(existingUser).not.toBeNull();

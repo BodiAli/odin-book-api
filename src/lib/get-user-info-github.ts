@@ -4,7 +4,7 @@ import config from "#src/config/config.js";
 import type {
   Oauth2RequestBody,
   Oauth2UserData,
-} from "#src/types/routes/auth.js";
+} from "#src/types/routes/tokens.js";
 
 interface CodeErrorResponse {
   error: string;

@@ -3,7 +3,7 @@ import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import type {
   Oauth2RequestBody,
   Oauth2UserData,
-} from "#src/types/routes/auth.js";
+} from "#src/types/routes/tokens.js";
 
 describe(getUserInfoGithub, () => {
   afterEach(() => {
