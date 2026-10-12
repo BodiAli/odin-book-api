@@ -11,6 +11,7 @@ import type {
   CreateUserRequestBody,
   FollowersResponse,
   FollowingsResponse,
+  GetCurrentUserResponse,
 } from "#src/types/routes/users.js";
 import type { AuthenticatedResponse } from "#src/types/routes/tokens.js";
 
@@ -33,6 +34,15 @@ export async function createUser(
     }
     throw error;
   }
+}
+
+export function getCurrentUser(
+  req: Request,
+  res: Response<GetCurrentUserResponse>,
+): void {
+  assert(req.user, "User not found");
+
+  res.json({ user: req.user });
 }
 
 export async function createFollowerForTargetUser(
