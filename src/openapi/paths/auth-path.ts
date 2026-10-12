@@ -17,13 +17,6 @@ registry.registerPath({
       content: {
         "application/json": {
           schema: signUpRequestBody,
-          example: {
-            email: "user@example.com",
-            username: "username-no-whitespace",
-            fullName: "First-name Last-name",
-            password: "user-password",
-            confirmPassword: "user-password",
-          },
         },
       },
     },
