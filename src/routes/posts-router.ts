@@ -29,6 +29,7 @@ postsRouter
     validateFile(postImage),
     validateBody(updatePostRequestBody),
     postsController.updatePost,
-  );
+  )
+  .delete(postsController.deletePost);
 
 export default postsRouter;

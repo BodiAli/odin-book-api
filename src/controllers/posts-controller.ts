@@ -112,6 +112,29 @@ export async function updatePost(
     await postQueries.updatePost(req.user.id, postId, {
       ...req.body,
     });
+
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function deletePost(
+  req: Request<{ postId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { postId } = req.params;
+
+  try {
+    await postQueries.deletePost(req.user.id, postId);
+
     res.sendStatus(204);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
