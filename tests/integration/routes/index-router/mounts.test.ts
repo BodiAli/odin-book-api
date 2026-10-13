@@ -7,7 +7,7 @@ import type { ClientError } from "#src/types/errors/errors.js";
 
 vi.mock(import("#src/routes/tokens-router.js"), () => {
   const router = express.Router();
-  router.post("/", (_req, res) => {
+  router.get("/", (_req, res) => {
     res.json({ mocked: true });
   });
   return {
@@ -58,6 +58,24 @@ describe("index-router mount endpoints", () => {
     mocked: true;
   }
 
+  describe("validate-content-type", () => {
+    it("should mount validateContentType", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post("/test")
+        .type("form")
+        .expect("Content-type", /json/)
+        .expect(415);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          { message: "Server only supports application/json media type." },
+        ],
+      });
+    });
+  });
+
   describe("json-error-handler", () => {
     it("should mount jsonErrorHandler", async () => {
       expect.hasAssertions();
@@ -79,7 +97,7 @@ describe("index-router mount endpoints", () => {
     it("should mount tokensRouter on the /tokens path", async () => {
       expect.hasAssertions();
 
-      const response = await request(app).post("/tokens").expect(200);
+      const response = await request(app).get("/tokens").expect(200);
 
       expect(response.body).toStrictEqual<Mocked>({
         mocked: true,
