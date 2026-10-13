@@ -3,6 +3,7 @@ import express from "express";
 import indexRouter from "#src/routes/index-router.js";
 import prisma from "#src/db/prisma-client.js";
 import issueJwt from "#src/utils/issue-jwt.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 vi.mock(import("#src/routes/tokens-router.js"), () => {
   const router = express.Router();
@@ -50,15 +51,32 @@ describe("index-router mount endpoints", () => {
   const app = express();
 
   beforeAll(() => {
-    app.use("/", indexRouter);
+    app.use(indexRouter);
   });
 
   interface Mocked {
     mocked: true;
   }
 
+  describe("json-error-handler", () => {
+    it("should mount jsonErrorHandler", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post("/test")
+        .send('{"invalid": }')
+        .type("json")
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Invalid JSON." }],
+      });
+    });
+  });
+
   describe("tokens-router", () => {
-    it("should mount authRouter on the /tokens path", async () => {
+    it("should mount tokensRouter on the /tokens path", async () => {
       expect.hasAssertions();
 
       const response = await request(app).post("/tokens").expect(200);
