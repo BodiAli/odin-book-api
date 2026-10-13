@@ -15,7 +15,7 @@ describe("upload image to cloudinary", () => {
     explicitly casting the type as mock will prevent raising the error in
     mockImplementation about target signature provides too few arguments
   */
-  const mockCloudinary = vi.spyOn(
+  const mockUploadStream = vi.spyOn(
     cloudinary.v2.uploader,
     "upload_stream",
   ) as Mock<
@@ -37,7 +37,7 @@ describe("upload image to cloudinary", () => {
       message: "test: failed to upload",
       name: "error",
     };
-    mockCloudinary.mockImplementation((_options, cb) => {
+    mockUploadStream.mockImplementation((_options, cb) => {
       assert(cb);
       cb(error, undefined);
       const stream = new PassThrough();
@@ -50,6 +50,51 @@ describe("upload image to cloudinary", () => {
     );
   });
 
+  it("should call upload_stream with public_id when public_id is passed", async () => {
+    expect.hasAssertions();
+
+    const buffer = Buffer.from("test");
+
+    mockUploadStream.mockImplementation((_options, cb) => {
+      assert(cb);
+      cb(undefined, {} as UploadApiResponse);
+      return new PassThrough();
+    });
+
+    await uploadImage(buffer, "test-public-id");
+
+    expect(mockUploadStream).toHaveBeenCalledExactlyOnceWith(
+      {
+        resource_type: "image",
+        public_id: "test-public-id",
+        invalidate: true,
+      },
+      expect.any(Function),
+    );
+  });
+
+  it("should not call upload_stream with public_id when public_id is not passed", async () => {
+    expect.hasAssertions();
+
+    const buffer = Buffer.from("test");
+
+    mockUploadStream.mockImplementation((_options, cb) => {
+      assert(cb);
+      cb(undefined, {} as UploadApiResponse);
+      return new PassThrough();
+    });
+
+    await uploadImage(buffer);
+
+    expect(mockUploadStream).toHaveBeenCalledExactlyOnceWith(
+      {
+        resource_type: "image",
+        invalidate: true,
+      },
+      expect.any(Function),
+    );
+  });
+
   it("should return upload response on successful upload", async () => {
     expect.hasAssertions();
 
@@ -57,7 +102,7 @@ describe("upload image to cloudinary", () => {
       public_id: "test-public-id",
       secure_url: "test-secure-url",
     } as UploadApiResponse;
-    mockCloudinary.mockImplementation((_options, cb) => {
+    mockUploadStream.mockImplementation((_options, cb) => {
       assert(cb);
       cb(undefined, uploadResponse);
       const stream = new PassThrough();
