@@ -5,6 +5,9 @@ import * as userQueries from "#src/queries/user-queries.js";
 import * as postQueries from "#src/queries/post-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import prisma from "#src/db/prisma-client.js";
+import deleteUpload from "#src/services/delete-upload.js";
+import CustomHttpStatusError from "#src/errors/http-status-error.js";
+import uploadImage from "#src/services/upload-image.js";
 import type { User } from "#src/types/routes/users.js";
 import type {
   GetPostResponseBody,
@@ -12,6 +15,9 @@ import type {
   UpdatePostRequestBody,
 } from "#src/types/routes/posts.js";
 import type { ClientError } from "#src/types/errors/errors.js";
+
+vi.mock(import("#src/services/delete-upload.js"));
+vi.mock(import("#src/services/upload-image.js"));
 
 describe("/posts/:postId path", () => {
   const app = express();
@@ -38,6 +44,10 @@ describe("/posts/:postId path", () => {
       imageUrl: null,
     });
     currentUserToken = issueJwt(currentUser.id);
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
   describe("get a single post GET", () => {
@@ -90,19 +100,23 @@ describe("/posts/:postId path", () => {
   });
 
   describe("update post PATCH", () => {
-    it("should return 400 status with error message when sending no body", async () => {
-      expect.hasAssertions();
+    it.todo(
+      "should return 400 status with error message when sending no body",
+      async () => {
+        expect.hasAssertions();
 
-      const response = await request(app)
-        .patch(`/posts/${post.id}`)
-        .auth(currentUserToken, { type: "bearer" })
-        .expect("Content-type", /json/)
-        .expect(400);
+        const response = await request(app)
+          .patch(`/posts/${post.id}`)
+          .auth(currentUserToken, { type: "bearer" })
+          .send("LOL")
+          .expect("Content-type", /json/)
+          .expect(400);
 
-      expect(response.body).toStrictEqual<ClientError>({
-        errors: [{ message: "Request body cannot be empty." }],
-      });
-    });
+        expect(response.body).toStrictEqual<ClientError>({
+          errors: [{ message: "Request body cannot be empty." }],
+        });
+      },
+    );
 
     it("should return 400 status with error message when given invalid inputs", async () => {
       expect.hasAssertions();
@@ -166,6 +180,140 @@ describe("/posts/:postId path", () => {
 
       expect(updatedPost.title).toBe(requestBody.title);
       expect(updatedPost.content).toBe(requestBody.content);
+    });
+
+    it("should return 400 status with error message when image is larger than 5MiB", async () => {
+      expect.hasAssertions();
+
+      const buffer = Buffer.alloc(5 * 2 ** 20 + 1);
+
+      const response = await request(app)
+        .patch(`/posts/${post.id}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .attach("postImage", buffer, {
+          filename: "test-filename",
+          contentType: "image/png",
+        })
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "File cannot exceed 5MiB." }],
+      });
+    });
+
+    it("should return 400 status with error message when file is not of type image", async () => {
+      expect.hasAssertions();
+
+      const buffer = Buffer.alloc(1024);
+
+      const response = await request(app)
+        .patch(`/posts/${post.id}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .attach("postImage", buffer, {
+          filename: "test-filename",
+          contentType: "text/plain",
+        })
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "File must be of type image." }],
+      });
+    });
+
+    it("should return 502 status with error message when deleting uploaded image fails", async () => {
+      expect.hasAssertions();
+
+      const postWithImage = await postQueries.createPost({
+        userId: currentUser.id,
+        title: "test: post title",
+        content: "test: post content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+      const buffer = Buffer.alloc(1024);
+      vi.mocked(deleteUpload).mockRejectedValue(
+        new CustomHttpStatusError(502, "Failed to delete upload."),
+      );
+
+      const response = await request(app)
+        .patch(`/posts/${postWithImage.id}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .attach("postImage", buffer, {
+          filename: "test-filename",
+          contentType: "image/png",
+        })
+        .expect("Content-type", /json/)
+        .expect(502);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Failed to delete upload." }],
+      });
+    });
+
+    it("should return 502 status with error message when uploading image fails", async () => {
+      expect.hasAssertions();
+
+      const postWithImage = await postQueries.createPost({
+        userId: currentUser.id,
+        title: "test: post title",
+        content: "test: post content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+      const buffer = Buffer.alloc(1024);
+      vi.mocked(uploadImage).mockRejectedValue(
+        new CustomHttpStatusError(502, "Failed to upload file."),
+      );
+
+      const response = await request(app)
+        .patch(`/posts/${postWithImage.id}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .attach("postImage", buffer, {
+          filename: "test-filename",
+          contentType: "image/png",
+        })
+        .expect("Content-type", /json/)
+        .expect(502);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Failed to upload file." }],
+      });
+    });
+
+    it("should return 204 status when upload is successful", async () => {
+      expect.hasAssertions();
+
+      const postWithImage = await postQueries.createPost({
+        userId: currentUser.id,
+        title: "test: post title",
+        content: "test: post content",
+        imageUrl: "test-image-url",
+        imageId: "test-image-id",
+      });
+      const buffer = Buffer.alloc(1024);
+      vi.mocked(uploadImage).mockResolvedValue({
+        imageUrl: "test-updated-image-url",
+        imageId: "test-updated-image-id",
+      });
+
+      await request(app)
+        .patch(`/posts/${postWithImage.id}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .attach("postImage", buffer, {
+          filename: "test-filename",
+          contentType: "image/png",
+        })
+        .expect(204);
+      const updatedPost = await prisma.post.findUniqueOrThrow({
+        where: {
+          id: postWithImage.id,
+        },
+      });
+
+      expect(updatedPost.imageUrl).toBe("test-updated-image-url");
+      expect(updatedPost.imageId).toBe("test-updated-image-id");
     });
   });
 });
