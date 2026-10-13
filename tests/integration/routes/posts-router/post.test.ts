@@ -259,4 +259,30 @@ describe("/posts/:postId path", () => {
       expect(response.noContent).toBe(true);
     });
   });
+
+  describe("delete post DELETE", () => {
+    it("should return 404 status with error message when post is not found", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .delete("/posts/non-existing-id")
+        .auth(currentUserToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "No post found to delete." }],
+      });
+    });
+
+    it("should return 204 status when post id is valid", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .delete(`/posts/${post.id}`)
+        .auth(currentUserToken, { type: "bearer" });
+
+      expect(response.noContent).toBe(true);
+    });
+  });
 });
