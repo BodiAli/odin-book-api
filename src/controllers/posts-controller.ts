@@ -7,6 +7,7 @@ import type {
   CreatePostResponseBody,
   GetIndexPostsResponseBody,
   GetPostResponseBody,
+  UpdatePostRequestBody,
 } from "#src/types/routes/posts.js";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
@@ -84,6 +85,26 @@ export async function getPost(
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
       return;
+    }
+    next(error);
+  }
+}
+
+export async function updatePost(
+  req: Request<{ postId: string }, unknown, UpdatePostRequestBody>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found");
+
+  const { postId } = req.params;
+
+  try {
+    await postQueries.updatePost(req.user.id, postId, req.body);
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
     }
     next(error);
   }
