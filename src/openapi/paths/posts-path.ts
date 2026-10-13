@@ -27,7 +27,7 @@ registry.registerPath({
     body: {
       content: {
         "multipart/form-data": {
-          schema: addBinaryField(createPostRequestBody, "postImage", false),
+          schema: addBinaryField(createPostRequestBody, "postImage", true),
           encoding: {
             postImage: {
               contentType: "image/*",
