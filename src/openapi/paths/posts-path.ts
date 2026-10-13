@@ -5,6 +5,7 @@ import {
   createPostResponseBody,
   getIndexPostsResponseBody,
   post,
+  updatePostRequestBody,
 } from "#src/schemas/routes/posts.js";
 import addBinaryField from "../common/multipart-schema.js";
 import {
@@ -136,6 +137,45 @@ registry.registerPath({
           schema: clientError,
         },
       },
+    },
+    401: unauthorizedResponse,
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}",
+  method: "patch",
+  description: "Update post",
+  security,
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: updatePostRequestBody,
+        },
+      },
+    },
+  },
+  responses: {
+    204: {
+      summary: "No content",
+      description: "Post updated successfully.",
+    },
+    401: unauthorizedResponse,
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}",
+  method: "delete",
+  description: "Delete post",
+  security,
+  responses: {
+    204: {
+      summary: "No content",
+      description: "Post deleted successfully.",
     },
     401: unauthorizedResponse,
     500: serverErrorResponse,

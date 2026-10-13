@@ -48,3 +48,8 @@ export const postImage = z
 export const getPostResponseBody = z.object({
   post: post,
 });
+
+export const updatePostRequestBody = z.object({
+  title: createPostRequestBody.shape.title.optional(),
+  content: createPostRequestBody.shape.title.optional(),
+});
