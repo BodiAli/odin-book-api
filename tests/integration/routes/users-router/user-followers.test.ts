@@ -55,6 +55,7 @@ describe("/users/:userId/followers path", () => {
       const response = await request(app)
         .post("/users/nonExistingId/followers")
         .auth(userAToken, { type: "bearer" })
+        .type("json")
         .expect("Content-type", /json/)
         .expect(404);
 
@@ -86,7 +87,8 @@ describe("/users/:userId/followers path", () => {
 
       const response = await request(app)
         .post(`/users/${userB.id}/followers`)
-        .auth(userAToken, { type: "bearer" });
+        .auth(userAToken, { type: "bearer" })
+        .type("json");
 
       expect(response.noContent).toBe(true);
     });
@@ -113,6 +115,7 @@ describe("/users/:userId/followers path", () => {
       await request(app)
         .post(`/users/${userB.id}/followers`)
         .auth(userAToken, { type: "bearer" })
+        .type("json")
         .expect(204);
       const msg = await waitForMessage;
 

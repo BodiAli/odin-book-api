@@ -51,7 +51,10 @@ describe(validateContentType, () => {
 
     expect(response.body).toStrictEqual<ClientError>({
       errors: [
-        { message: "Server only supports application/json media type." },
+        {
+          message:
+            "Server only supports application/json or multipart/form-data media types.",
+        },
       ],
     });
   });

@@ -16,6 +16,7 @@ describe("/tokens/guest path", () => {
 
       const response = await request(app)
         .post("/tokens/guest")
+        .type("json")
         .expect("Content-type", /json/)
         .expect(200);
 
