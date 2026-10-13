@@ -100,24 +100,6 @@ describe("/posts/:postId path", () => {
   });
 
   describe("update post PATCH", () => {
-    it.todo(
-      "should return 400 status with error message when sending no body",
-      async () => {
-        expect.hasAssertions();
-
-        const response = await request(app)
-          .patch(`/posts/${post.id}`)
-          .auth(currentUserToken, { type: "bearer" })
-          .send("LOL")
-          .expect("Content-type", /json/)
-          .expect(400);
-
-        expect(response.body).toStrictEqual<ClientError>({
-          errors: [{ message: "Request body cannot be empty." }],
-        });
-      },
-    );
-
     it("should return 400 status with error message when given invalid inputs", async () => {
       expect.hasAssertions();
 
