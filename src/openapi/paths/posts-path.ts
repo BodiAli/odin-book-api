@@ -26,8 +26,11 @@ registry.registerPath({
   request: {
     body: {
       content: {
+        "application/json": {
+          schema: createPostRequestBody,
+        },
         "multipart/form-data": {
-          schema: addBinaryField(createPostRequestBody, "postImage", true),
+          schema: addBinaryField(createPostRequestBody, "postImage", false),
           encoding: {
             postImage: {
               contentType: "image/*",
@@ -151,12 +154,30 @@ registry.registerPath({
   path: "/posts/{postId}",
   method: "patch",
   description: "Update post",
+  parameters: [
+    {
+      in: "path",
+      name: "postId",
+      required: true,
+      schema: {
+        type: "string",
+      },
+    },
+  ],
   security,
   request: {
     body: {
       content: {
         "application/json": {
           schema: updatePostRequestBody,
+        },
+        "multipart/form-data": {
+          schema: addBinaryField(updatePostRequestBody, "postImage", false),
+          encoding: {
+            postImage: {
+              contentType: "image/*",
+            },
+          },
         },
       },
     },
