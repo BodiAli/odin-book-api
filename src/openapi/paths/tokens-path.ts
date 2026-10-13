@@ -4,7 +4,11 @@ import {
   logInRequestBody,
   oauth2RequestBody,
 } from "#src/schemas/routes/tokens.js";
-import { serverErrorResponse } from "../common/responses.js";
+import {
+  invalidContentTypeResponse,
+  invalidInputsResponse,
+  serverErrorResponse,
+} from "../common/responses.js";
 import registry from "../registry.js";
 
 registry.registerPath({
@@ -31,15 +35,8 @@ registry.registerPath({
         },
       },
     },
-    "400": {
-      summary: "Invalid inputs.",
-      description: "User entered invalid inputs.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
+    "400": invalidInputsResponse,
+    415: invalidContentTypeResponse,
     "401": {
       summary: "Invalid credentials.",
       description:
@@ -97,6 +94,7 @@ registry.registerPath({
         },
       },
     },
+    415: invalidContentTypeResponse,
     502: {
       summary: "Bad gateway",
       description: "Server received an unexpected response from Google.",
@@ -152,6 +150,7 @@ registry.registerPath({
         },
       },
     },
+    415: invalidContentTypeResponse,
     502: {
       summary: "Bad gateway",
       description: "Server received an unexpected response from Github.",

@@ -19,3 +19,24 @@ export const serverErrorResponse = {
     },
   },
 } as const;
+
+export const invalidInputsResponse = {
+  summary: "Invalid inputs.",
+  description: "User entered invalid inputs.",
+  content: {
+    "application/json": {
+      schema: clientError,
+    },
+  },
+} as const;
+
+export const invalidContentTypeResponse = {
+  summary: "Invalid Content type.",
+  description:
+    "Server refused passed media type, or Content-Type header is missing.",
+  content: {
+    "application/json": {
+      schema: clientError,
+    },
+  },
+};

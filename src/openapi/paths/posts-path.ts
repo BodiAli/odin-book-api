@@ -9,6 +9,8 @@ import {
 } from "#src/schemas/routes/posts.js";
 import addBinaryField from "../common/multipart-schema.js";
 import {
+  invalidContentTypeResponse,
+  invalidInputsResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/responses.js";
@@ -49,7 +51,9 @@ registry.registerPath({
         location: z.string(),
       }),
     },
+    400: invalidInputsResponse,
     401: unauthorizedResponse,
+    415: invalidContentTypeResponse,
     502: {
       summary: "Bad gateway",
       description: "Server received an unexpected response from Cloudinary.",
@@ -162,7 +166,9 @@ registry.registerPath({
       summary: "No content",
       description: "Post updated successfully.",
     },
+    400: invalidInputsResponse,
     401: unauthorizedResponse,
+    415: invalidContentTypeResponse,
     500: serverErrorResponse,
   },
 });

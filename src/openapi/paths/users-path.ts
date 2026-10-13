@@ -8,6 +8,8 @@ import {
   getCurrentUserResponse,
 } from "#src/schemas/routes/users.js";
 import {
+  invalidContentTypeResponse,
+  invalidInputsResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/responses.js";
@@ -49,15 +51,8 @@ registry.registerPath({
         },
       },
     },
-    "400": {
-      summary: "Invalid inputs.",
-      description: "User entered invalid inputs.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
+    "400": invalidInputsResponse,
+    415: invalidContentTypeResponse,
     "500": serverErrorResponse,
   },
 });
