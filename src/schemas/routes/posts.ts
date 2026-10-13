@@ -49,7 +49,10 @@ export const getPostResponseBody = z.object({
   post: post,
 });
 
-export const updatePostRequestBody = z.object({
-  title: createPostRequestBody.shape.title.optional(),
-  content: createPostRequestBody.shape.title.optional(),
-});
+export const updatePostRequestBody = z.object(
+  {
+    title: createPostRequestBody.shape.title.exactOptional(),
+    content: createPostRequestBody.shape.title.exactOptional(),
+  },
+  "Request body cannot be empty.",
+);
