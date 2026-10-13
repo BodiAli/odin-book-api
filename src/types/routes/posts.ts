@@ -4,6 +4,7 @@ import {
   createPostResponseBody,
   getIndexPostsResponseBody,
   getPostResponseBody,
+  updatePostRequestBody,
 } from "#src/schemas/routes/posts.js";
 import type z from "zod";
 
@@ -17,3 +18,5 @@ export type GetIndexPostsResponseBody = z.infer<
 >;
 
 export type GetPostResponseBody = z.infer<typeof getPostResponseBody>;
+
+export type UpdatePostRequestBody = z.infer<typeof updatePostRequestBody>;
