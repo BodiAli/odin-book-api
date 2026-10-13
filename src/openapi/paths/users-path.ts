@@ -17,8 +17,8 @@ import { security } from "../common/security.js";
 import registry from "../registry.js";
 
 registry.registerPath({
-  method: "post",
   path: "/users",
+  method: "post",
   tags: ["users"],
   request: {
     body: {
