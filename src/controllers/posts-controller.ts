@@ -2,7 +2,6 @@ import assert from "node:assert";
 import * as postQueries from "#src/queries/post-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
-import deleteUpload from "#src/services/delete-upload.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
@@ -99,24 +98,19 @@ export async function updatePost(
   assert(req.user, "User not found");
 
   const { postId } = req.params;
-  let imageUrl: string | null = null;
-  let imageId: string | null = null;
 
   try {
     if (req.file) {
       const post = await postQueries.getPost(postId);
-      if (post.imageId) {
-        await deleteUpload(post.imageId);
+      if (post.imageId === null) {
+        await uploadImage(req.file.buffer);
+      } else {
+        await uploadImage(req.file.buffer, post.imageId);
       }
-      const uploadResult = await uploadImage(req.file.buffer);
-      imageUrl = uploadResult.imageUrl;
-      imageId = uploadResult.imageId;
     }
 
     await postQueries.updatePost(req.user.id, postId, {
       ...req.body,
-      imageUrl,
-      imageId,
     });
     res.sendStatus(204);
   } catch (error) {

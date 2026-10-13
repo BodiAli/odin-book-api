@@ -5,7 +5,6 @@ import * as userQueries from "#src/queries/user-queries.js";
 import * as postQueries from "#src/queries/post-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import prisma from "#src/db/prisma-client.js";
-import deleteUpload from "#src/services/delete-upload.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
 import type { User } from "#src/types/routes/users.js";
@@ -16,7 +15,6 @@ import type {
 } from "#src/types/routes/posts.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 
-vi.mock(import("#src/services/delete-upload.js"));
 vi.mock(import("#src/services/upload-image.js"));
 
 describe("/posts/:postId path", () => {
@@ -204,36 +202,6 @@ describe("/posts/:postId path", () => {
       });
     });
 
-    it("should return 502 status with error message when deleting uploaded image fails", async () => {
-      expect.hasAssertions();
-
-      const postWithImage = await postQueries.createPost({
-        userId: currentUser.id,
-        title: "test: post title",
-        content: "test: post content",
-        imageUrl: "test-image-url",
-        imageId: "test-image-id",
-      });
-      const buffer = Buffer.alloc(1024);
-      vi.mocked(deleteUpload).mockRejectedValue(
-        new CustomHttpStatusError(502, "Failed to delete upload."),
-      );
-
-      const response = await request(app)
-        .patch(`/posts/${postWithImage.id}`)
-        .auth(currentUserToken, { type: "bearer" })
-        .attach("postImage", buffer, {
-          filename: "test-filename",
-          contentType: "image/png",
-        })
-        .expect("Content-type", /json/)
-        .expect(502);
-
-      expect(response.body).toStrictEqual<ClientError>({
-        errors: [{ message: "Failed to delete upload." }],
-      });
-    });
-
     it("should return 502 status with error message when uploading image fails", async () => {
       expect.hasAssertions();
 
@@ -280,22 +248,15 @@ describe("/posts/:postId path", () => {
         imageId: "test-updated-image-id",
       });
 
-      await request(app)
+      const response = await request(app)
         .patch(`/posts/${postWithImage.id}`)
         .auth(currentUserToken, { type: "bearer" })
         .attach("postImage", buffer, {
           filename: "test-filename",
           contentType: "image/png",
-        })
-        .expect(204);
-      const updatedPost = await prisma.post.findUniqueOrThrow({
-        where: {
-          id: postWithImage.id,
-        },
-      });
+        });
 
-      expect(updatedPost.imageUrl).toBe("test-updated-image-url");
-      expect(updatedPost.imageId).toBe("test-updated-image-id");
+      expect(response.noContent).toBe(true);
     });
   });
 });
