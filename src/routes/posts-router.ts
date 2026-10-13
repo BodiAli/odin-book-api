@@ -25,6 +25,7 @@ postsRouter
   .route("/:postId")
   .get(postsController.getPost)
   .patch(
+    upload.single("postImage"),
     validateFile(postImage),
     validateBody(updatePostRequestBody),
     postsController.updatePost,
