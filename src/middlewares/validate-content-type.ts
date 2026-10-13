@@ -6,10 +6,16 @@ export default function validateContentType(
   res: Response<ClientError>,
   next: NextFunction,
 ): void {
-  if (req.is("application/json") === false) {
+  if (
+    req.is("application/json") === false &&
+    req.is("multipart/form-data") === false
+  ) {
     res.status(415).json({
       errors: [
-        { message: "Server only supports application/json media type." },
+        {
+          message:
+            "Server only supports application/json or multipart/form-data media types.",
+        },
       ],
     });
     return;
