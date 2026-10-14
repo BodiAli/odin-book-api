@@ -214,5 +214,45 @@ describe("websocket connection", () => {
         }),
       ).rejects.toThrow(new Error("Timed out in waitUntil!"));
     });
+
+    it("should update user lastSeen", async () => {
+      expect.hasAssertions();
+
+      vi.useFakeTimers();
+      const initialDate = new Date("2020-01-01T00:00:00Z");
+      const endDate = new Date("2025-01-01T00:00:00Z");
+      vi.setSystemTime(initialDate);
+      const user = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          isOnline: true,
+        },
+      });
+      const token = issueJwt(user.id);
+      const ws = await utils.connectClient(token);
+      vi.setSystemTime(endDate);
+
+      ws.close();
+      await vi.waitUntil(
+        async () => {
+          const updatedUser = await prisma.user.findUnique({
+            where: { id: user.id },
+          });
+          assert(updatedUser);
+
+          return !updatedUser.isOnline;
+        },
+        // Use interval 0 so that `waitUntil` does not advance fake timers by 50ms
+        { interval: 0 },
+      );
+      const updatedUser = await prisma.user.findUniqueOrThrow({
+        where: { id: user.id },
+      });
+
+      expect(updatedUser.lastSeen).toStrictEqual(endDate);
+
+      vi.useRealTimers();
+    });
   });
 });
