@@ -353,4 +353,34 @@ describe("user queries", () => {
       });
     });
   });
+
+  describe(userQueries.updateLastSeen, () => {
+    it("should update user lastSeen to current time", async () => {
+      expect.hasAssertions();
+
+      const initialDate = new Date("2020-01-01T00:00:00Z");
+      const endDate = new Date("2025-01-01T00:00:00Z");
+      vi.useFakeTimers();
+      vi.setSystemTime(initialDate);
+      const createdUser = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+        },
+      });
+      vi.setSystemTime(endDate);
+
+      await userQueries.updateLastSeen(createdUser.id);
+      const updatedUser = await prisma.user.findUniqueOrThrow({
+        where: {
+          id: createdUser.id,
+        },
+      });
+
+      expect(createdUser.lastSeen).toStrictEqual(initialDate);
+      expect(updatedUser.lastSeen).toStrictEqual(endDate);
+
+      vi.useRealTimers();
+    });
+  });
 });
