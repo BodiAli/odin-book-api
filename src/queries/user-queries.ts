@@ -218,3 +218,14 @@ export async function getPublicUser(userId: string): Promise<PublicUser> {
     lastSeen: user.lastSeen,
   };
 }
+
+export async function updateLastSeen(userId: string): Promise<void> {
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      lastSeen: new Date(),
+    },
+  });
+}
