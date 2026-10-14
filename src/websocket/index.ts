@@ -40,12 +40,8 @@ class WebSocketApp {
       const userClients = this.clients.getUserClients(req.userId);
 
       if (userClients.length === 1) {
-        try {
-          await userQueries.updateIsOnline(req.userId, false);
-        } catch (error) {
-          // TODO: test
-          console.log("err", error);
-        }
+        await userQueries.updateIsOnline(req.userId, false);
+        await userQueries.updateLastSeen(req.userId);
       }
 
       this.clients.removeConnection(req.userId, ws);
