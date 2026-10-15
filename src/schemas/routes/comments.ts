@@ -7,4 +7,5 @@ export const comment: z.ZodType<CommentModel> = z.object({
   userId: z.string(),
   postId: z.string(),
   parentId: z.string(),
+  createdAt: z.date(),
 });
