@@ -124,6 +124,7 @@ describe("comment queries", () => {
         parentId: null,
         userId: user.id,
         postId: post.id,
+        createdAt: expect.any(Date) as Date,
       });
     });
   });
@@ -218,5 +219,9 @@ describe("comment queries", () => {
 
       expect(reply.userId).toBe(userB.id);
     });
+  });
+
+  describe(commentQueries.getComments, () => {
+    it.todo("todo");
   });
 });
