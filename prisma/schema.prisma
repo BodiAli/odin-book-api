@@ -77,14 +77,14 @@ model Post {
 }
 
 model Comment {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   content  String
   postId   String
-  parentId String
+  parentId String?
   userId   String
 
   post    Post      @relation(references: [id], fields: [postId])
-  parent  Comment   @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies Comment[] @relation("ParentReplies")
   user    User      @relation(references: [id], fields: [userId])
 }
