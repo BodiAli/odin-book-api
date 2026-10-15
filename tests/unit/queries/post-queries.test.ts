@@ -70,7 +70,7 @@ describe("post queries", () => {
   });
 
   describe(postQueries.getPost, () => {
-    it("throw an error when the post is not found", async () => {
+    it("should throw an error when the post is not found", async () => {
       expect.hasAssertions();
 
       await expect(postQueries.getPost("non-existing-id")).rejects.toThrow(
