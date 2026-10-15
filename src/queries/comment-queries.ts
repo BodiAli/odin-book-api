@@ -1,7 +1,7 @@
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
-import type { Comment } from "#src/types/routes/comments.js";
+import type { Comment, Comments } from "#src/types/routes/comments.js";
 
 export async function createComment({
   userId,
@@ -96,3 +96,8 @@ export async function createReply({
     id: createdReply.id,
   };
 }
+
+export async function getComments(
+  userId: string,
+  postId: string,
+): Promise<Comments> {}
