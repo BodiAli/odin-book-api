@@ -564,5 +564,118 @@ describe("comment queries", () => {
 
       expect(comments.metadata.nextCursorId).toBe(nextCursorComment.id);
     });
+
+    it("should return comment replies when type is 'replies'", async () => {
+      expect.hasAssertions();
+
+      const parentComment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+      const parentReply1 = await commentQueries.createReply({
+        content: "test: parentReply1 content",
+        parentId: parentComment.id,
+        userId: user.id,
+        postId: post.id,
+      });
+      const parentReply2 = await commentQueries.createReply({
+        content: "test: parentReply2 content",
+        parentId: parentComment.id,
+        userId: user.id,
+        postId: post.id,
+      });
+      await commentQueries.createReply({
+        content: "test: childReply content",
+        parentId: parentReply1.id,
+        userId: user.id,
+        postId: post.id,
+      });
+
+      const { comments: replies } = await commentQueries.getCommentsInPost({
+        type: "replies",
+        parentCommentId: parentComment.id,
+      });
+
+      expect(replies).toStrictEqual<Comments>([
+        {
+          content: "test: parentReply2 content",
+          createdAt: expect.any(Date) as Date,
+          hasReplies: false,
+          id: parentReply2.id,
+          parentId: parentComment.id,
+          postId: post.id,
+          userId: user.id,
+        },
+        {
+          content: "test: parentReply1 content",
+          createdAt: expect.any(Date) as Date,
+          hasReplies: true,
+          id: parentReply1.id,
+          parentId: parentComment.id,
+          postId: post.id,
+          userId: user.id,
+        },
+      ]);
+    });
+
+    it("should return nextCursorId as null when there are no more replies to fetch", async () => {
+      expect.hasAssertions();
+
+      const parentComment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+      await commentQueries.createReply({
+        content: "test: reply content",
+        parentId: parentComment.id,
+        userId: user.id,
+        postId: post.id,
+      });
+
+      const { metadata } = await commentQueries.getCommentsInPost({
+        type: "replies",
+        parentCommentId: parentComment.id,
+      });
+
+      expect(metadata.nextCursorId).toBeNull();
+    });
+
+    it("should return nextCursorId pointing to next reply cursor when there are more replies to fetch", async () => {
+      expect.hasAssertions();
+
+      const parentComment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+      const baseDate = new Date("2020-01-01T00:00:00Z");
+      await Promise.all(
+        Array.from({ length: 11 }, (_, i) => {
+          return prisma.comment.create({
+            data: {
+              content: `test: reply content ${String(i)}`,
+              parentId: parentComment.id,
+              userId: user.id,
+              postId: post.id,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+
+      const { metadata } = await commentQueries.getCommentsInPost({
+        type: "replies",
+        parentCommentId: parentComment.id,
+      });
+      const cursor = await prisma.comment.findFirstOrThrow({
+        where: {
+          content: "test: reply content 1",
+        },
+      });
+
+      expect(metadata.nextCursorId).toBe(cursor.id);
+    });
   });
 });
