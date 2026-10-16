@@ -120,7 +120,7 @@ async function nextCursorId(
     },
   });
 
-  return comment === null ? null : comment.id;
+  return comment === null ? null : nextComment.id;
 }
 
 export async function getCommentsInPost(
@@ -163,8 +163,8 @@ export async function getCommentsInPost(
     }),
   });
 
-  const lastComment = comments.at(-1);
-  const nextCursorIdResult = await nextCursorId(postId, lastComment);
+  const nextComment = comments.at(-1);
+  const nextCursorIdResult = await nextCursorId(postId, nextComment);
 
   const result = comments.map((value) => {
     const { _count, ...comment } = value;
