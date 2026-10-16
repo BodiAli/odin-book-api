@@ -1,6 +1,7 @@
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
+import type { CommentModel } from "#src/generated/prisma/models.js";
 import type { Comment, Comments } from "#src/types/routes/comments.js";
 
 export async function createComment({
@@ -97,7 +98,85 @@ export async function createReply({
   };
 }
 
-export async function getComments(
-  userId: string,
+async function nextCursorId(
   postId: string,
-): Promise<Comments> {}
+  nextComment: CommentModel | undefined,
+): Promise<string | null> {
+  if (!nextComment) {
+    return null;
+  }
+
+  const comment = await prisma.comment.findFirst({
+    where: {
+      postId,
+      parentId: null,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip: 1,
+    cursor: {
+      id: nextComment.id,
+    },
+  });
+
+  return comment === null ? null : comment.id;
+}
+
+export async function getCommentsInPost(
+  postId: string,
+  lastCursorId?: string,
+): Promise<{
+  comments: Comments;
+  metadata: {
+    nextCursorId: string | null;
+  };
+}> {
+  if (lastCursorId) {
+    const cursor = await prisma.comment.findUnique({
+      where: {
+        id: lastCursorId,
+      },
+    });
+    if (cursor === null) {
+      throw new CustomHttpStatusError(404, "Cursor not found.");
+    }
+  }
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      postId,
+      parentId: null,
+    },
+    include: {
+      _count: { select: { replies: true } },
+    },
+    take: 10,
+    orderBy: {
+      createdAt: "desc",
+    },
+    ...(lastCursorId && { skip: 1 }),
+    ...(lastCursorId && {
+      cursor: {
+        id: lastCursorId,
+      },
+    }),
+  });
+
+  const lastComment = comments.at(-1);
+  const nextCursorIdResult = await nextCursorId(postId, lastComment);
+
+  const result = comments.map((value) => {
+    const { _count, ...comment } = value;
+    return {
+      ...comment,
+      hasReplies: _count.replies > 0,
+    };
+  });
+  return {
+    comments: result,
+    metadata: {
+      nextCursorId: nextCursorIdResult,
+    },
+  };
+}
