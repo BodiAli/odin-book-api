@@ -3,6 +3,7 @@ import * as usersController from "#src/controllers/users-controller.js";
 import validateBody from "#src/middlewares/validate-body.js";
 import authenticateJwt from "#src/middlewares/authenticate-jwt.js";
 import { createUserRequestBody } from "#src/schemas/routes/users.js";
+import unauthorizeGuest from "#src/middlewares/unauthorize-guest.js";
 
 const usersRouter = Router();
 
@@ -17,9 +18,9 @@ usersRouter.get("/me", authenticateJwt, usersController.getCurrentUser);
 usersRouter
   .route("/:userId/followers")
   .all(authenticateJwt)
-  .post(usersController.createFollowerForTargetUser)
+  .post(unauthorizeGuest, usersController.createFollowerForTargetUser)
   .get(usersController.getFollowers)
-  .delete(usersController.deleteFollowerOfTargetUser);
+  .delete(unauthorizeGuest, usersController.deleteFollowerOfTargetUser);
 
 usersRouter.get(
   "/:userId/followings",
