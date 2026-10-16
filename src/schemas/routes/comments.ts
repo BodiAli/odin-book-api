@@ -12,8 +12,6 @@ export const comment = z.object({
 
 export const comments = z.array(
   comment.extend({
-    get replies() {
-      return comments;
-    },
+    hasReplies: z.boolean(),
   }),
 );
