@@ -433,5 +433,45 @@ describe("comment queries", () => {
         commentQueries.getCommentsInPost(post.id, "non-existing-id"),
       ).rejects.toThrow(new CustomHttpStatusError(404, "Cursor not found."));
     });
+
+    it("should return nextCursorId as null when there are no more comments to fetch", async () => {
+      expect.hasAssertions();
+
+      await commentQueries.createComment({
+        content: "test: comment content",
+        userId: user.id,
+        postId: post.id,
+      });
+      const comments = await commentQueries.getCommentsInPost(post.id);
+
+      expect(comments.metadata.nextCursorId).toBeNull();
+    });
+
+    it("should return nextCursorId pointing to the next cursor comment when there are more comments to fetch", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2020-01-01T00:00:00Z");
+      await Promise.all(
+        Array.from({ length: 11 }, (_, i) => {
+          return prisma.comment.create({
+            data: {
+              content: `test: comment content ${String(i)}`,
+              userId: user.id,
+              postId: post.id,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+
+      const comments = await commentQueries.getCommentsInPost(post.id);
+      const nextCursorComment = await prisma.comment.findFirstOrThrow({
+        where: {
+          content: "test: comment content 1",
+        },
+      });
+
+      expect(comments.metadata.nextCursorId).toBe(nextCursorComment.id);
+    });
   });
 });
