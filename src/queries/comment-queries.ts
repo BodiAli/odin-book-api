@@ -222,3 +222,43 @@ export async function getCommentsInPost(param: CommentsQuery): Promise<{
     },
   };
 }
+
+export async function updateComment(
+  commentId: string,
+  content: string,
+): Promise<void> {
+  try {
+    await prisma.comment.update({
+      where: {
+        id: commentId,
+      },
+      data: {
+        content,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new CustomHttpStatusError(404, "Comment not found.");
+    }
+  }
+}
+
+export async function deleteComment(commentId: string): Promise<void> {
+  try {
+    await prisma.comment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new CustomHttpStatusError(404, "Comment not found.");
+    }
+  }
+}

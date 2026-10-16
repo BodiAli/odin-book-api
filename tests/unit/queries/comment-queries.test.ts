@@ -678,4 +678,65 @@ describe("comment queries", () => {
       expect(metadata.nextCursorId).toBe(cursor.id);
     });
   });
+
+  describe(commentQueries.updateComment, () => {
+    it("should throw error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        commentQueries.updateComment(
+          "non-existing-id",
+          "test: updated content",
+        ),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
+
+    it("should update comment", async () => {
+      expect.hasAssertions();
+
+      const comment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+
+      await commentQueries.updateComment(comment.id, "test: updated comment");
+      const updatedComment = await prisma.comment.findUniqueOrThrow({
+        where: {
+          id: comment.id,
+        },
+      });
+
+      expect(updatedComment.content).toBe("test: updated comment");
+    });
+  });
+
+  describe(commentQueries.deleteComment, () => {
+    it("should throw error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        commentQueries.deleteComment("non-existing-id"),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
+
+    it("should delete comment", async () => {
+      expect.hasAssertions();
+
+      const comment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+
+      await commentQueries.deleteComment(comment.id);
+      const deletedComment = await prisma.comment.findUnique({
+        where: {
+          id: comment.id,
+        },
+      });
+
+      expect(deletedComment).toBeNull();
+    });
+  });
 });
