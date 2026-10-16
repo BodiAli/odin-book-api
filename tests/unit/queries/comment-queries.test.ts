@@ -237,7 +237,10 @@ describe("comment queries", () => {
         }),
       );
 
-      const { comments } = await commentQueries.getCommentsInPost(post.id);
+      const { comments } = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
 
       expect(comments).toHaveLength(10);
     });
@@ -251,7 +254,10 @@ describe("comment queries", () => {
         postId: post.id,
       });
 
-      const { comments } = await commentQueries.getCommentsInPost(post.id);
+      const { comments } = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
 
       expect(comments).toStrictEqual<Comments>([
         {
@@ -281,7 +287,10 @@ describe("comment queries", () => {
         parentId: parentComment.id,
       });
 
-      const { comments } = await commentQueries.getCommentsInPost(post.id);
+      const { comments } = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
 
       expect(comments).toStrictEqual<Comments>([
         {
@@ -313,7 +322,10 @@ describe("comment queries", () => {
         }),
       );
 
-      const { comments } = await commentQueries.getCommentsInPost(post.id);
+      const { comments } = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
 
       expect(comments).toStrictEqual<Comments>([
         {
@@ -366,7 +378,10 @@ describe("comment queries", () => {
         userId: user.id,
       });
 
-      const { comments } = await commentQueries.getCommentsInPost(post.id);
+      const { comments } = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
 
       expect(comments).toStrictEqual<Comments>([
         {
@@ -413,10 +428,11 @@ describe("comment queries", () => {
         },
       });
 
-      const comments = await commentQueries.getCommentsInPost(
-        post.id,
-        cursorComment.id,
-      );
+      const comments = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+        lastCursorId: cursorComment.id,
+      });
       const firstComment = comments.comments[0];
       assert(firstComment);
       const lastComment = comments.comments[9];
@@ -430,7 +446,11 @@ describe("comment queries", () => {
       expect.hasAssertions();
 
       await expect(
-        commentQueries.getCommentsInPost(post.id, "non-existing-id"),
+        commentQueries.getCommentsInPost({
+          type: "comments",
+          postId: post.id,
+          lastCursorId: "non-existing-id",
+        }),
       ).rejects.toThrow(new CustomHttpStatusError(404, "Cursor not found."));
     });
 
@@ -442,7 +462,11 @@ describe("comment queries", () => {
         userId: user.id,
         postId: post.id,
       });
-      const comments = await commentQueries.getCommentsInPost(post.id);
+
+      const comments = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
 
       expect(comments.metadata.nextCursorId).toBeNull();
     });
@@ -464,7 +488,74 @@ describe("comment queries", () => {
         }),
       );
 
-      const comments = await commentQueries.getCommentsInPost(post.id);
+      const comments = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+      });
+      const nextCursorComment = await prisma.comment.findFirstOrThrow({
+        where: {
+          content: "test: comment content 1",
+        },
+      });
+
+      expect(comments.metadata.nextCursorId).toBe(nextCursorComment.id);
+    });
+
+    it("should return nextCursorId as null when there are no more comments to fetch while next cursor is passed", async () => {
+      expect.hasAssertions();
+
+      await commentQueries.createComment({
+        content: "test: comment content 1",
+        userId: user.id,
+        postId: post.id,
+      });
+      const lastCursor = await commentQueries.createComment({
+        content: "test: comment content 2",
+        userId: user.id,
+        postId: post.id,
+      });
+      await commentQueries.createComment({
+        content: "test: comment content 3",
+        userId: user.id,
+        postId: post.id,
+      });
+
+      const comments = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+        lastCursorId: lastCursor.id,
+      });
+
+      expect(comments.metadata.nextCursorId).toBeNull();
+    });
+
+    it("should return nextCursorId pointing to the next cursor comment when there are more comments to fetch while next cursor is passed", async () => {
+      expect.hasAssertions();
+
+      const baseDate = new Date("2020-01-01T00:00:00Z");
+      await Promise.all(
+        Array.from({ length: 12 }, (_, i) => {
+          return prisma.comment.create({
+            data: {
+              content: `test: comment content ${String(i)}`,
+              userId: user.id,
+              postId: post.id,
+              createdAt: new Date(baseDate.getTime() + i),
+            },
+          });
+        }),
+      );
+      const lastCursor = await prisma.comment.findFirstOrThrow({
+        where: {
+          content: "test: comment content 11",
+        },
+      });
+
+      const comments = await commentQueries.getCommentsInPost({
+        type: "comments",
+        postId: post.id,
+        lastCursorId: lastCursor.id,
+      });
       const nextCursorComment = await prisma.comment.findFirstOrThrow({
         where: {
           content: "test: comment content 1",
