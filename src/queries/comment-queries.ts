@@ -98,40 +98,65 @@ export async function createReply({
   };
 }
 
-async function nextCursorId(
-  postId: string,
-  nextComment: CommentModel | undefined,
-): Promise<string | null> {
-  if (!nextComment) {
+type GetCursorId =
+  | {
+      type: "comments";
+      postId: string;
+      nextCursor?: CommentModel | undefined;
+    }
+  | {
+      type: "replies";
+      parentCommentId: string;
+      nextCursor?: CommentModel | undefined;
+    };
+
+async function nextCursorId(param: GetCursorId): Promise<string | null> {
+  if (!param.nextCursor) {
     return null;
   }
 
-  const comment = await prisma.comment.findFirst({
-    where: {
-      postId,
-      parentId: null,
-    },
+  const where =
+    param.type === "comments"
+      ? {
+          postId: param.postId,
+          parentId: null,
+        }
+      : {
+          parentId: param.parentCommentId,
+        };
+  const nextComment = await prisma.comment.findFirst({
+    where,
     orderBy: {
       createdAt: "desc",
     },
     skip: 1,
     cursor: {
-      id: nextComment.id,
+      id: param.nextCursor.id,
     },
   });
 
-  return comment === null ? null : nextComment.id;
+  return nextComment === null ? null : param.nextCursor.id;
 }
 
-export async function getCommentsInPost(
-  postId: string,
-  lastCursorId?: string,
-): Promise<{
+type CommentsQuery =
+  | {
+      type: "comments";
+      postId: string;
+      lastCursorId?: string;
+    }
+  | {
+      type: "replies";
+      parentCommentId: string;
+      lastCursorId?: string;
+    };
+
+export async function getCommentsInPost(param: CommentsQuery): Promise<{
   comments: Comments;
   metadata: {
     nextCursorId: string | null;
   };
 }> {
+  const { lastCursorId } = param;
   if (lastCursorId) {
     const cursor = await prisma.comment.findUnique({
       where: {
@@ -143,11 +168,16 @@ export async function getCommentsInPost(
     }
   }
 
+  const where =
+    param.type === "comments"
+      ? {
+          postId: param.postId,
+          parentId: null,
+        }
+      : { parentId: param.parentCommentId };
+
   const comments = await prisma.comment.findMany({
-    where: {
-      postId,
-      parentId: null,
-    },
+    where,
     include: {
       _count: { select: { replies: true } },
     },
@@ -163,8 +193,20 @@ export async function getCommentsInPost(
     }),
   });
 
-  const nextComment = comments.at(-1);
-  const nextCursorIdResult = await nextCursorId(postId, nextComment);
+  const nextCursor = comments.at(-1);
+  const cursorArgs: GetCursorId =
+    param.type === "comments"
+      ? {
+          type: "comments",
+          nextCursor: nextCursor,
+          postId: param.postId,
+        }
+      : {
+          type: "replies",
+          nextCursor: nextCursor,
+          parentCommentId: param.parentCommentId,
+        };
+  const nextCursorIdResult = await nextCursorId(cursorArgs);
 
   const result = comments.map((value) => {
     const { _count, ...comment } = value;
