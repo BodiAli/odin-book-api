@@ -2,7 +2,7 @@ import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import type { CommentModel } from "#src/generated/prisma/models.js";
-import type { Comment, Comments } from "#src/types/routes/comments.js";
+import type { Comments } from "#src/types/routes/comments.js";
 
 export async function createComment({
   userId,
@@ -30,26 +30,6 @@ export async function createComment({
       error.code === "P2003"
     ) {
       throw new CustomHttpStatusError(404, "Post not found.");
-    }
-    throw error;
-  }
-}
-
-export async function getComment(id: string): Promise<Comment> {
-  try {
-    const comment = await prisma.comment.findUniqueOrThrow({
-      where: {
-        id,
-      },
-    });
-
-    return comment;
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2025"
-    ) {
-      throw new CustomHttpStatusError(404, "Comment not found.");
     }
     throw error;
   }

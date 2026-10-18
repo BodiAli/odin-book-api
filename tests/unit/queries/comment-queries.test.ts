@@ -2,7 +2,7 @@ import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
 import type { PostModel, UserModel } from "#src/generated/prisma/models.js";
-import type { Comment, Comments } from "#src/types/routes/comments.js";
+import type { Comments } from "#src/types/routes/comments.js";
 
 describe("comment queries", () => {
   let user: Omit<UserModel, "password">;
@@ -93,39 +93,6 @@ describe("comment queries", () => {
       });
 
       expect(comment.id).toBe(id);
-    });
-  });
-
-  describe(commentQueries.getComment, () => {
-    it("should throw an error when comment is not found", async () => {
-      expect.hasAssertions();
-
-      await expect(
-        commentQueries.getComment("non-existing-id"),
-      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
-    });
-
-    it("should return comment", async () => {
-      expect.hasAssertions();
-
-      const { id } = await prisma.comment.create({
-        data: {
-          content: "test: comment content",
-          postId: post.id,
-          userId: user.id,
-        },
-      });
-
-      const comment = await commentQueries.getComment(id);
-
-      expect(comment).toStrictEqual<Comment>({
-        id: id,
-        content: "test: comment content",
-        parentId: null,
-        userId: user.id,
-        postId: post.id,
-        createdAt: expect.any(Date) as Date,
-      });
     });
   });
 
