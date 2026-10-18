@@ -35,4 +35,6 @@ postsRouter
   )
   .delete(unauthorizeGuest, postsController.deletePost);
 
+postsRouter.get("/:postId/comments", postsController.getPostComments);
+
 export default postsRouter;
