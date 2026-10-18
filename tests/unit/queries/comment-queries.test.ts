@@ -677,6 +677,28 @@ describe("comment queries", () => {
 
       expect(metadata.nextCursorId).toBe(cursor.id);
     });
+
+    it("should throw an error when post is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        commentQueries.getCommentsInPost({
+          type: "comments",
+          postId: "non-existing-id",
+        }),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Post not found."));
+    });
+
+    it("should throw an error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        commentQueries.getCommentsInPost({
+          type: "replies",
+          parentCommentId: "non-existing-id",
+        }),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
   });
 
   describe(commentQueries.updateComment, () => {

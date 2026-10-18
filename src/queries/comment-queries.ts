@@ -156,6 +156,26 @@ export async function getCommentsInPost(param: CommentsQuery): Promise<{
     nextCursorId: string | null;
   };
 }> {
+  if (param.type === "comments") {
+    const post = await prisma.post.findUnique({
+      where: {
+        id: param.postId,
+      },
+    });
+    if (post === null) {
+      throw new CustomHttpStatusError(404, "Post not found.");
+    }
+  } else {
+    const comment = await prisma.comment.findUnique({
+      where: {
+        id: param.parentCommentId,
+      },
+    });
+    if (comment === null) {
+      throw new CustomHttpStatusError(404, "Comment not found.");
+    }
+  }
+
   const { lastCursorId } = param;
   if (lastCursorId) {
     const cursor = await prisma.comment.findUnique({
