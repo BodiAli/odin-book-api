@@ -1,6 +1,7 @@
 import express from "express";
 import request from "supertest";
 import resourceNotFound from "#src/errors/resource-not-found.js";
+import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("resourceNotFound middleware", () => {
   const app = express();
@@ -8,10 +9,6 @@ describe("resourceNotFound middleware", () => {
   beforeAll(() => {
     app.use(resourceNotFound);
   });
-
-  interface NotFoundError {
-    error: string;
-  }
 
   it("should return 404 status with error message when requesting an unknown resource", async () => {
     expect.hasAssertions();
@@ -21,8 +18,8 @@ describe("resourceNotFound middleware", () => {
       .expect("Content-type", /json/)
       .expect(404);
 
-    expect(response.body).toStrictEqual<NotFoundError>({
-      error: "Resource not found.",
+    expect(response.body).toStrictEqual<ClientError>({
+      errors: [{ message: "Resource not found." }],
     });
   });
 });
