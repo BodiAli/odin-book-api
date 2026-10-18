@@ -19,6 +19,7 @@ export default function authenticateJwt(
         }
 
         if (!user) {
+          res.setHeader("WWW-Authenticate", 'Bearer realm="API"');
           res.status(401).json({
             errors: [{ message: "Access token is missing or invalid." }],
           });

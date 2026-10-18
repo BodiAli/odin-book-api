@@ -28,7 +28,7 @@ describe("validate JWT middleware", () => {
     });
   });
 
-  it("should pass the request to next request handler when user authorized", async () => {
+  it("should pass the request to next request handler when user is authorized", async () => {
     expect.hasAssertions();
 
     const currentUser = await prisma.user.create({
@@ -46,5 +46,16 @@ describe("validate JWT middleware", () => {
       .expect(200);
 
     expect(response.body).toBe("Passed");
+  });
+
+  it("should return WWW-Authenticate header when user is unauthorized", async () => {
+    expect.hasAssertions();
+
+    const response = await request(app)
+      .get("/test")
+      .expect("Content-type", /json/)
+      .expect(401);
+
+    expect(response.headers["www-authenticate"]).toBe('Bearer realm="API"');
   });
 });

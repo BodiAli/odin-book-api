@@ -116,5 +116,23 @@ describe("/tokens/local path", () => {
         errors: [{ message: "Incorrect email or password." }],
       });
     });
+
+    it("should return WWW-Authenticate header with LoginForm authentication scheme", async () => {
+      expect.hasAssertions();
+
+      const requestBody: LogInRequestBody = {
+        password: "test: password",
+        email: "test-email@test.com",
+      };
+
+      const response = await request(app)
+        .post("/tokens/local")
+        .type("json")
+        .send(requestBody)
+        .expect("Content-type", /json/)
+        .expect(401);
+
+      expect(response.headers["www-authenticate"]).toBe("LoginForm");
+    });
   });
 });

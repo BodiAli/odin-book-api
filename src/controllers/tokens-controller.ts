@@ -30,6 +30,7 @@ export function authenticateWithLocal(
         }
 
         if (!user) {
+          res.setHeader("WWW-Authenticate", "LoginForm");
           res.status(401).json({ errors: [{ message: info.message }] });
           return;
         }
