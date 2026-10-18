@@ -1,11 +1,13 @@
 import assert from "node:assert";
 import * as postQueries from "#src/queries/post-queries.js";
+import * as commentQueries from "#src/queries/comment-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
 import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
   GetIndexPostsResponseBody,
+  GetPostCommentsResponse,
   GetPostResponseBody,
   UpdatePostRequestBody,
 } from "#src/types/routes/posts.js";
@@ -136,6 +138,39 @@ export async function deletePost(
     await postQueries.deletePost(req.user.id, postId);
 
     res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function getPostComments(
+  req: Request<
+    { postId: string },
+    unknown,
+    unknown,
+    { last_cursor_id?: string }
+  >,
+  res: Response<GetPostCommentsResponse | ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { postId } = req.params;
+
+  try {
+    const result = await commentQueries.getCommentsInPost({
+      type: "comments",
+      postId,
+      ...(req.query.last_cursor_id && {
+        lastCursorId: req.query.last_cursor_id,
+      }),
+    });
+
+    res.json(result);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
