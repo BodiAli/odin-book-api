@@ -1,5 +1,6 @@
 import z from "zod";
 import { publicUser } from "./users.js";
+import { comments } from "./comments.js";
 import type { PostModel } from "#src/generated/prisma/models.js";
 import type { PublicUser } from "#src/types/routes/users.js";
 
@@ -52,4 +53,11 @@ export const getPostResponseBody = z.object({
 export const updatePostRequestBody = z.object({
   title: createPostRequestBody.shape.title.exactOptional(),
   content: createPostRequestBody.shape.title.exactOptional(),
+});
+
+export const getPostCommentsResponse = z.object({
+  comments,
+  metadata: z.object({
+    nextCursorId: z.string().nullable(),
+  }),
 });
