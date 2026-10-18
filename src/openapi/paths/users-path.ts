@@ -60,6 +60,7 @@ registry.registerPath({
 registry.registerPath({
   path: "/users/me",
   method: "get",
+  tags: ["users"],
   security,
   responses: {
     200: {

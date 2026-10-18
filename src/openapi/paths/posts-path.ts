@@ -4,6 +4,7 @@ import {
   createPostRequestBody,
   createPostResponseBody,
   getIndexPostsResponseBody,
+  getPostCommentsResponse,
   post,
   updatePostRequestBody,
 } from "#src/schemas/routes/posts.js";
@@ -153,6 +154,7 @@ registry.registerPath({
 registry.registerPath({
   path: "/posts/{postId}",
   method: "patch",
+  tags: ["posts"],
   description: "Update post",
   parameters: [
     {
@@ -189,6 +191,15 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    404: {
+      summary: "Not found",
+      description: "Post not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     415: invalidContentTypeResponse,
     500: serverErrorResponse,
   },
@@ -197,6 +208,7 @@ registry.registerPath({
 registry.registerPath({
   path: "/posts/{postId}",
   method: "delete",
+  tags: ["posts"],
   description: "Delete post",
   security,
   responses: {
@@ -205,6 +217,53 @@ registry.registerPath({
       description: "Post deleted successfully.",
     },
     401: unauthorizedResponse,
+    404: {
+      summary: "Not found",
+      description: "Post not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}/comments",
+  method: "get",
+  tags: ["posts"],
+  description: "Get post comments",
+  security,
+  request: {
+    query: z.object({
+      last_cursor_id: z.string().optional(),
+    }),
+    params: z.object({
+      postId: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      summary: "OK",
+      description: "Post comments retrieved successfully.",
+      content: {
+        "application/json": {
+          schema: getPostCommentsResponse,
+        },
+      },
+    },
+    401: unauthorizedResponse,
+    404: {
+      summary: "Not found",
+      description: "Post not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     500: serverErrorResponse,
   },
 });
