@@ -47,6 +47,17 @@ vi.mock(import("#src/routes/posts-router.js"), () => {
   };
 });
 
+vi.mock(import("#src/routes/comments-router.js"), () => {
+  const router = express.Router();
+  router.get("/", (_req, res) => {
+    res.json({ mocked: true });
+  });
+
+  return {
+    default: router,
+  };
+});
+
 describe("index-router mount endpoints", () => {
   const app = express();
 
@@ -186,6 +197,37 @@ describe("index-router mount endpoints", () => {
 
       const response = await request(app)
         .get("/posts")
+        .auth(currentUserToken, { type: "bearer" })
+        .expect(200);
+
+      expect(response.body).toStrictEqual<Mocked>({
+        mocked: true,
+      });
+    });
+  });
+
+  describe("comments-router", () => {
+    it("should authenticate JWT", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app).get("/comments");
+
+      expect(response.unauthorized).toBe(true);
+    });
+
+    it("should mount commentsRouter on /comments path", async () => {
+      expect.hasAssertions();
+
+      const currentUser = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+        },
+      });
+      const currentUserToken = issueJwt(currentUser.id);
+
+      const response = await request(app)
+        .get("/comments")
         .auth(currentUserToken, { type: "bearer" })
         .expect(200);
 
