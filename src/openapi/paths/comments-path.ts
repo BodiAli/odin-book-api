@@ -1,7 +1,7 @@
 import z from "zod";
 import {
   createCommentRequest,
-  getCommentReliesResponse,
+  getCommentRepliesResponse,
   updateCommentRequest,
 } from "#src/schemas/routes/comments.js";
 import { clientError } from "#src/schemas/errors/errors.js";
@@ -102,7 +102,7 @@ registry.registerPath({
       description: "Comment replies retrieved successfully.",
       content: {
         "application/json": {
-          schema: getCommentReliesResponse,
+          schema: getCommentRepliesResponse,
         },
       },
     },
