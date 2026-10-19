@@ -243,6 +243,7 @@ export async function updateComment(
     ) {
       throw new CustomHttpStatusError(404, "Comment not found.");
     }
+    throw error;
   }
 }
 
@@ -260,5 +261,6 @@ export async function deleteComment(commentId: string): Promise<void> {
     ) {
       throw new CustomHttpStatusError(404, "Comment not found.");
     }
+    throw error;
   }
 }
