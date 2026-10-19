@@ -6,6 +6,7 @@ import tokensRouter from "./tokens-router.js";
 import usersRouter from "./users-router.js";
 import notificationsRouter from "./notifications-router.js";
 import postsRouter from "./posts-router.js";
+import commentsRouter from "./comments-router.js";
 import "#src/config/passport.js";
 
 const indexRouter = express.Router();
@@ -17,6 +18,7 @@ indexRouter.use("/tokens", tokensRouter);
 indexRouter.use("/users", usersRouter);
 indexRouter.use("/notifications", authenticateJwt, notificationsRouter);
 indexRouter.use("/posts", authenticateJwt, postsRouter);
+indexRouter.use("/comments", authenticateJwt, commentsRouter);
 
 indexRouter.use(jsonErrorHandler);
 
