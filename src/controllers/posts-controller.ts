@@ -199,7 +199,7 @@ export async function createPostComment(
       content,
     });
 
-    res.json({ id });
+    res.status(201).json({ id });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });

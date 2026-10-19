@@ -228,7 +228,7 @@ describe("/posts/{postId}/comments path", () => {
         .auth(currentUserToken, { type: "bearer" })
         .send({ content: "test: comment content" })
         .expect("Content-type", /json/)
-        .expect(200);
+        .expect(201);
 
       expect(response.body).toStrictEqual<CreatePostCommentResponse>({
         id: expect.any(String) as string,
