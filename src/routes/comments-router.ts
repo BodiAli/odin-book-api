@@ -1,8 +1,13 @@
 import { Router } from "express";
 import * as commentsController from "#src/controllers/comments-controller.js";
+import validateBody from "#src/middlewares/validate-body.js";
+import { updateCommentRequest } from "#src/schemas/routes/comments.js";
 
 const commentsRouter = Router();
 
-commentsRouter.patch("/:commentId", commentsController.updateComment);
+commentsRouter
+  .route("/:commentId")
+  .patch(validateBody(updateCommentRequest), commentsController.updateComment)
+  .delete(commentsController.deleteComment);
 
 export default commentsRouter;
