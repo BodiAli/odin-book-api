@@ -1,7 +1,6 @@
 import { Router } from "express";
 import validateBody from "#src/middlewares/validate-body.js";
 import {
-  createPostCommentRequest,
   createPostRequestBody,
   postImage,
   updatePostRequestBody,
@@ -10,6 +9,7 @@ import * as postsController from "#src/controllers/posts-controller.js";
 import upload from "#src/config/multer.js";
 import validateFile from "#src/middlewares/validate-file.js";
 import unauthorizeGuest from "#src/middlewares/unauthorize-guest.js";
+import { createCommentRequest } from "#src/schemas/routes/comments.js";
 
 const postsRouter = Router();
 
@@ -39,7 +39,7 @@ postsRouter
 postsRouter.get("/:postId/comments", postsController.getPostComments);
 postsRouter.post(
   "/:postId/comments",
-  validateBody(createPostCommentRequest),
+  validateBody(createCommentRequest),
   postsController.createPostComment,
 );
 
