@@ -1,6 +1,6 @@
 import z from "zod";
 import {
-  createCommentRequest,
+  createReplyRequest,
   getCommentRepliesResponse,
   updateCommentRequest,
 } from "#src/schemas/routes/comments.js";
@@ -129,7 +129,7 @@ registry.registerPath({
     body: {
       content: {
         "application/json": {
-          schema: createCommentRequest,
+          schema: createReplyRequest,
         },
       },
     },
