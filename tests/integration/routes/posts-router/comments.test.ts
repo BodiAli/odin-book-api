@@ -7,7 +7,11 @@ import indexRouter from "#src/routes/index-router.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import prisma from "#src/db/prisma-client.js";
 import type { User } from "#src/types/routes/users.js";
-import type { GetPostCommentsResponse, Post } from "#src/types/routes/posts.js";
+import type {
+  CreatePostCommentResponse,
+  GetPostCommentsResponse,
+  Post,
+} from "#src/types/routes/posts.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { Comments } from "#src/types/routes/comments.js";
 
@@ -182,6 +186,53 @@ describe("/posts/{postId}/comments path", () => {
       expect(response2LastComment.content).toBe("test: comment content 10");
       expect(response3LastComment.content).toBe("test: comment content 0");
       expect(response3.metadata.nextCursorId).toBeNull();
+    });
+  });
+
+  describe("create comment for a post POST", () => {
+    it("should return a 404 status with error message when post is not found", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post("/posts/non-existing-id/comments")
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: comment content" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Post not found." }],
+      });
+    });
+
+    it("should return a 400 status with error message when given invalid inputs", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "" })
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Comment content cannot be empty." }],
+      });
+    });
+
+    it("should 201 status with comment id", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: comment content" })
+        .expect("Content-type", /json/)
+        .expect(200);
+
+      expect(response.body).toStrictEqual<CreatePostCommentResponse>({
+        id: expect.any(String) as string,
+      });
     });
   });
 });
