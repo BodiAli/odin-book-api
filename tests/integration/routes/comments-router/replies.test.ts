@@ -11,6 +11,7 @@ import type { ClientError } from "#src/types/errors/errors.js";
 import type { Post } from "#src/types/routes/posts.js";
 import type {
   Comments,
+  CreateReplyResponse,
   GetCommentRepliesResponse,
 } from "#src/types/routes/comments.js";
 
@@ -197,6 +198,71 @@ describe("/comments/{commentId}/replies path", () => {
       expect(response2LastComment.content).toBe("test: reply content 10");
       expect(response3LastComment.content).toBe("test: reply content 0");
       expect(response3.metadata.nextCursorId).toBeNull();
+    });
+  });
+
+  describe("create reply POST", () => {
+    it("should return 404 status with error message when comment is not found", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post("/comments/non-existing-id/replies")
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: reply content", postId: post.id })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Parent comment not found." }],
+      });
+    });
+
+    it("should return 404 status with error message when post is not found", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/comments/${commentId}/replies`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: reply content", postId: "non-existing-id" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Post not found." }],
+      });
+    });
+
+    it("should return 400 status with error message when given invalid inputs", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/comments/${commentId}/replies`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "", postId: "" })
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [
+          { message: "Comment content cannot be empty." },
+          { message: "Post ID cannot be empty." },
+        ],
+      });
+    });
+
+    it("should return 201 status with reply id when reply is created", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/comments/${commentId}/replies`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: reply content", postId: post.id })
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      expect(response.body).toStrictEqual<CreateReplyResponse>({
+        id: expect.any(String) as string,
+      });
     });
   });
 });
