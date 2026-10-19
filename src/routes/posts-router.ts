@@ -1,6 +1,7 @@
 import { Router } from "express";
 import validateBody from "#src/middlewares/validate-body.js";
 import {
+  createPostCommentRequest,
   createPostRequestBody,
   postImage,
   updatePostRequestBody,
@@ -36,5 +37,10 @@ postsRouter
   .delete(unauthorizeGuest, postsController.deletePost);
 
 postsRouter.get("/:postId/comments", postsController.getPostComments);
+postsRouter.post(
+  "/:postId/comments",
+  validateBody(createPostCommentRequest),
+  postsController.createPostComment,
+);
 
 export default postsRouter;

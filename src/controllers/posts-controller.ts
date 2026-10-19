@@ -4,6 +4,8 @@ import * as commentQueries from "#src/queries/comment-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
 import type {
+  CreatePostCommentRequest,
+  CreatePostCommentResponse,
   CreatePostRequestBody,
   CreatePostResponseBody,
   GetIndexPostsResponseBody,
@@ -171,6 +173,33 @@ export async function getPostComments(
     });
 
     res.json(result);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function createPostComment(
+  req: Request<{ postId: string }, unknown, CreatePostCommentRequest>,
+  res: Response<CreatePostCommentResponse | ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { postId } = req.params;
+  const { content } = req.body;
+
+  try {
+    const { id } = await commentQueries.createComment({
+      userId: req.user.id,
+      postId,
+      content,
+    });
+
+    res.json({ id });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
