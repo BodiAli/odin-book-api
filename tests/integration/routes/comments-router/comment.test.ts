@@ -57,5 +57,58 @@ describe("/comments/{commentId} path", () => {
         errors: [{ message: "Comment not found." }],
       });
     });
+
+    it("should return 400 status with error message when given invalid inputs", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .patch(`/comments/${commentId}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "" })
+        .expect("Content-type", /json/)
+        .expect(400);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Comment content cannot be empty." }],
+      });
+    });
+
+    it("should return 204 status when comment is updated", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .patch(`/comments/${commentId}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: updated comment content" });
+
+      expect(response.noContent).toBe(true);
+    });
+  });
+
+  describe("delete comment DELETE", () => {
+    it("should return 404 status with error message when comment doesn't exist", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .delete("/comments/non-existing-id")
+        .auth(currentUserToken, { type: "bearer" })
+        .expect("Content-type", /json/)
+        .expect(404);
+
+      expect(response.body).toStrictEqual<ClientError>({
+        errors: [{ message: "Comment not found." }],
+      });
+    });
+
+    it("should return 204 status comment is deleted", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .delete(`/comments/${commentId}`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: updated comment content" });
+
+      expect(response.noContent).toBe(true);
+    });
   });
 });
