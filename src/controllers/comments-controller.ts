@@ -26,3 +26,24 @@ export async function updateComment(
     next(error);
   }
 }
+
+export async function deleteComment(
+  req: Request<{ commentId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { commentId } = req.params;
+
+  try {
+    await commentQueries.deleteComment(commentId);
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
