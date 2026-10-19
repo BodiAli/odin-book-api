@@ -31,3 +31,13 @@ export const getCommentRepliesResponse = z.object({
     nextCursorId: z.string().nullable(),
   }),
 });
+
+export const createReplyRequest = createCommentRequest.extend({
+  postId: z
+    .string("Please provide a string post ID.")
+    .trim()
+    .nonempty("Post ID cannot be empty."),
+});
+export const createReplyResponse = z.object({
+  id: z.string(),
+});
