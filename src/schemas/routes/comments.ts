@@ -15,3 +15,12 @@ export const comments = z.array(
     hasReplies: z.boolean(),
   }),
 );
+
+export const createCommentRequest = z.object({
+  content: z
+    .string("Please provide a string content.")
+    .trim()
+    .nonempty("Comment content cannot be empty."),
+});
+
+export const updateCommentRequest = createCommentRequest;

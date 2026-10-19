@@ -62,13 +62,6 @@ export const getPostCommentsResponse = z.object({
   }),
 });
 
-export const createPostCommentRequest = z.object({
-  content: z
-    .string("Please provide a string content.")
-    .trim()
-    .nonempty("Comment content cannot be empty."),
-});
-
 export const createPostCommentResponse = z.object({
   id: z.string(),
 });
