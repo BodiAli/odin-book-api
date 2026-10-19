@@ -2,7 +2,10 @@ import assert from "node:assert";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
 import type { ClientError } from "#src/types/errors/errors.js";
-import type { UpdateCommentRequest } from "#src/types/routes/comments.js";
+import type {
+  GetCommentRepliesResponse,
+  UpdateCommentRequest,
+} from "#src/types/routes/comments.js";
 import type { NextFunction, Request, Response } from "express";
 
 export async function updateComment(
@@ -39,6 +42,39 @@ export async function deleteComment(
   try {
     await commentQueries.deleteComment(commentId);
     res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function getCommentReplies(
+  req: Request<
+    { commentId: string },
+    unknown,
+    unknown,
+    { last_cursor_id?: string }
+  >,
+  res: Response<GetCommentRepliesResponse | ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { commentId } = req.params;
+
+  try {
+    const result = await commentQueries.getCommentsInPost({
+      type: "replies",
+      parentCommentId: commentId,
+      ...(req.query.last_cursor_id && {
+        lastCursorId: req.query.last_cursor_id,
+      }),
+    });
+
+    res.json({ replies: result.comments, metadata: result.metadata });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });

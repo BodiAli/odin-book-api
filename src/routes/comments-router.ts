@@ -10,4 +10,8 @@ commentsRouter
   .patch(validateBody(updateCommentRequest), commentsController.updateComment)
   .delete(commentsController.deleteComment);
 
+commentsRouter
+  .route("/:commentId/replies")
+  .get(commentsController.getCommentReplies);
+
 export default commentsRouter;
