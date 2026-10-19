@@ -1,6 +1,7 @@
 import z from "zod";
 import { clientError } from "#src/schemas/errors/errors.js";
 import {
+  createPostCommentResponse,
   createPostRequestBody,
   createPostResponseBody,
   getIndexPostsResponseBody,
@@ -8,6 +9,7 @@ import {
   post,
   updatePostRequestBody,
 } from "#src/schemas/routes/posts.js";
+import { createCommentRequest } from "#src/schemas/routes/comments.js";
 import addBinaryField from "../common/multipart-schema.js";
 import {
   invalidContentTypeResponse,
@@ -234,7 +236,7 @@ registry.registerPath({
   path: "/posts/{postId}/comments",
   method: "get",
   tags: ["posts"],
-  description: "Get post comments",
+  description: "Get post comments.",
   security,
   request: {
     query: z.object({
@@ -264,6 +266,50 @@ registry.registerPath({
         },
       },
     },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}/comments",
+  method: "post",
+  tags: ["posts"],
+  description: "Create comment in post.",
+  security,
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: createCommentRequest,
+        },
+      },
+    },
+    params: z.object({
+      postId: z.string(),
+    }),
+  },
+  responses: {
+    201: {
+      summary: "Created",
+      description: "Post comment created successfully.",
+      content: {
+        "application/json": {
+          schema: createPostCommentResponse,
+        },
+      },
+    },
+    400: invalidInputsResponse,
+    401: unauthorizedResponse,
+    404: {
+      summary: "Not found",
+      description: "Post not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    415: invalidContentTypeResponse,
     500: serverErrorResponse,
   },
 });
