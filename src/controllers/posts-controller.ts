@@ -4,7 +4,6 @@ import * as commentQueries from "#src/queries/comment-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
 import type {
-  CreatePostCommentRequest,
   CreatePostCommentResponse,
   CreatePostRequestBody,
   CreatePostResponseBody,
@@ -15,6 +14,7 @@ import type {
 } from "#src/types/routes/posts.js";
 import type { NextFunction, Request, Response } from "express";
 import type { ClientError } from "#src/types/errors/errors.js";
+import type { CreateCommentRequest } from "#src/types/routes/comments.js";
 
 export async function createPost(
   req: Request<unknown, unknown, CreatePostRequestBody>,
@@ -183,7 +183,7 @@ export async function getPostComments(
 }
 
 export async function createPostComment(
-  req: Request<{ postId: string }, unknown, CreatePostCommentRequest>,
+  req: Request<{ postId: string }, unknown, CreateCommentRequest>,
   res: Response<CreatePostCommentResponse | ClientError>,
   next: NextFunction,
 ): Promise<void> {
