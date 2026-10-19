@@ -24,3 +24,10 @@ export const createCommentRequest = z.object({
 });
 
 export const updateCommentRequest = createCommentRequest;
+
+export const getCommentRepliesResponse = z.object({
+  replies: comments,
+  metadata: z.object({
+    nextCursorId: z.string().nullable(),
+  }),
+});
