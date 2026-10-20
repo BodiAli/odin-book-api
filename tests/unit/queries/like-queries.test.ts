@@ -198,6 +198,35 @@ describe("like queries", () => {
   });
 
   describe(likeQueries.deleteCommentLike, () => {
-    it.todo("should throw an error when comment is not found");
+    it("should throw an error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.deleteCommentLike(currentUser.id, "non-existing-like"),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No comment found to unlike."),
+      );
+    });
+
+    it("should throw an error when no like is found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.deleteCommentLike(currentUser.id, comment.id),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No like found to delete."),
+      );
+    });
+
+    it("should unlike comment", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createCommentLike(currentUser.id, comment.id);
+
+      await likeQueries.deleteCommentLike(currentUser.id, comment.id);
+      const commentLikes = await likeQueries.getCommentLikes(comment.id);
+
+      expect(commentLikes).toBe(0);
+    });
   });
 });
