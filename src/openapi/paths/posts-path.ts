@@ -5,6 +5,7 @@ import {
   createPostRequestBody,
   createPostResponseBody,
   getIndexPostsResponseBody,
+  getNumberOfPostLikesResponse,
   getPostCommentsResponse,
   post,
   updatePostRequestBody,
@@ -315,6 +316,109 @@ registry.registerPath({
       },
     },
     415: invalidContentTypeResponse,
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}/likes",
+  method: "post",
+  description: "Like post.",
+  security,
+  request: {
+    params: z.object({
+      postId: z.string(),
+    }),
+  },
+  responses: {
+    204: {
+      summary: "No content",
+      description: "Post liked successfully.",
+    },
+    401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
+    404: {
+      summary: "Not found",
+      description: "No post found to like.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    409: {
+      summary: "Conflict",
+      description: "Post is already liked by the current user.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}/likes",
+  method: "get",
+  description: "Get number of post likes.",
+  security,
+  request: {
+    params: z.object({
+      postId: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      summary: "OK",
+      description: "Number of post likes fetched successfully.",
+      content: {
+        "application/json": {
+          schema: getNumberOfPostLikesResponse,
+        },
+      },
+    },
+    401: unauthorizedResponse,
+    404: {
+      summary: "Not found",
+      description: "Post not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/posts/{postId}/likes",
+  method: "delete",
+  description: "Unlike post.",
+  security,
+  request: {
+    params: z.object({
+      postId: z.string(),
+    }),
+  },
+  responses: {
+    204: {
+      summary: "No content",
+      description: "Post unliked successfully.",
+    },
+    401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
+    404: {
+      summary: "Not found",
+      description: "Post or like were not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     500: serverErrorResponse,
   },
 });
