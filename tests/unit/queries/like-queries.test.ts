@@ -8,12 +8,12 @@ import type {
 } from "#src/generated/prisma/models.js";
 
 describe("like queries", () => {
-  let user: Omit<UserModel, "password">;
+  let currentUser: Omit<UserModel, "password">;
   let post: PostModel;
   let comment: CommentModel;
 
   beforeEach(async () => {
-    user = await prisma.user.create({
+    currentUser = await prisma.user.create({
       data: {
         email: "test-email@test.com",
         fullName: "test: full name",
@@ -23,13 +23,13 @@ describe("like queries", () => {
       data: {
         title: "test: post title",
         content: "test: post content",
-        userId: user.id,
+        userId: currentUser.id,
       },
     });
     comment = await prisma.comment.create({
       data: {
         content: "test: comment content",
-        userId: user.id,
+        userId: currentUser.id,
         postId: post.id,
       },
     });
@@ -40,16 +40,28 @@ describe("like queries", () => {
       expect.hasAssertions();
 
       await expect(
-        likeQueries.createPostLike(user.id, "non-existing-id"),
+        likeQueries.createPostLike(currentUser.id, "non-existing-id"),
       ).rejects.toThrow(
         new CustomHttpStatusError(404, "No post found to like."),
+      );
+    });
+
+    it("should throw an error when the same user tries to like a post twice", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createPostLike(currentUser.id, post.id);
+
+      await expect(
+        likeQueries.createPostLike(currentUser.id, post.id),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(409, "You can’t like post twice."),
       );
     });
 
     it("should like post", async () => {
       expect.hasAssertions();
 
-      await likeQueries.createPostLike(user.id, post.id);
+      await likeQueries.createPostLike(currentUser.id, post.id);
       const likes = await prisma.like.count({
         where: {
           postId: post.id,
@@ -69,18 +81,6 @@ describe("like queries", () => {
       );
     });
 
-    it("should throw an error when the same user tries to like a post twice", async () => {
-      expect.hasAssertions();
-
-      await likeQueries.createPostLike(user.id, post.id);
-
-      await expect(
-        likeQueries.createPostLike(user.id, post.id),
-      ).rejects.toThrow(
-        new CustomHttpStatusError(409, "You can’t like post twice."),
-      );
-    });
-
     it("should return number of post likes", async () => {
       expect.hasAssertions();
 
@@ -91,7 +91,7 @@ describe("like queries", () => {
         },
       });
 
-      await likeQueries.createPostLike(user.id, post.id);
+      await likeQueries.createPostLike(currentUser.id, post.id);
       await likeQueries.createPostLike(userB.id, post.id);
 
       const postLikes = await likeQueries.getPostLikes(post.id);
@@ -105,7 +105,7 @@ describe("like queries", () => {
       expect.hasAssertions();
 
       await expect(
-        likeQueries.deletePostLike(user.id, "non-existing-id"),
+        likeQueries.deletePostLike(currentUser.id, "non-existing-id"),
       ).rejects.toThrow(
         new CustomHttpStatusError(404, "No post found to unlike."),
       );
@@ -115,7 +115,7 @@ describe("like queries", () => {
       expect.hasAssertions();
 
       await expect(
-        likeQueries.deletePostLike(user.id, post.id),
+        likeQueries.deletePostLike(currentUser.id, post.id),
       ).rejects.toThrow(
         new CustomHttpStatusError(404, "No like found to delete."),
       );
@@ -124,12 +124,80 @@ describe("like queries", () => {
     it("should unlike post", async () => {
       expect.hasAssertions();
 
-      await likeQueries.createPostLike(user.id, post.id);
+      await likeQueries.createPostLike(currentUser.id, post.id);
 
-      await likeQueries.deletePostLike(user.id, post.id);
+      await likeQueries.deletePostLike(currentUser.id, post.id);
       const postLikes = await likeQueries.getPostLikes(post.id);
 
       expect(postLikes).toBe(0);
     });
+  });
+
+  describe(likeQueries.createCommentLike, () => {
+    it("should throw an error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.createCommentLike(currentUser.id, "non-existing-id"),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No comment found to like."),
+      );
+    });
+
+    it("should throw an error when comment is already liked", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createCommentLike(currentUser.id, comment.id);
+
+      await expect(
+        likeQueries.createCommentLike(currentUser.id, comment.id),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(409, "You can’t like comment twice."),
+      );
+    });
+
+    it("should like comment", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createCommentLike(currentUser.id, comment.id);
+      const commentLikes = await prisma.like.count({
+        where: {
+          commentId: comment.id,
+        },
+      });
+
+      expect(commentLikes).toBe(1);
+    });
+  });
+
+  describe(likeQueries.getCommentLikes, () => {
+    it("should throw an error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.getCommentLikes("non-existing-id"),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
+
+    it("should return number of comment likes", async () => {
+      expect.hasAssertions();
+
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+        },
+      });
+
+      await likeQueries.createCommentLike(currentUser.id, comment.id);
+      await likeQueries.createCommentLike(userB.id, comment.id);
+      const commentLikes = await likeQueries.getCommentLikes(comment.id);
+
+      expect(commentLikes).toBe(2);
+    });
+  });
+
+  describe(likeQueries.deleteCommentLike, () => {
+    it.todo("should throw an error when comment is not found");
   });
 });
