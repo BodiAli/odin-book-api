@@ -101,6 +101,35 @@ describe("like queries", () => {
   });
 
   describe(likeQueries.deletePostLike, () => {
-    it("should throw an error when post is not found");
+    it("should throw an error when post is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.deletePostLike(user.id, "non-existing-id"),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No post found to unlike."),
+      );
+    });
+
+    it("should throw an error when no like is found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.deletePostLike(user.id, post.id),
+      ).rejects.toThrow(
+        new CustomHttpStatusError(404, "No like found to delete."),
+      );
+    });
+
+    it("should unlike post", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createPostLike(user.id, post.id);
+
+      await likeQueries.deletePostLike(user.id, post.id);
+      const postLikes = await likeQueries.getPostLikes(post.id);
+
+      expect(postLikes).toBe(0);
+    });
   });
 });
