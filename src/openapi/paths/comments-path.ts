@@ -2,6 +2,7 @@ import z from "zod";
 import {
   createReplyRequest,
   getCommentRepliesResponse,
+  getNumberOfCommentLikesResponse,
   updateCommentRequest,
 } from "#src/schemas/routes/comments.js";
 import { clientError } from "#src/schemas/errors/errors.js";
@@ -191,6 +192,70 @@ registry.registerPath({
     409: {
       summary: "Conflict",
       description: "Comment is already liked by the current user.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/comments/{commentId}/likes",
+  method: "get",
+  description: "Get number of comment likes.",
+  security,
+  request: {
+    params: z.object({
+      commentId: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      summary: "OK",
+      description: "Number of comment likes fetched successfully.",
+      content: {
+        "application/json": {
+          schema: getNumberOfCommentLikesResponse,
+        },
+      },
+    },
+    401: unauthorizedResponse,
+    404: {
+      summary: "Not found",
+      description: "Comment not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/comments/{commentId}/likes",
+  method: "delete",
+  description: "Unlike comment.",
+  security,
+  request: {
+    params: z.object({
+      commentId: z.string(),
+    }),
+  },
+  responses: {
+    204: {
+      summary: "No content",
+      description: "Comment unliked successfully.",
+    },
+    401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
+    404: {
+      summary: "Not found",
+      description: "Comment or like were not found.",
       content: {
         "application/json": {
           schema: clientError,
