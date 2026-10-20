@@ -100,4 +100,7 @@ model Like {
   user      User     @relation(references: [id], fields: [userId])
   post      Post?    @relation(references: [id], fields: [postId], onDelete: Cascade)
   comment   Comment? @relation(references: [id], fields: [commentId], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
 }
