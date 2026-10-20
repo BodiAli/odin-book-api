@@ -12,6 +12,7 @@ import {
 import { createCommentRequest } from "#src/schemas/routes/comments.js";
 import addBinaryField from "../common/multipart-schema.js";
 import {
+  InsufficientPermissionResponse,
   invalidContentTypeResponse,
   invalidInputsResponse,
   serverErrorResponse,
@@ -59,6 +60,7 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     415: invalidContentTypeResponse,
     502: {
       summary: "Bad gateway",
@@ -193,6 +195,7 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "Post not found.",
@@ -219,6 +222,7 @@ registry.registerPath({
       description: "Post deleted successfully.",
     },
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "Post not found.",
@@ -300,6 +304,7 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "Post not found.",

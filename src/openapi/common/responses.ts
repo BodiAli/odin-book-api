@@ -39,4 +39,14 @@ export const invalidContentTypeResponse = {
       schema: clientError,
     },
   },
-};
+} as const;
+
+export const InsufficientPermissionResponse = {
+  summary: "Insufficient permission",
+  description: "This operation is not allowed for a 'guest' user.",
+  content: {
+    "application/json": {
+      schema: clientError,
+    },
+  },
+} as const;

@@ -8,6 +8,7 @@ import {
   getCurrentUserResponse,
 } from "#src/schemas/routes/users.js";
 import {
+  InsufficientPermissionResponse,
   invalidContentTypeResponse,
   invalidInputsResponse,
   serverErrorResponse,
@@ -190,6 +191,7 @@ registry.registerPath({
       description: "Unfollowed target user successfully.",
     },
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "No user to unfollow was found.",
