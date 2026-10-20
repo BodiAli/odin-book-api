@@ -79,3 +79,50 @@ export async function deletePostLike(
     },
   });
 }
+
+export async function createCommentLike(
+  userId: string,
+  commentId: string,
+): Promise<void> {
+  try {
+    await prisma.like.create({
+      data: {
+        userId,
+        commentId,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2003") {
+        throw new CustomHttpStatusError(404, "No comment found to like.");
+      }
+      if (error.code === "P2002") {
+        throw new CustomHttpStatusError(409, "You can’t like comment twice.");
+      }
+    }
+    throw error;
+  }
+}
+
+export async function getCommentLikes(commentId: string): Promise<number> {
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+  });
+  if (comment === null) {
+    throw new CustomHttpStatusError(404, "Comment not found.");
+  }
+  const commentLikes = await prisma.like.count({
+    where: {
+      commentId,
+    },
+  });
+
+  return commentLikes;
+}
+
+export async function deleteCommentLike(
+  userId: string,
+  commentId: string,
+): Promise<void> {}
