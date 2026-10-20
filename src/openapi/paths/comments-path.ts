@@ -8,6 +8,7 @@ import { clientError } from "#src/schemas/errors/errors.js";
 import { security } from "../common/security.js";
 import registry from "../registry.js";
 import {
+  InsufficientPermissionResponse,
   invalidContentTypeResponse,
   invalidInputsResponse,
   serverErrorResponse,
@@ -38,6 +39,7 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "Comment not found.",
@@ -69,6 +71,7 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "Comment not found.",
@@ -144,6 +147,7 @@ registry.registerPath({
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
     404: {
       summary: "Not found",
       description: "Comment not found.",
@@ -154,6 +158,45 @@ registry.registerPath({
       },
     },
     415: invalidContentTypeResponse,
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/comments/{commentId}/likes",
+  method: "post",
+  description: "Like comment.",
+  security,
+  request: {
+    params: z.object({
+      commentId: z.string(),
+    }),
+  },
+  responses: {
+    204: {
+      summary: "No content",
+      description: "Comment liked successfully.",
+    },
+    401: unauthorizedResponse,
+    403: InsufficientPermissionResponse,
+    404: {
+      summary: "Not found",
+      description: "No comment found to like.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    409: {
+      summary: "Conflict",
+      description: "Comment is already liked by the current user.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
     500: serverErrorResponse,
   },
 });
