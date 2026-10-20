@@ -30,6 +30,7 @@ model User {
   notificationsReceived Notification[] @relation("Notifier")
   posts                 Post[]
   comments              Comment[]
+  likes                 Like[]
 }
 
 model Profile {
@@ -74,6 +75,7 @@ model Post {
   userId    String
   user      User      @relation(references: [id], fields: [userId])
   comments  Comment[]
+  likes     Like[]
 }
 
 model Comment {
@@ -87,4 +89,15 @@ model Comment {
   parent    Comment?  @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies   Comment[] @relation("ParentReplies")
   user      User      @relation(references: [id], fields: [userId])
+  likes     Like[]
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String?
+  commentId String?
+  user      User     @relation(references: [id], fields: [userId])
+  post      Post?    @relation(references: [id], fields: [postId], onDelete: Cascade)
+  comment   Comment? @relation(references: [id], fields: [commentId], onDelete: Cascade)
 }
