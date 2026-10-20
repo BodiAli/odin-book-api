@@ -45,3 +45,37 @@ export async function getPostLikes(postId: string): Promise<number> {
 
   return numberOfPostLikes;
 }
+
+export async function deletePostLike(
+  userId: string,
+  postId: string,
+): Promise<void> {
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+  if (post === null) {
+    throw new CustomHttpStatusError(404, "No post found to unlike.");
+  }
+  const like = await prisma.like.findUnique({
+    where: {
+      userId_postId: {
+        userId,
+        postId,
+      },
+    },
+  });
+  if (like === null) {
+    throw new CustomHttpStatusError(404, "No like found to delete.");
+  }
+
+  await prisma.like.delete({
+    where: {
+      userId_postId: {
+        userId,
+        postId,
+      },
+    },
+  });
+}
