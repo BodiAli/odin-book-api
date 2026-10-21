@@ -4,7 +4,9 @@ import { comments } from "./comments.js";
 import type { PostModel } from "#src/generated/prisma/models.js";
 import type { PublicUser } from "#src/types/routes/users.js";
 
-export const post: z.ZodType<PostModel & { author: PublicUser }> = z.object({
+export const post: z.ZodType<
+  PostModel & { author: PublicUser; likes: number; isLiked: boolean }
+> = z.object({
   id: z.string(),
   title: z.string(),
   content: z.string(),
@@ -12,6 +14,8 @@ export const post: z.ZodType<PostModel & { author: PublicUser }> = z.object({
   imageUrl: z.string().nullable(),
   userId: z.string(),
   createdAt: z.date(),
+  likes: z.number(),
+  isLiked: z.boolean(),
   author: publicUser,
 });
 

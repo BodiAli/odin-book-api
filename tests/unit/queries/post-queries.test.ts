@@ -3,6 +3,7 @@ import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as postQueries from "#src/queries/post-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
+import * as likeQueries from "#src/queries/like-queries.js";
 import type { Post } from "#src/types/routes/posts.js";
 
 describe("post queries", () => {
@@ -65,6 +66,8 @@ describe("post queries", () => {
           lastSeen: publicUser.lastSeen,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
     });
   });
@@ -73,12 +76,18 @@ describe("post queries", () => {
     it("should throw an error when the post is not found", async () => {
       expect.hasAssertions();
 
-      await expect(postQueries.getPost("non-existing-id")).rejects.toThrow(
-        new CustomHttpStatusError(404, "Post not found."),
-      );
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-user-password",
+      });
+
+      await expect(
+        postQueries.getPost(user.id, "non-existing-id"),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Post not found."));
     });
 
-    it("should return the requested post with the author", async () => {
+    it("should return the requested post with the author, likes, and isLiked boolean", async () => {
       expect.hasAssertions();
 
       const user = await userQueries.createUserLocal({
@@ -95,9 +104,77 @@ describe("post queries", () => {
         },
       });
 
-      const post = await postQueries.getPost(createdPost.id);
+      const post = await postQueries.getPost(user.id, createdPost.id);
 
-      expect(post).toStrictEqual<Post>({ ...createdPost, author: publicUser });
+      expect(post).toStrictEqual<Post>({
+        ...createdPost,
+        author: publicUser,
+        likes: 0,
+        isLiked: false,
+      });
+    });
+
+    it("should return number of post likes", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB",
+      });
+      const createdPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userA.id,
+        },
+      });
+      await likeQueries.createPostLike(userA.id, createdPost.id);
+      await likeQueries.createPostLike(userB.id, createdPost.id);
+
+      const post = await postQueries.getPost(userA.id, createdPost.id);
+
+      expect(post.likes).toBe(2);
+    });
+
+    it("should return whether a post is liked or not", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB",
+      });
+      const createdPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userA.id,
+        },
+      });
+      await likeQueries.createPostLike(userA.id, createdPost.id);
+
+      const userAFetchedPost = await postQueries.getPost(
+        userA.id,
+        createdPost.id,
+      );
+      const userBFetchedPost = await postQueries.getPost(
+        userB.id,
+        createdPost.id,
+      );
+
+      expect(userAFetchedPost.isLiked).toBe(true);
+      expect(userBFetchedPost.isLiked).toBe(false);
     });
   });
 
@@ -529,6 +606,85 @@ describe("post queries", () => {
       expect(thirdResult.posts).not.toContainEqual(secondCursor);
       expect(thirdResult.posts).toHaveLength(4);
     });
+
+    it("should return number of post likes", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB",
+      });
+      const post1 = await prisma.post.create({
+        data: {
+          title: "test: post1 title",
+          content: "test: post1 content",
+          userId: userA.id,
+        },
+      });
+      await prisma.post.create({
+        data: {
+          title: "test: post2 title",
+          content: "test: post2 content",
+          userId: userA.id,
+        },
+      });
+      await likeQueries.createPostLike(userA.id, post1.id);
+      await likeQueries.createPostLike(userB.id, post1.id);
+
+      const { posts: indexPosts } = await postQueries.getIndexPosts(userA.id);
+      assert(indexPosts[0]);
+      assert(indexPosts[1]);
+
+      expect(indexPosts).toHaveLength(2);
+      expect(indexPosts[0].likes).toBe(0);
+      expect(indexPosts[1].likes).toBe(2);
+    });
+
+    it("should return whether a post is liked or not", async () => {
+      expect.hasAssertions();
+
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA",
+      });
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB",
+      });
+      const post1 = await prisma.post.create({
+        data: {
+          title: "test: post1 title",
+          content: "test: post1 content",
+          userId: userA.id,
+        },
+      });
+      const post2 = await prisma.post.create({
+        data: {
+          title: "test: post2 title",
+          content: "test: post2 content",
+          userId: userA.id,
+        },
+      });
+      await likeQueries.createPostLike(userA.id, post1.id);
+      await likeQueries.createPostLike(userB.id, post1.id);
+      await likeQueries.createPostLike(userB.id, post2.id);
+
+      const { posts: indexPosts } = await postQueries.getIndexPosts(userA.id);
+      assert(indexPosts[0]);
+      assert(indexPosts[1]);
+
+      expect(indexPosts).toHaveLength(2);
+      expect(indexPosts[0].isLiked).toBe(false);
+      expect(indexPosts[1].isLiked).toBe(true);
+    });
   });
 
   describe(postQueries.updatePost, () => {
@@ -571,6 +727,7 @@ describe("post queries", () => {
         imageId: "test-image-id",
       });
       const { author: _, ...updatedPost } = await postQueries.getPost(
+        user.id,
         createdPost.id,
       );
 
@@ -582,6 +739,8 @@ describe("post queries", () => {
         imageUrl: "test-image-url",
         imageId: "test-image-id",
         createdAt: createdPost.createdAt,
+        likes: 0,
+        isLiked: false,
       });
     });
 
@@ -605,6 +764,7 @@ describe("post queries", () => {
         content: "test: updated post content",
       });
       const { author: _, ...updatedPost } = await postQueries.getPost(
+        user.id,
         createdPost.id,
       );
 
@@ -616,6 +776,8 @@ describe("post queries", () => {
         imageUrl: null,
         imageId: null,
         createdAt: createdPost.createdAt,
+        likes: 0,
+        isLiked: false,
       });
     });
 

@@ -2,6 +2,7 @@ import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import * as userQueries from "#src/queries/user-queries.js";
+import * as likeQueries from "#src/queries/like-queries.js";
 import type { Post } from "#src/types/routes/posts.js";
 
 interface CreatePostArgument {
@@ -29,10 +30,16 @@ export async function createPost({
   });
   const author = await userQueries.getPublicUser(post.userId);
 
-  return { ...post, author };
+  const postLikes = await likeQueries.getPostLikes(post.id);
+  const isPostLiked = await likeQueries.isPostLikedByCurrentUser(
+    userId,
+    post.id,
+  );
+
+  return { ...post, author, likes: postLikes, isLiked: isPostLiked };
 }
 
-export async function getPost(postId: string): Promise<Post> {
+export async function getPost(userId: string, postId: string): Promise<Post> {
   const post = await prisma.post.findUnique({
     where: {
       id: postId,
@@ -44,7 +51,18 @@ export async function getPost(postId: string): Promise<Post> {
 
   const publicUser = await userQueries.getPublicUser(post.userId);
 
-  return { ...post, author: publicUser };
+  const postLikes = await likeQueries.getPostLikes(post.id);
+  const isPostLiked = await likeQueries.isPostLikedByCurrentUser(
+    userId,
+    post.id,
+  );
+
+  return {
+    ...post,
+    author: publicUser,
+    likes: postLikes,
+    isLiked: isPostLiked,
+  };
 }
 
 async function nextPageMetadata(
@@ -106,7 +124,7 @@ export async function getIndexPosts(
   let cursorId: string | undefined;
   if (lastCursorId) {
     try {
-      const cursor = await getPost(lastCursorId);
+      const cursor = await getPost(userId, lastCursorId);
       cursorId = cursor.id;
     } catch (error) {
       if (error instanceof CustomHttpStatusError) {
@@ -139,6 +157,16 @@ export async function getIndexPosts(
           profile: true,
         },
       },
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+      likes: {
+        where: {
+          userId,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -155,6 +183,8 @@ export async function getIndexPosts(
   const result = indexPosts.map<Post>((post) => {
     const {
       user: { profile, ...user },
+      _count,
+      likes,
       ...postWithoutUser
     } = post;
     const picture = profile ? profile.imageUrl : null;
@@ -164,6 +194,8 @@ export async function getIndexPosts(
         ...user,
         picture,
       },
+      likes: _count.likes,
+      isLiked: likes.length > 0,
     };
   });
 
