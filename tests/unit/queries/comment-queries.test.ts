@@ -1,6 +1,7 @@
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
+import * as likeQueries from "#src/queries/like-queries.js";
 import type { PostModel, UserModel } from "#src/generated/prisma/models.js";
 import type { Comments } from "#src/types/routes/comments.js";
 
@@ -207,6 +208,7 @@ describe("comment queries", () => {
       const { comments } = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
 
       expect(comments).toHaveLength(10);
@@ -224,6 +226,7 @@ describe("comment queries", () => {
       const { comments } = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
 
       expect(comments).toStrictEqual<Comments>([
@@ -235,6 +238,8 @@ describe("comment queries", () => {
           userId: user.id,
           createdAt: expect.any(Date) as Date,
           hasReplies: false,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });
@@ -257,6 +262,7 @@ describe("comment queries", () => {
       const { comments } = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
 
       expect(comments).toStrictEqual<Comments>([
@@ -268,6 +274,8 @@ describe("comment queries", () => {
           id: parentComment.id,
           parentId: null,
           hasReplies: true,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });
@@ -292,6 +300,7 @@ describe("comment queries", () => {
       const { comments } = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
 
       expect(comments).toStrictEqual<Comments>([
@@ -303,6 +312,8 @@ describe("comment queries", () => {
           parentId: null,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
         {
           content: "test: comment content 1",
@@ -312,6 +323,8 @@ describe("comment queries", () => {
           parentId: null,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
         {
           content: "test: comment content 0",
@@ -321,6 +334,8 @@ describe("comment queries", () => {
           parentId: null,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });
@@ -348,6 +363,7 @@ describe("comment queries", () => {
       const { comments } = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
 
       expect(comments).toStrictEqual<Comments>([
@@ -359,6 +375,8 @@ describe("comment queries", () => {
           parentId: null,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
         {
           content: "test: parentComment1 content",
@@ -368,6 +386,8 @@ describe("comment queries", () => {
           parentId: null,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });
@@ -399,6 +419,7 @@ describe("comment queries", () => {
         type: "comments",
         postId: post.id,
         lastCursorId: cursorComment.id,
+        userId: user.id,
       });
       const firstComment = comments.comments[0];
       assert(firstComment);
@@ -417,6 +438,7 @@ describe("comment queries", () => {
           type: "comments",
           postId: post.id,
           lastCursorId: "non-existing-id",
+          userId: user.id,
         }),
       ).rejects.toThrow(new CustomHttpStatusError(404, "Cursor not found."));
     });
@@ -433,6 +455,7 @@ describe("comment queries", () => {
       const comments = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
 
       expect(comments.metadata.nextCursorId).toBeNull();
@@ -458,6 +481,7 @@ describe("comment queries", () => {
       const comments = await commentQueries.getCommentsInPost({
         type: "comments",
         postId: post.id,
+        userId: user.id,
       });
       const nextCursorComment = await prisma.comment.findFirstOrThrow({
         where: {
@@ -491,6 +515,7 @@ describe("comment queries", () => {
         type: "comments",
         postId: post.id,
         lastCursorId: lastCursor.id,
+        userId: user.id,
       });
 
       expect(comments.metadata.nextCursorId).toBeNull();
@@ -522,6 +547,7 @@ describe("comment queries", () => {
         type: "comments",
         postId: post.id,
         lastCursorId: lastCursor.id,
+        userId: user.id,
       });
       const nextCursorComment = await prisma.comment.findFirstOrThrow({
         where: {
@@ -562,6 +588,7 @@ describe("comment queries", () => {
       const { comments: replies } = await commentQueries.getCommentsInPost({
         type: "replies",
         parentCommentId: parentComment.id,
+        userId: user.id,
       });
 
       expect(replies).toStrictEqual<Comments>([
@@ -573,6 +600,8 @@ describe("comment queries", () => {
           parentId: parentComment.id,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
         {
           content: "test: parentReply1 content",
@@ -582,6 +611,8 @@ describe("comment queries", () => {
           parentId: parentComment.id,
           postId: post.id,
           userId: user.id,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });
@@ -604,6 +635,7 @@ describe("comment queries", () => {
       const { metadata } = await commentQueries.getCommentsInPost({
         type: "replies",
         parentCommentId: parentComment.id,
+        userId: user.id,
       });
 
       expect(metadata.nextCursorId).toBeNull();
@@ -635,6 +667,7 @@ describe("comment queries", () => {
       const { metadata } = await commentQueries.getCommentsInPost({
         type: "replies",
         parentCommentId: parentComment.id,
+        userId: user.id,
       });
       const cursor = await prisma.comment.findFirstOrThrow({
         where: {
@@ -652,6 +685,7 @@ describe("comment queries", () => {
         commentQueries.getCommentsInPost({
           type: "comments",
           postId: "non-existing-id",
+          userId: user.id,
         }),
       ).rejects.toThrow(new CustomHttpStatusError(404, "Post not found."));
     });
@@ -663,8 +697,189 @@ describe("comment queries", () => {
         commentQueries.getCommentsInPost({
           type: "replies",
           parentCommentId: "non-existing-id",
+          userId: user.id,
         }),
       ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
+
+    it("should return number of comment likes", async () => {
+      expect.hasAssertions();
+
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+          password: "test-userB",
+        },
+      });
+      const comment1 = await prisma.comment.create({
+        data: {
+          content: "test: comment1 content",
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+      await prisma.comment.create({
+        data: {
+          content: "test: comment2 content",
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+      await likeQueries.createCommentLike(user.id, comment1.id);
+      await likeQueries.createCommentLike(userB.id, comment1.id);
+
+      const { comments } = await commentQueries.getCommentsInPost({
+        userId: user.id,
+        type: "comments",
+        postId: post.id,
+      });
+      assert(comments[0]);
+      assert(comments[1]);
+
+      expect(comments).toHaveLength(2);
+      expect(comments[0].likes).toBe(0);
+      expect(comments[1].likes).toBe(2);
+    });
+
+    it("should return whether a comment is liked or not", async () => {
+      expect.hasAssertions();
+
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+          password: "test-userB",
+        },
+      });
+      const comment1 = await prisma.comment.create({
+        data: {
+          content: "test: comment1 content",
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+      const comment2 = await prisma.comment.create({
+        data: {
+          content: "test: comment2 content",
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+      await likeQueries.createCommentLike(user.id, comment1.id);
+      await likeQueries.createCommentLike(userB.id, comment1.id);
+      await likeQueries.createCommentLike(userB.id, comment2.id);
+
+      const { comments } = await commentQueries.getCommentsInPost({
+        userId: user.id,
+        type: "comments",
+        postId: post.id,
+      });
+      assert(comments[0]);
+      assert(comments[1]);
+
+      expect(comments).toHaveLength(2);
+      expect(comments[0].isLiked).toBe(false);
+      expect(comments[1].isLiked).toBe(true);
+    });
+
+    it("should return number of reply likes", async () => {
+      expect.hasAssertions();
+
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+          password: "test-userB",
+        },
+      });
+      const parentComment = await prisma.comment.create({
+        data: {
+          content: "test: parentComment content",
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+      const reply1 = await prisma.comment.create({
+        data: {
+          content: "test: reply1 content",
+          userId: user.id,
+          postId: post.id,
+          parentId: parentComment.id,
+        },
+      });
+      await prisma.comment.create({
+        data: {
+          content: "test: reply2 content",
+          userId: user.id,
+          postId: post.id,
+          parentId: parentComment.id,
+        },
+      });
+      await likeQueries.createCommentLike(user.id, reply1.id);
+      await likeQueries.createCommentLike(userB.id, reply1.id);
+
+      const { comments } = await commentQueries.getCommentsInPost({
+        userId: user.id,
+        type: "replies",
+        parentCommentId: parentComment.id,
+      });
+      assert(comments[0]);
+      assert(comments[1]);
+
+      expect(comments).toHaveLength(2);
+      expect(comments[0].likes).toBe(0);
+      expect(comments[1].likes).toBe(2);
+    });
+
+    it("should return whether a reply is liked or not", async () => {
+      expect.hasAssertions();
+
+      const userB = await prisma.user.create({
+        data: {
+          email: "test-userB@test.com",
+          fullName: "test: userB",
+          password: "test-userB",
+        },
+      });
+      const parentComment = await prisma.comment.create({
+        data: {
+          content: "test: parentComment content",
+          userId: user.id,
+          postId: post.id,
+        },
+      });
+      const reply1 = await prisma.comment.create({
+        data: {
+          content: "test: reply1 content",
+          userId: user.id,
+          postId: post.id,
+          parentId: parentComment.id,
+        },
+      });
+      const reply2 = await prisma.comment.create({
+        data: {
+          content: "test: reply2 content",
+          userId: user.id,
+          postId: post.id,
+          parentId: parentComment.id,
+        },
+      });
+      await likeQueries.createCommentLike(user.id, reply1.id);
+      await likeQueries.createCommentLike(userB.id, reply1.id);
+      await likeQueries.createCommentLike(userB.id, reply2.id);
+
+      const { comments } = await commentQueries.getCommentsInPost({
+        userId: user.id,
+        type: "replies",
+        parentCommentId: parentComment.id,
+      });
+      assert(comments[0]);
+      assert(comments[1]);
+
+      expect(comments).toHaveLength(2);
+      expect(comments[0].isLiked).toBe(false);
+      expect(comments[1].isLiked).toBe(true);
     });
   });
 

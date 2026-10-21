@@ -8,7 +8,9 @@ export const comment = z.object({
   postId: z.string(),
   parentId: z.string().nullable(),
   createdAt: z.date(),
-}) satisfies z.ZodType<CommentModel>;
+  likes: z.number(),
+  isLiked: z.boolean(),
+}) satisfies z.ZodType<CommentModel & { likes: number; isLiked: boolean }>;
 
 export const comments = z.array(
   comment.extend({

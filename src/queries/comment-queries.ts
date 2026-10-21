@@ -122,11 +122,13 @@ type CommentsQuery =
   | {
       type: "comments";
       postId: string;
+      userId: string;
       lastCursorId?: string;
     }
   | {
       type: "replies";
       parentCommentId: string;
+      userId: string;
       lastCursorId?: string;
     };
 
@@ -179,7 +181,12 @@ export async function getCommentsInPost(param: CommentsQuery): Promise<{
   const comments = await prisma.comment.findMany({
     where,
     include: {
-      _count: { select: { replies: true } },
+      _count: { select: { replies: true, likes: true } },
+      likes: {
+        where: {
+          userId: param.userId,
+        },
+      },
     },
     take: 10,
     orderBy: {
@@ -209,10 +216,12 @@ export async function getCommentsInPost(param: CommentsQuery): Promise<{
   const nextCursorIdResult = await nextCursorId(cursorArgs);
 
   const result = comments.map((value) => {
-    const { _count, ...comment } = value;
+    const { _count, likes, ...comment } = value;
     return {
       ...comment,
       hasReplies: _count.replies > 0,
+      likes: _count.likes,
+      isLiked: likes.length > 0,
     };
   });
   return {
