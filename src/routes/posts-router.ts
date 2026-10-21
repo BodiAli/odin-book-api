@@ -36,11 +36,15 @@ postsRouter
   )
   .delete(unauthorizeGuest, postsController.deletePost);
 
-postsRouter.get("/:postId/comments", postsController.getPostComments);
-postsRouter.post(
-  "/:postId/comments",
-  validateBody(createCommentRequest),
-  postsController.createPostComment,
-);
+postsRouter
+  .route("/:postId/comments")
+  .get(postsController.getPostComments)
+  .post(validateBody(createCommentRequest), postsController.createPostComment);
+
+postsRouter
+  .route("/:postId/likes")
+  .post(postsController.createPostLike)
+  .get(postsController.getNumberOfPostLikes)
+  .delete(postsController.deletePostLike);
 
 export default postsRouter;
