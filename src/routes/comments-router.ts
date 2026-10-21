@@ -18,4 +18,9 @@ commentsRouter
   .get(commentsController.getCommentReplies)
   .post(validateBody(createReplyRequest), commentsController.createReply);
 
+commentsRouter
+  .route("/:commentId/likes")
+  .post(commentsController.createCommentLike)
+  .delete(commentsController.deleteCommentLike);
+
 export default commentsRouter;
