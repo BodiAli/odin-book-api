@@ -34,11 +34,12 @@ model User {
 }
 
 model Profile {
-  id          String  @id @default(uuid())
-  description String?
-  imageUrl    String?
-  user        User    @relation(references: [id], fields: [userId])
-  userId      String  @unique
+  id                   String               @id @default(uuid())
+  description          String?
+  imageUrl             String?
+  user                 User                 @relation(references: [id], fields: [userId])
+  userId               String               @unique
+  notificationEntities NotificationEntity[]
 }
 
 model UserFollow {
@@ -53,43 +54,59 @@ model UserFollow {
 enum NotificationType {
   FOLLOW
   COMMENT
+  REPLY
 }
 
 model Notification {
-  id         String           @id @default(uuid())
-  actorId    String
-  actor      User             @relation("Actor", references: [id], fields: [actorId])
-  notifierId String
-  notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
-  type       NotificationType
-  createdAt  DateTime         @default(now())
+  id                   String             @id @default(uuid())
+  actorId              String
+  actor                User               @relation("Actor", references: [id], fields: [actorId])
+  notifierId           String
+  notifier             User               @relation("Notifier", references: [id], fields: [notifierId])
+  createdAt            DateTime           @default(now())
+  notificationEntityId String             @unique
+  notificationEntity   NotificationEntity @relation(fields: [notificationEntityId], references: [id])
+}
+
+model NotificationEntity {
+  id           String           @id @default(uuid())
+  profileId    String?
+  postId       String?
+  commentId    String?
+  type         NotificationType
+  profile      Profile?         @relation(references: [id], fields: [profileId])
+  post         Post?            @relation(references: [id], fields: [postId])
+  comment      Comment?         @relation(references: [id], fields: [commentId])
+  notification Notification?
 }
 
 model Post {
-  id        String    @id @default(uuid())
-  title     String    @db.VarChar(255)
-  content   String
-  imageUrl  String?
-  imageId   String?
-  createdAt DateTime  @default(now())
-  userId    String
-  user      User      @relation(references: [id], fields: [userId])
-  comments  Comment[]
-  likes     Like[]
+  id                   String               @id @default(uuid())
+  title                String               @db.VarChar(255)
+  content              String
+  imageUrl             String?
+  imageId              String?
+  createdAt            DateTime             @default(now())
+  userId               String
+  user                 User                 @relation(references: [id], fields: [userId])
+  comments             Comment[]
+  likes                Like[]
+  notificationEntities NotificationEntity[]
 }
 
 model Comment {
-  id        String    @id @default(uuid())
-  content   String
-  postId    String
-  parentId  String?
-  userId    String
-  createdAt DateTime  @default(now())
-  post      Post      @relation(references: [id], fields: [postId])
-  parent    Comment?  @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("ParentReplies")
-  user      User      @relation(references: [id], fields: [userId])
-  likes     Like[]
+  id                   String               @id @default(uuid())
+  content              String
+  postId               String
+  parentId             String?
+  userId               String
+  createdAt            DateTime             @default(now())
+  post                 Post                 @relation(references: [id], fields: [postId])
+  parent               Comment?             @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies              Comment[]            @relation("ParentReplies")
+  user                 User                 @relation(references: [id], fields: [userId])
+  likes                Like[]
+  notificationEntities NotificationEntity[]
 }
 
 model Like {
