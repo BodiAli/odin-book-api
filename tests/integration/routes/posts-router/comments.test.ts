@@ -86,6 +86,8 @@ describe("/posts/{postId}/comments path", () => {
           parentId: null,
           postId: post.id,
           userId: currentUser.id,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });

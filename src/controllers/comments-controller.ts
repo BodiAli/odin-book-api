@@ -75,6 +75,7 @@ export async function getCommentReplies(
       ...(req.query.last_cursor_id && {
         lastCursorId: req.query.last_cursor_id,
       }),
+      userId: req.user.id,
     });
 
     res.json({ replies: result.comments, metadata: result.metadata });

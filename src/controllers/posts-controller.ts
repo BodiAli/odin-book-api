@@ -84,7 +84,7 @@ export async function getPost(
   const { postId } = req.params;
 
   try {
-    const post = await postQueries.getPost(postId);
+    const post = await postQueries.getPost(req.user.id, postId);
     res.json({ post });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
@@ -106,7 +106,7 @@ export async function updatePost(
 
   try {
     if (req.file) {
-      const post = await postQueries.getPost(postId);
+      const post = await postQueries.getPost(req.user.id, postId);
       if (post.imageId === null) {
         await uploadImage(req.file.buffer);
       } else {
@@ -171,6 +171,7 @@ export async function getPostComments(
       ...(req.query.last_cursor_id && {
         lastCursorId: req.query.last_cursor_id,
       }),
+      userId: req.user.id,
     });
 
     res.json(result);

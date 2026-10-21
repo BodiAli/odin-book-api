@@ -95,6 +95,8 @@ describe("/comments/{commentId}/replies path", () => {
           parentId: commentId,
           postId: post.id,
           userId: currentUser.id,
+          isLiked: false,
+          likes: 0,
         },
       ]);
     });

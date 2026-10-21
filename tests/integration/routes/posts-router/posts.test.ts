@@ -275,6 +275,8 @@ describe("/posts path", () => {
           isOnline: true,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
       expect(typedResponseBody.posts[9]).toStrictEqual<Post>({
         id: expect.any(String) as string,
@@ -291,6 +293,8 @@ describe("/posts path", () => {
           isOnline: true,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
     });
 
@@ -375,6 +379,8 @@ describe("/posts path", () => {
           isOnline: true,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
       expect(typedResponseBody.posts[9]).toStrictEqual<Post>({
         id: expect.any(String) as string,
@@ -391,6 +397,8 @@ describe("/posts path", () => {
           isOnline: true,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
     });
 
@@ -445,6 +453,8 @@ describe("/posts path", () => {
           isOnline: true,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
       expect(typedSecondResponseBody.posts[9]).toStrictEqual<Post>({
         id: expect.any(String) as string,
@@ -461,6 +471,8 @@ describe("/posts path", () => {
           isOnline: true,
           picture: null,
         },
+        isLiked: false,
+        likes: 0,
       });
     });
   });

@@ -92,6 +92,8 @@ describe("/posts/:postId path", () => {
             isOnline: true,
             picture: null,
           },
+          isLiked: false,
+          likes: 0,
         },
       });
     });
