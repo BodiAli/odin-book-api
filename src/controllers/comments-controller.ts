@@ -136,3 +136,25 @@ export async function createCommentLike(
     next(error);
   }
 }
+
+export async function deleteCommentLike(
+  req: Request<{ commentId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { commentId } = req.params;
+
+  try {
+    await likeQueries.deleteCommentLike(req.user.id, commentId);
+
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
