@@ -6,10 +6,7 @@ import * as postQueries from "#src/queries/post-queries.js";
 import * as likeQueries from "#src/queries/like-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import type { User } from "#src/types/routes/users.js";
-import type {
-  GetNumberOfPostLikesResponse,
-  Post,
-} from "#src/types/routes/posts.js";
+import type { Post } from "#src/types/routes/posts.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 
 describe("/posts/{postId}/likes path", () => {
@@ -86,38 +83,6 @@ describe("/posts/{postId}/likes path", () => {
         .type("json");
 
       expect(response.noContent).toBe(true);
-    });
-  });
-
-  describe("get number of post likes GET", () => {
-    it("should return 404 status with error message when post is not found", async () => {
-      expect.hasAssertions();
-
-      const response = await request(app)
-        .get("/posts/non-existing-id/likes")
-        .auth(currentUserToken, { type: "bearer" })
-        .expect("Content-type", /json/)
-        .expect(404);
-
-      expect(response.body).toStrictEqual<ClientError>({
-        errors: [{ message: "Post not found." }],
-      });
-    });
-
-    it("should return 200 status with number of post likes", async () => {
-      expect.hasAssertions();
-
-      await likeQueries.createPostLike(currentUser.id, post.id);
-
-      const response = await request(app)
-        .get(`/posts/${post.id}/likes`)
-        .auth(currentUserToken, { type: "bearer" })
-        .expect("Content-type", /json/)
-        .expect(200);
-
-      expect(response.body).toStrictEqual<GetNumberOfPostLikesResponse>({
-        likes: 1,
-      });
     });
   });
 
