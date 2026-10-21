@@ -56,7 +56,7 @@ describe("/posts/{postId}/likes path", () => {
       });
     });
 
-    it("should return 403 status with error message when liking post twice", async () => {
+    it("should return 409 status with error message when liking post twice", async () => {
       expect.hasAssertions();
 
       await request(app)
