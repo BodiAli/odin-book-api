@@ -229,4 +229,75 @@ describe("like queries", () => {
       expect(commentLikes).toBe(0);
     });
   });
+
+  describe(likeQueries.isPostLikedByCurrentUser, () => {
+    it("should throw an error when post is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.isPostLikedByCurrentUser(currentUser.id, "non-existing-id"),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Post not found."));
+    });
+
+    it("should return false when post is not liked by current user", async () => {
+      expect.hasAssertions();
+
+      const isLiked = await likeQueries.isPostLikedByCurrentUser(
+        currentUser.id,
+        post.id,
+      );
+
+      expect(isLiked).toBe(false);
+    });
+
+    it("should return true when post is liked by current user", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createPostLike(currentUser.id, post.id);
+
+      const isLiked = await likeQueries.isPostLikedByCurrentUser(
+        currentUser.id,
+        post.id,
+      );
+
+      expect(isLiked).toBe(true);
+    });
+  });
+
+  describe(likeQueries.isCommentLikedByCurrentUser, () => {
+    it("should throw an error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        likeQueries.isCommentLikedByCurrentUser(
+          currentUser.id,
+          "non-existing-id",
+        ),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
+
+    it("should return false when comment is not liked by current user", async () => {
+      expect.hasAssertions();
+
+      const isLiked = await likeQueries.isCommentLikedByCurrentUser(
+        currentUser.id,
+        comment.id,
+      );
+
+      expect(isLiked).toBe(false);
+    });
+
+    it("should return true when comment is liked by current user", async () => {
+      expect.hasAssertions();
+
+      await likeQueries.createCommentLike(currentUser.id, comment.id);
+
+      const isLiked = await likeQueries.isCommentLikedByCurrentUser(
+        currentUser.id,
+        comment.id,
+      );
+
+      expect(isLiked).toBe(true);
+    });
+  });
 });

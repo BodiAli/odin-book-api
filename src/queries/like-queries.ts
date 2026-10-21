@@ -156,3 +156,53 @@ export async function deleteCommentLike(
     },
   });
 }
+
+export async function isPostLikedByCurrentUser(
+  userId: string,
+  postId: string,
+): Promise<boolean> {
+  const post = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+  });
+  if (post === null) {
+    throw new CustomHttpStatusError(404, "Post not found.");
+  }
+
+  const like = await prisma.like.findUnique({
+    where: {
+      userId_postId: {
+        userId,
+        postId,
+      },
+    },
+  });
+
+  return Boolean(like);
+}
+
+export async function isCommentLikedByCurrentUser(
+  userId: string,
+  commentId: string,
+): Promise<boolean> {
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+  });
+  if (comment === null) {
+    throw new CustomHttpStatusError(404, "Comment not found.");
+  }
+
+  const like = await prisma.like.findUnique({
+    where: {
+      userId_commentId: {
+        userId,
+        commentId,
+      },
+    },
+  });
+
+  return Boolean(like);
+}
