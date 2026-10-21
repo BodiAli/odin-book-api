@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
+import * as likeQueries from "#src/queries/like-queries.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type {
   CreateReplyRequest,
@@ -105,6 +106,28 @@ export async function createReply(
     });
 
     res.status(201).json({ id });
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function createCommentLike(
+  req: Request<{ commentId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { commentId } = req.params;
+
+  try {
+    await likeQueries.createCommentLike(req.user.id, commentId);
+
+    res.sendStatus(204);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
