@@ -7,6 +7,7 @@ import {
   updatePostRequestBody,
   getPostCommentsResponse,
   createPostCommentResponse,
+  getNumberOfPostLikesResponse,
 } from "#src/schemas/routes/posts.js";
 import type z from "zod";
 
@@ -27,4 +28,8 @@ export type GetPostCommentsResponse = z.infer<typeof getPostCommentsResponse>;
 
 export type CreatePostCommentResponse = z.infer<
   typeof createPostCommentResponse
+>;
+
+export type GetNumberOfPostLikesResponse = z.infer<
+  typeof getNumberOfPostLikesResponse
 >;
