@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import * as postQueries from "#src/queries/post-queries.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
+import * as likeQueries from "#src/queries/like-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
 import type {
@@ -8,6 +9,7 @@ import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
   GetIndexPostsResponseBody,
+  GetNumberOfPostLikesResponse,
   GetPostCommentsResponse,
   GetPostResponseBody,
   UpdatePostRequestBody,
@@ -200,6 +202,70 @@ export async function createPostComment(
     });
 
     res.status(201).json({ id });
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function createPostLike(
+  req: Request<{ postId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { postId } = req.params;
+  try {
+    await likeQueries.createPostLike(req.user.id, postId);
+
+    res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function getNumberOfPostLikes(
+  req: Request<{ postId: string }>,
+  res: Response<GetNumberOfPostLikesResponse | ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { postId } = req.params;
+  try {
+    const postLikes = await likeQueries.getPostLikes(postId);
+
+    res.json({ likes: postLikes });
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function deletePostLike(
+  req: Request<{ postId: string }>,
+  res: Response<ClientError>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { postId } = req.params;
+
+  try {
+    await likeQueries.deletePostLike(req.user.id, postId);
+
+    res.sendStatus(204);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
