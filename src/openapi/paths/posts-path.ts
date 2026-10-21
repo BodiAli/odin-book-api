@@ -5,7 +5,6 @@ import {
   createPostRequestBody,
   createPostResponseBody,
   getIndexPostsResponseBody,
-  getNumberOfPostLikesResponse,
   getPostCommentsResponse,
   post,
   updatePostRequestBody,
@@ -349,40 +348,6 @@ registry.registerPath({
     409: {
       summary: "Conflict",
       description: "Post is already liked by the current user.",
-      content: {
-        "application/json": {
-          schema: clientError,
-        },
-      },
-    },
-    500: serverErrorResponse,
-  },
-});
-
-registry.registerPath({
-  path: "/posts/{postId}/likes",
-  method: "get",
-  description: "Get number of post likes.",
-  security,
-  request: {
-    params: z.object({
-      postId: z.string(),
-    }),
-  },
-  responses: {
-    200: {
-      summary: "OK",
-      description: "Number of post likes fetched successfully.",
-      content: {
-        "application/json": {
-          schema: getNumberOfPostLikesResponse,
-        },
-      },
-    },
-    401: unauthorizedResponse,
-    404: {
-      summary: "Not found",
-      description: "Post not found.",
       content: {
         "application/json": {
           schema: clientError,

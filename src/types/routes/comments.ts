@@ -5,7 +5,6 @@ import type {
   createReplyRequest,
   createReplyResponse,
   getCommentRepliesResponse,
-  getNumberOfCommentLikesResponse,
   updateCommentRequest,
 } from "#src/schemas/routes/comments.js";
 import type z from "zod";
@@ -23,7 +22,3 @@ export type GetCommentRepliesResponse = z.infer<
 
 export type CreateReplyRequest = z.infer<typeof createReplyRequest>;
 export type CreateReplyResponse = z.infer<typeof createReplyResponse>;
-
-export type GetNumberOfCommentLikesResponse = z.infer<
-  typeof getNumberOfCommentLikesResponse
->;

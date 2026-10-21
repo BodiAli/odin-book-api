@@ -44,7 +44,6 @@ postsRouter
 postsRouter
   .route("/:postId/likes")
   .post(postsController.createPostLike)
-  .get(postsController.getNumberOfPostLikes)
   .delete(postsController.deletePostLike);
 
 export default postsRouter;

@@ -9,7 +9,6 @@ import type {
   CreatePostRequestBody,
   CreatePostResponseBody,
   GetIndexPostsResponseBody,
-  GetNumberOfPostLikesResponse,
   GetPostCommentsResponse,
   GetPostResponseBody,
   UpdatePostRequestBody,
@@ -223,27 +222,6 @@ export async function createPostLike(
     await likeQueries.createPostLike(req.user.id, postId);
 
     res.sendStatus(204);
-  } catch (error) {
-    if (error instanceof CustomHttpStatusError) {
-      res.status(error.code).json({ errors: [{ message: error.message }] });
-      return;
-    }
-    next(error);
-  }
-}
-
-export async function getNumberOfPostLikes(
-  req: Request<{ postId: string }>,
-  res: Response<GetNumberOfPostLikesResponse | ClientError>,
-  next: NextFunction,
-): Promise<void> {
-  assert(req.user, "User not found.");
-
-  const { postId } = req.params;
-  try {
-    const postLikes = await likeQueries.getPostLikes(postId);
-
-    res.json({ likes: postLikes });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });

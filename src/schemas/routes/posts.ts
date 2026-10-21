@@ -65,7 +65,3 @@ export const getPostCommentsResponse = z.object({
 export const createPostCommentResponse = z.object({
   id: z.string(),
 });
-
-export const getNumberOfPostLikesResponse = z.object({
-  likes: z.number(),
-});
