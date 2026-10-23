@@ -45,7 +45,10 @@ export const getIndexPostsResponseBody = z.object({
 
 export const postImage = z
   .object({
-    size: z.number().max(5 * 2 ** 20, "File cannot exceed 5MiB."),
+    size: z
+      .number()
+      .max(5 * 2 ** 20, "File cannot exceed 5MiB.")
+      .min(1, "File cannot be empty."),
     mimetype: z.string().startsWith("image/", "File must be of type image."),
   })
   .optional();
