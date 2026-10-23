@@ -246,7 +246,7 @@ describe("notification queries", () => {
     });
   });
 
-  describe.only(notificationQueries.getSentNotification, () => {
+  describe(notificationQueries.getSentNotification, () => {
     it("should throw an error when notification is not found", async () => {
       expect.hasAssertions();
 
@@ -257,6 +257,31 @@ describe("notification queries", () => {
 
     it("should return the structure of notification sent to the end user", async () => {
       expect.hasAssertions();
+
+      const userAProfile = await prisma.profile.findFirstOrThrow({
+        where: {
+          userId: userA.id,
+        },
+      });
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        entityId: userAProfile.id,
+        type: "FOLLOW",
+      });
+
+      const sentNotification =
+        await notificationQueries.getSentNotification(id);
+
+      expect(sentNotification).toStrictEqual<SentNotification>({
+        id,
+        actorId: userA.id,
+        type: "FOLLOW",
+        actorProfilePicture: userAImageUrl,
+        createdAt: expect.any(Date) as Date,
+        entityId: userAProfile.id,
+        message: "test: userA started following you.",
+      });
     });
   });
 });
