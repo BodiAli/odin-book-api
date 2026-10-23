@@ -25,6 +25,6 @@ export default function generateNotificationMessage({
       return `${actorName} replied to your comment "${trimText(notificationType.comment.content)}"`;
     default:
       notificationType satisfies never;
-      throw new Error("Unknown notification type");
+      throw new Error("Unknown notification type.");
   }
 }
