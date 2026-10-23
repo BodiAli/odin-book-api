@@ -65,7 +65,7 @@ model Notification {
   notifier             User               @relation("Notifier", references: [id], fields: [notifierId])
   createdAt            DateTime           @default(now())
   notificationEntityId String             @unique
-  notificationEntity   NotificationEntity @relation(fields: [notificationEntityId], references: [id])
+  notificationEntity   NotificationEntity @relation(fields: [notificationEntityId], references: [id], onDelete: Cascade)
 }
 
 model NotificationEntity {
@@ -74,9 +74,9 @@ model NotificationEntity {
   postId       String?
   commentId    String?
   type         NotificationType
-  profile      Profile?         @relation(references: [id], fields: [profileId])
-  post         Post?            @relation(references: [id], fields: [postId])
-  comment      Comment?         @relation(references: [id], fields: [commentId])
+  profile      Profile?         @relation(references: [id], fields: [profileId], onDelete: Cascade)
+  post         Post?            @relation(references: [id], fields: [postId], onDelete: Cascade)
+  comment      Comment?         @relation(references: [id], fields: [commentId], onDelete: Cascade)
   notification Notification?
 }
 
@@ -101,7 +101,7 @@ model Comment {
   parentId             String?
   userId               String
   createdAt            DateTime             @default(now())
-  post                 Post                 @relation(references: [id], fields: [postId])
+  post                 Post                 @relation(references: [id], fields: [postId], onDelete: Cascade)
   parent               Comment?             @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies              Comment[]            @relation("ParentReplies")
   user                 User                 @relation(references: [id], fields: [userId])
