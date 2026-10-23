@@ -1,40 +1,69 @@
+import assert from "node:assert";
 import prisma from "#src/db/prisma-client.js";
 import generateNotificationMessage from "#src/utils/generate-notification-message.js";
+import { Prisma } from "#src/generated/prisma/client.js";
 import type {
+  NotificationEntity,
   SentNotification,
-  NotificationModel,
 } from "#src/types/routes/notifications.js";
 import type { NotificationType } from "#src/generated/prisma/enums.js";
+
+interface CreateNotificationArg {
+  actorId: string;
+  notifierId: string;
+  type: NotificationType;
+  entityId: string;
+}
 
 export async function createNotification({
   actorId,
   notifierId,
   type,
-}: CreateNotificationArg): Promise<NotificationModel> {
-  const createdNotification = await prisma.notification.create({
-    data: {
-      type,
-      actorId,
-      notifierId,
-    },
-    include: {
-      actor: {
-        select: {
-          id: true,
-          fullName: true,
-        },
-      },
-    },
-  });
+  entityId,
+}: CreateNotificationArg): Promise<{ id: string }> {
+  try {
+    const normalizedEntityId =
+      type === "FOLLOW"
+        ? { profileId: entityId }
+        : type === "COMMENT"
+          ? { postId: entityId }
+          : { commentId: entityId };
 
-  return {
-    id: createdNotification.id,
-    actorId: createdNotification.actorId,
-    actorName: createdNotification.actor.fullName,
-    createdAt: createdNotification.createdAt,
-    notifierId: createdNotification.notifierId,
-    type: createdNotification.type,
-  };
+    const createdNotification = await prisma.notification.create({
+      data: {
+        actorId,
+        notifierId,
+        type,
+        ...normalizedEntityId,
+      },
+    });
+
+    return { id: createdNotification.id };
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      throw new Error("Foreign key constraint failed.", { cause: error });
+    }
+    throw error;
+  }
+}
+
+function getEntityId(notificationEntity: NotificationEntity): string {
+  switch (notificationEntity.type) {
+    case "FOLLOW":
+      assert(notificationEntity.profile, "Profile missing");
+      return notificationEntity.profile.id;
+    case "COMMENT":
+      assert(notificationEntity.post, "Post missing");
+      return notificationEntity.post.id;
+    case "REPLY":
+      assert(notificationEntity.comment, "Comment missing");
+      return notificationEntity.comment.id;
+    default:
+      throw new Error("Unknown notification entity type");
+  }
 }
 
 export async function getUserNotifications(
@@ -44,15 +73,35 @@ export async function getUserNotifications(
     where: {
       notifierId: currentUserId,
     },
-    include: {
+    select: {
+      id: true,
+      createdAt: true,
+      type: true,
       actor: {
         select: {
-          fullName: true,
+          id: true,
           profile: {
             select: {
               imageUrl: true,
             },
           },
+        },
+      },
+      comment: {
+        select: {
+          id: true,
+          content: true,
+        },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      profile: {
+        select: {
+          id: true,
         },
       },
     },
@@ -62,20 +111,24 @@ export async function getUserNotifications(
   });
 
   const notificationsResponse = currentUserNotifications.map<SentNotification>(
-    ({ id, actor, createdAt, type }) => {
-      const message = generateNotificationMessage({
-        type,
-        actorName: actor.fullName,
-        entityId: null,
-      });
-      const actorProfilePicture = actor.profile?.imageUrl ?? null;
+    (notification) => {
+      const notificationEntity: NotificationEntity = {
+        type: notification.type,
+        comment: notification.comment,
+        post: notification.post,
+        profile: notification.profile,
+      };
+      const entityId = getEntityId(notificationEntity);
+      const actorProfilePicture = notification.actor.profile?.imageUrl ?? null;
 
       return {
-        id,
+        id: notification.id,
         actorProfilePicture,
-        message,
-        createdAt,
-        type,
+        createdAt: notification.createdAt,
+        actorId: notification.actor.id,
+        type: notification.type,
+        entityId,
+        message: "FOO",
       };
     },
   );
@@ -83,8 +136,51 @@ export async function getUserNotifications(
   return notificationsResponse;
 }
 
-interface CreateNotificationArg {
-  actorId: string;
-  notifierId: string;
-  type: NotificationType;
+export async function getSentNotification(
+  notificationId: string,
+): SentNotification {
+  const notification = await prisma.notification.findUnique({
+    where: {
+      id: notificationId,
+    },
+    select: {
+      id: true,
+      createdAt: true,
+      type: true,
+      actor: {
+        select: {
+          id: true,
+          profile: {
+            select: {
+              imageUrl: true,
+            },
+          },
+        },
+      },
+      comment: {
+        select: {
+          id: true,
+          content: true,
+        },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      profile: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+  if (notification === null) {
+    throw new Error("Notification not found.");
+  }
+
+  return {
+    id: notification.id,
+  };
 }
