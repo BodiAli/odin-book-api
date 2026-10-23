@@ -1,8 +1,10 @@
 import assert from "node:assert";
 import prisma from "#src/db/prisma-client.js";
 import generateNotificationMessage from "#src/utils/generate-notification-message.js";
+import * as profileQueries from "#src/queries/profile-queries.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import type {
+  DiscriminatedNotificationType,
   NotificationEntity,
   SentNotification,
 } from "#src/types/routes/notifications.js";
@@ -61,8 +63,10 @@ function getEntityId(notificationEntity: NotificationEntity): string {
     case "REPLY":
       assert(notificationEntity.comment, "Comment missing");
       return notificationEntity.comment.id;
-    default:
+    default: {
+      notificationEntity.type satisfies never;
       throw new Error("Unknown notification entity type");
+    }
   }
 }
 
@@ -80,6 +84,7 @@ export async function getUserNotifications(
       actor: {
         select: {
           id: true,
+          fullName: true,
           profile: {
             select: {
               imageUrl: true,
@@ -120,7 +125,15 @@ export async function getUserNotifications(
       };
       const entityId = getEntityId(notificationEntity);
       const actorProfilePicture = notification.actor.profile?.imageUrl ?? null;
-
+      const notificationType = getDiscriminatedNotificationType(
+        notification.type,
+        notification.post,
+        notification.comment,
+      );
+      const notificationMessage = generateNotificationMessage({
+        actorName: notification.actor.fullName,
+        notificationType,
+      });
       return {
         id: notification.id,
         actorProfilePicture,
@@ -128,7 +141,7 @@ export async function getUserNotifications(
         actorId: notification.actor.id,
         type: notification.type,
         entityId,
-        message: "FOO",
+        message: notificationMessage,
       };
     },
   );
@@ -138,7 +151,7 @@ export async function getUserNotifications(
 
 export async function getSentNotification(
   notificationId: string,
-): SentNotification {
+): Promise<SentNotification> {
   const notification = await prisma.notification.findUnique({
     where: {
       id: notificationId,
@@ -150,6 +163,7 @@ export async function getSentNotification(
       actor: {
         select: {
           id: true,
+          fullName: true,
           profile: {
             select: {
               imageUrl: true,
@@ -180,7 +194,70 @@ export async function getSentNotification(
     throw new Error("Notification not found.");
   }
 
+  const notificationEntity: NotificationEntity = {
+    type: notification.type,
+    comment: notification.comment,
+    post: notification.post,
+    profile: notification.profile,
+  };
+  const entityId = getEntityId(notificationEntity);
+
+  const notificationType = getDiscriminatedNotificationType(
+    notification.type,
+    notification.post,
+    notification.comment,
+  );
+  const notificationMessage = generateNotificationMessage({
+    actorName: notification.actor.fullName,
+    notificationType,
+  });
+
+  const actorProfilePicture = await profileQueries.getProfilePicture(
+    notification.actor.id,
+  );
+
   return {
     id: notification.id,
+    type: notification.type,
+    actorId: notification.actor.id,
+    actorProfilePicture,
+    createdAt: notification.createdAt,
+    entityId,
+    message: notificationMessage,
   };
+}
+
+function getDiscriminatedNotificationType(
+  type: NotificationType,
+  post: { title: string } | null,
+  comment: { content: string } | null,
+): DiscriminatedNotificationType {
+  switch (type) {
+    case "FOLLOW": {
+      return {
+        type,
+        comment: null,
+        post: null,
+      };
+    }
+    case "COMMENT": {
+      assert(post, "Post not found.");
+      return {
+        type,
+        comment: null,
+        post: { title: post.title },
+      };
+    }
+    case "REPLY": {
+      assert(comment, "Comment not found.");
+      return {
+        type,
+        post: null,
+        comment: { content: comment.content },
+      };
+    }
+    default:
+      (type) satisfies never;
+      throw new Error("Unknown notification type.");
+  }
 }
