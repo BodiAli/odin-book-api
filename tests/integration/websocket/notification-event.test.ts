@@ -4,6 +4,7 @@ import issueJwt from "#src/utils/issue-jwt.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import AppEmitter from "#src/events/app-emitter.js";
 import { EventType } from "#src/types/websocket/event-type.js";
+import prisma from "#src/db/prisma-client.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
@@ -36,15 +37,19 @@ describe("notification event", () => {
       fullName: "test: userB",
       password: "test-userB-password",
     });
+    const userAProfile = await prisma.profile.findUniqueOrThrow({
+      where: { userId: userA.id },
+    });
     const userBToken = issueJwt(userB.id, "10m");
     const notification = await notificationQueries.createNotification({
       actorId: userA.id,
       notifierId: userB.id,
       type: "FOLLOW",
+      entityId: userAProfile.id,
     });
     const wsUserB = await utils.connectClient(userBToken);
 
-    AppEmitter.getInstance().emitNotification(notification);
+    AppEmitter.getInstance().emitNotification(userB.id, notification.id);
     const message = await utils.waitForMessage(wsUserB);
 
     expect(message).toStrictEqual<JsonServerFrame>({
@@ -53,9 +58,11 @@ describe("notification event", () => {
       data: {
         id: notification.id,
         actorProfilePicture: userA.picture,
-        createdAt: notification.createdAt.toISOString(),
-        type: notification.type,
+        createdAt: expect.any(String) as string,
+        type: "FOLLOW",
         message: "test: userA started following you.",
+        actorId: userA.id,
+        entityId: userAProfile.id,
       },
     });
   });

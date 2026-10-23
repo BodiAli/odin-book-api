@@ -5,6 +5,7 @@ import issueJwt from "#src/utils/issue-jwt.js";
 import { EventType } from "#src/types/websocket/event-type.js";
 import utils from "#test-utils/websocket-utils.js";
 import sendFrame from "#src/websocket/send-frame.js";
+import prisma from "#src/db/prisma-client.js";
 import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
@@ -40,15 +41,19 @@ describe("send notification", () => {
       fullName: "test: notifier",
       password: "test-notifier",
     });
+    const actorProfile = await prisma.profile.findUniqueOrThrow({
+      where: { userId: actor.id },
+    });
     const notification = await notificationQueries.createNotification({
       actorId: actor.id,
       notifierId: notifier.id,
       type: "FOLLOW",
+      entityId: actorProfile.id,
     });
     const notifierToken = issueJwt(notifier.id, "10m");
     const ws = await utils.connectClient(notifierToken);
 
-    await sendNotification(notification);
+    await sendNotification(notifier.id, notification.id);
     const notifierMsg = await utils.waitForMessage(ws);
 
     expect(notifierMsg).toStrictEqual<JsonServerFrame>({
@@ -56,10 +61,12 @@ describe("send notification", () => {
       success: true,
       data: {
         id: notification.id,
-        createdAt: notification.createdAt.toISOString(),
+        createdAt: expect.any(String) as string,
         actorProfilePicture: actor.picture,
         message: "test: actor started following you.",
         type: "FOLLOW",
+        actorId: actor.id,
+        entityId: actorProfile.id,
       },
     });
   });
@@ -82,10 +89,14 @@ describe("send notification", () => {
       fullName: "test: userC",
       password: "test-userC",
     });
+    const userAProfile = await prisma.profile.findUniqueOrThrow({
+      where: { userId: userA.id },
+    });
     const notification = await notificationQueries.createNotification({
       actorId: userA.id,
       notifierId: userB.id,
       type: "FOLLOW",
+      entityId: userAProfile.id,
     });
     const userAToken = issueJwt(userA.id, "10m");
     const userBToken = issueJwt(userB.id, "10m");
@@ -97,7 +108,7 @@ describe("send notification", () => {
     const userBPromise = utils.waitForMessage(wsUserB, 200);
     const userCPromise = utils.waitForMessage(wsUserC, 200);
 
-    await sendNotification(notification);
+    await sendNotification(userB.id, notification.id);
 
     await expect(userAPromise).rejects.toStrictEqual(
       new Error("No message received"),
@@ -110,10 +121,12 @@ describe("send notification", () => {
       success: true,
       data: {
         id: notification.id,
-        createdAt: notification.createdAt.toISOString(),
+        createdAt: expect.any(String) as string,
         actorProfilePicture: userA.picture,
         message: "test: userA started following you.",
         type: "FOLLOW",
+        actorId: userA.id,
+        entityId: userAProfile.id,
       },
     });
   });
@@ -131,10 +144,14 @@ describe("send notification", () => {
       fullName: "test: notifier",
       password: "test-notifier-password",
     });
+    const actorProfile = await prisma.profile.findUniqueOrThrow({
+      where: { userId: actor.id },
+    });
     const notification = await notificationQueries.createNotification({
       actorId: actor.id,
       notifierId: notifier.id,
       type: "FOLLOW",
+      entityId: actorProfile.id,
     });
     const notifierToken = issueJwt(notifier.id);
     const ws1Notifier = await utils.connectClient(notifierToken);
@@ -144,7 +161,7 @@ describe("send notification", () => {
     const ws2MsgPromise = utils.waitForMessage(ws2Notifier);
     const ws3MsgPromise = utils.waitForMessage(ws3Notifier);
 
-    await sendNotification(notification);
+    await sendNotification(notifier.id, notification.id);
     const ws1Msg = await ws1MsgPromise;
     const ws2Msg = await ws2MsgPromise;
     const ws3Msg = await ws3MsgPromise;
@@ -155,8 +172,10 @@ describe("send notification", () => {
         id: notification.id,
         type: "FOLLOW",
         actorProfilePicture: actor.picture,
-        createdAt: notification.createdAt.toISOString(),
+        createdAt: expect.any(String) as string,
         message: "test: actor started following you.",
+        actorId: actor.id,
+        entityId: actorProfile.id,
       },
     };
 
@@ -178,13 +197,17 @@ describe("send notification", () => {
       fullName: "test: actor",
       password: "test-actor-password",
     });
+    const actorProfile = await prisma.profile.findUniqueOrThrow({
+      where: { userId: actor.id },
+    });
     const notification = await notificationQueries.createNotification({
       actorId: actor.id,
       notifierId: notifier.id,
       type: "FOLLOW",
+      entityId: actorProfile.id,
     });
 
-    await sendNotification(notification);
+    await sendNotification(notifier.id, notification.id);
 
     expect(sendFrame).not.toHaveBeenCalled();
   });

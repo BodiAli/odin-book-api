@@ -1,14 +1,11 @@
 import AppEmitter from "#src/events/app-emitter.js";
 import sendNotification from "#src/services/send-notification.js";
-import type { NotificationModel } from "#src/types/routes/notifications.js";
 
 vi.mock(import("#src/services/send-notification.js"), () => {
   return {
-    default: vi.fn<(notification: NotificationModel) => Promise<void>>(
-      async (_notification): Promise<void> => {
-        // empty
-      },
-    ),
+    default: vi.fn<() => Promise<void>>(async (): Promise<void> => {
+      // empty
+    }),
   };
 });
 
@@ -46,15 +43,17 @@ describe("app-emitter class", () => {
 
       const notification = {
         id: "test-notificationId",
-        actorId: "test-actorId",
-        actorName: "test: actorName",
-        createdAt: new Date(),
         notifierId: "test-notifierId",
-        type: "FOLLOW" as const,
       };
       AppEmitter.getInstance().listenForNotification();
-      AppEmitter.getInstance().emitNotification(notification);
-      AppEmitter.getInstance().emitNotification(notification);
+      AppEmitter.getInstance().emitNotification(
+        notification.notifierId,
+        notification.id,
+      );
+      AppEmitter.getInstance().emitNotification(
+        notification.notifierId,
+        notification.id,
+      );
 
       expect(sendNotification).toHaveBeenCalledTimes(2);
     });
@@ -67,15 +66,17 @@ describe("app-emitter class", () => {
       AppEmitter.getInstance().listenForNotification();
       const notification = {
         id: "test-notificationId",
-        actorId: "test-actorId",
-        actorName: "test: actorName",
-        createdAt: new Date(),
         notifierId: "test-notifierId",
-        type: "FOLLOW" as const,
       };
-      AppEmitter.getInstance().emitNotification(notification);
+      AppEmitter.getInstance().emitNotification(
+        notification.notifierId,
+        notification.id,
+      );
 
-      expect(sendNotification).toHaveBeenCalledExactlyOnceWith(notification);
+      expect(sendNotification).toHaveBeenCalledExactlyOnceWith(
+        notification.notifierId,
+        notification.id,
+      );
     });
   });
 });

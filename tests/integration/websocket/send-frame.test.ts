@@ -41,6 +41,8 @@ describe("sending frame", () => {
         id: "test-notification-id",
         message: "test: message",
         type: "FOLLOW",
+        actorId: "test-actor-id",
+        entityId: "test-entity-id",
       },
     });
 
@@ -69,6 +71,8 @@ describe("sending frame", () => {
         id: "test-notification-id",
         message: "test: message",
         type: "FOLLOW",
+        actorId: "test-actor-id",
+        entityId: "test-entity-id",
       },
     };
 

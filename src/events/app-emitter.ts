@@ -1,6 +1,5 @@
 import { EventEmitter } from "node:events";
 import sendNotification from "#src/services/send-notification.js";
-import type { NotificationModel } from "#src/types/routes/notifications.js";
 
 class AppEmitter {
   #appEmitter: EventEmitter;
@@ -27,17 +26,18 @@ class AppEmitter {
 
   private async notificationListener(
     this: void,
-    notification: NotificationModel,
+    notifierId: string,
+    notificationId: string,
   ): Promise<void> {
     try {
-      await sendNotification(notification);
+      await sendNotification(notifierId, notificationId);
     } catch (error) {
       console.error("Failed to send notification", error);
     }
   }
 
-  emitNotification(notification: NotificationModel): void {
-    this.#appEmitter.emit("notification", notification);
+  emitNotification(notifierId: string, notificationId: string): void {
+    this.#appEmitter.emit("notification", notifierId, notificationId);
   }
 }
 
