@@ -34,12 +34,12 @@ model User {
 }
 
 model Profile {
-  id                   String               @id @default(uuid())
-  description          String?
-  imageUrl             String?
-  user                 User                 @relation(references: [id], fields: [userId])
-  userId               String               @unique
-  notificationEntities NotificationEntity[]
+  id            String         @id @default(uuid())
+  description   String?
+  imageUrl      String?
+  user          User           @relation(references: [id], fields: [userId])
+  userId        String         @unique
+  notifications Notification[]
 }
 
 model UserFollow {
@@ -58,55 +58,48 @@ enum NotificationType {
 }
 
 model Notification {
-  id                   String             @id @default(uuid())
-  actorId              String
-  actor                User               @relation("Actor", references: [id], fields: [actorId])
-  notifierId           String
-  notifier             User               @relation("Notifier", references: [id], fields: [notifierId])
-  createdAt            DateTime           @default(now())
-  notificationEntityId String             @unique
-  notificationEntity   NotificationEntity @relation(fields: [notificationEntityId], references: [id], onDelete: Cascade)
-}
-
-model NotificationEntity {
-  id           String           @id @default(uuid())
-  profileId    String?
-  postId       String?
-  commentId    String?
-  type         NotificationType
-  profile      Profile?         @relation(references: [id], fields: [profileId], onDelete: Cascade)
-  post         Post?            @relation(references: [id], fields: [postId], onDelete: Cascade)
-  comment      Comment?         @relation(references: [id], fields: [commentId], onDelete: Cascade)
-  notification Notification?
+  id         String           @id @default(uuid())
+  actorId    String
+  notifierId String
+  createdAt  DateTime         @default(now())
+  profileId  String?
+  postId     String?
+  commentId  String?
+  type       NotificationType
+  actor      User             @relation("Actor", references: [id], fields: [actorId])
+  notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
+  profile    Profile?         @relation(references: [id], fields: [profileId], onDelete: Cascade)
+  post       Post?            @relation(references: [id], fields: [postId], onDelete: Cascade)
+  comment    Comment?         @relation(references: [id], fields: [commentId], onDelete: Cascade)
 }
 
 model Post {
-  id                   String               @id @default(uuid())
-  title                String               @db.VarChar(255)
-  content              String
-  imageUrl             String?
-  imageId              String?
-  createdAt            DateTime             @default(now())
-  userId               String
-  user                 User                 @relation(references: [id], fields: [userId])
-  comments             Comment[]
-  likes                Like[]
-  notificationEntities NotificationEntity[]
+  id            String         @id @default(uuid())
+  title         String         @db.VarChar(255)
+  content       String
+  imageUrl      String?
+  imageId       String?
+  createdAt     DateTime       @default(now())
+  userId        String
+  user          User           @relation(references: [id], fields: [userId])
+  comments      Comment[]
+  likes         Like[]
+  notifications Notification[]
 }
 
 model Comment {
-  id                   String               @id @default(uuid())
-  content              String
-  postId               String
-  parentId             String?
-  userId               String
-  createdAt            DateTime             @default(now())
-  post                 Post                 @relation(references: [id], fields: [postId], onDelete: Cascade)
-  parent               Comment?             @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies              Comment[]            @relation("ParentReplies")
-  user                 User                 @relation(references: [id], fields: [userId])
-  likes                Like[]
-  notificationEntities NotificationEntity[]
+  id            String         @id @default(uuid())
+  content       String
+  postId        String
+  parentId      String?
+  userId        String
+  createdAt     DateTime       @default(now())
+  post          Post           @relation(references: [id], fields: [postId], onDelete: Cascade)
+  parent        Comment?       @relation("ParentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       Comment[]      @relation("ParentReplies")
+  user          User           @relation(references: [id], fields: [userId])
+  likes         Like[]
+  notifications Notification[]
 }
 
 model Like {
