@@ -1,19 +1,30 @@
-import type { NotificationType } from "#src/generated/prisma/enums.js";
+import type { DiscriminatedNotificationType } from "#src/types/routes/notifications.js";
 
-interface NotificationData {
+interface GenerateNotification {
   actorName: string;
-  type: NotificationType;
-  entityId: string | null;
+  notificationType: DiscriminatedNotificationType;
+}
+
+function trimText(text: string): string {
+  if (text.length > 50) {
+    return `${text.slice(0, 47)}...`;
+  }
+  return text;
 }
 
 export default function generateNotificationMessage({
   actorName,
-  type,
-}: NotificationData): string {
-  switch (type) {
-    case "FOLLOW": {
+  notificationType,
+}: GenerateNotification): string {
+  switch (notificationType.type) {
+    case "FOLLOW":
       return `${actorName} started following you.`;
-    }
+    case "COMMENT":
+      return `${actorName} commented on your post "${trimText(notificationType.post.title)}"`;
+    case "REPLY":
+      return `${actorName} replied to your comment "${trimText(notificationType.comment.content)}"`;
+    default:
+      notificationType satisfies never;
+      throw new Error("Unknown notification type");
   }
-  return "NOT IMPLEMENTED";
 }
