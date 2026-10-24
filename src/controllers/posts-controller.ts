@@ -202,15 +202,18 @@ export async function createPostComment(
       postId,
       content,
     });
+
     const authorId = await postQueries.getPostAuthorId(postId);
-    const notification = await notificationQueries.createNotification({
-      actorId: req.user.id,
-      notifierId: authorId,
-      type: "COMMENT",
-      entityId: postId,
-    });
-    const appEmitter = AppEmitter.getInstance();
-    appEmitter.emitNotification(authorId, notification.id);
+    if (authorId !== req.user.id) {
+      const notification = await notificationQueries.createNotification({
+        actorId: req.user.id,
+        notifierId: authorId,
+        type: "COMMENT",
+        entityId: postId,
+      });
+      const appEmitter = AppEmitter.getInstance();
+      appEmitter.emitNotification(authorId, notification.id);
+    }
 
     res.status(201).json({ id });
   } catch (error) {

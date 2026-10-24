@@ -283,5 +283,26 @@ describe("/posts/{postId}/comments path", () => {
 
       await utils.cleanupConnection();
     });
+
+    it("should not send notification when the comment and post author are the same", async () => {
+      expect.hasAssertions();
+
+      await utils.initiateWebSocketServer();
+      const ws = await utils.connectClient(currentUserToken);
+      const waitForMessage = utils.waitForMessage<SentNotification>(ws);
+
+      await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: comment content" })
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      await expect(waitForMessage).rejects.toThrow(
+        new Error("No message received"),
+      );
+
+      await utils.cleanupConnection();
+    });
   });
 });
