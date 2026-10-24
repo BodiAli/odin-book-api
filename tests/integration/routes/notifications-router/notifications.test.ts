@@ -4,6 +4,8 @@ import indexRouter from "#src/routes/index-router.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
+import * as profileQueries from "#src/queries/profile-queries.js";
+import * as postQueries from "#src/queries/post-queries.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("/notifications path", () => {
@@ -20,7 +22,7 @@ describe("/notifications path", () => {
   }
 
   describe("get current user notifications GET", () => {
-    it("should 200 status with current user notifications", async () => {
+    it("should return 200 status with current user notifications", async () => {
       expect.hasAssertions();
 
       const userA = await userQueries.createUserLocal({
@@ -38,15 +40,25 @@ describe("/notifications path", () => {
         fullName: "test: userC",
         password: "test-userC-password",
       });
+      const userAProfileId = await profileQueries.getProfileId(userA.id);
+      const userCPost = await postQueries.createPost({
+        title: "test: userC post title",
+        content: "test: userC post content",
+        imageId: null,
+        imageUrl: null,
+        userId: userC.id,
+      });
       await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userC.id,
         type: "FOLLOW",
+        entityId: userAProfileId,
       });
       await notificationQueries.createNotification({
         actorId: userB.id,
         notifierId: userC.id,
-        type: "FOLLOW",
+        type: "COMMENT",
+        entityId: userCPost.id,
       });
       const userCToken = issueJwt(userC.id, "10m");
 
@@ -62,8 +74,11 @@ describe("/notifications path", () => {
             id: expect.any(String) as string,
             actorProfilePicture: userB.picture,
             createdAt: expect.any(String) as string,
-            message: "test: userB started following you.",
-            type: "FOLLOW",
+            message:
+              'test: userB commented on your post "test: userC post title"',
+            type: "COMMENT",
+            entityId: userCPost.id,
+            actorId: userB.id,
           },
           {
             id: expect.any(String) as string,
@@ -71,6 +86,8 @@ describe("/notifications path", () => {
             createdAt: expect.any(String) as string,
             message: "test: userA started following you.",
             type: "FOLLOW",
+            entityId: userAProfileId,
+            actorId: userA.id,
           },
         ],
       });

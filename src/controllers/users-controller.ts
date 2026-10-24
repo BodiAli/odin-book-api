@@ -2,6 +2,7 @@ import assert from "node:assert";
 import * as userQueries from "#src/queries/user-queries.js";
 import * as userFollowsQueries from "#src/queries/user-follows-queries.js";
 import * as notificationQueries from "#src/queries/notification-queries.js";
+import * as profileQueries from "#src/queries/profile-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import AppEmitter from "#src/events/app-emitter.js";
 import issueJwt from "#src/utils/issue-jwt.js";
@@ -55,13 +56,15 @@ export async function createFollowerForTargetUser(
 
   try {
     await userFollowsQueries.followUser(req.user.id, userId);
+    const actorProfileId = await profileQueries.getProfileId(req.user.id);
     const notification = await notificationQueries.createNotification({
       actorId: req.user.id,
       notifierId: userId,
       type: "FOLLOW",
+      entityId: actorProfileId,
     });
     const appEmitter = AppEmitter.getInstance();
-    appEmitter.emitNotification(notification);
+    appEmitter.emitNotification(userId, notification.id);
     res.sendStatus(204);
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {

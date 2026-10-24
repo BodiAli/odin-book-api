@@ -71,17 +71,15 @@ describe("/users/:userId/followers path", () => {
     it("should return 204 status when request is valid", async () => {
       expect.hasAssertions();
 
-      const userA = await prisma.user.create({
-        data: {
-          email: "test-userA@test.com",
-          fullName: "test: userA",
-        },
+      const userA = await userQueries.createUserLocal({
+        email: "test-userA@test.com",
+        fullName: "test: userA",
+        password: "test-userA-password",
       });
-      const userB = await prisma.user.create({
-        data: {
-          email: "test-userB@test.com",
-          fullName: "test: userB",
-        },
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
       });
       const userAToken = issueJwt(userA.id, "10m");
 
