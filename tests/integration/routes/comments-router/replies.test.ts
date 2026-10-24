@@ -6,6 +6,7 @@ import * as postQueries from "#src/queries/post-queries.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import prisma from "#src/db/prisma-client.js";
+import utils from "#test-utils/websocket-utils.js";
 import type { User } from "#src/types/routes/users.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { Post } from "#src/types/routes/posts.js";
@@ -14,6 +15,7 @@ import type {
   CreateReplyResponse,
   GetCommentRepliesResponse,
 } from "#src/types/routes/comments.js";
+import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("/comments/{commentId}/replies path", () => {
   const app = express();
@@ -265,6 +267,70 @@ describe("/comments/{commentId}/replies path", () => {
       expect(response.body).toStrictEqual<CreateReplyResponse>({
         id: expect.any(String) as string,
       });
+    });
+
+    it("should send notification to the comment author", async () => {
+      expect.hasAssertions();
+
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
+      const userBComment = await commentQueries.createComment({
+        userId: userB.id,
+        content: "test: userB comment content",
+        postId: post.id,
+      });
+      const userBToken = issueJwt(userB.id);
+      await utils.initiateWebSocketServer();
+      const ws = await utils.connectClient(userBToken);
+      const waitForMessage = utils.waitForMessage<SentNotification>(ws);
+
+      await request(app)
+        .post(`/comments/${userBComment.id}/replies`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: reply content", postId: post.id })
+        .expect("Content-type", /json/)
+        .expect(201);
+      const msg = await waitForMessage;
+      interface JsonNotification extends Omit<SentNotification, "createdAt"> {
+        createdAt: string;
+      }
+
+      expect(msg.data).toStrictEqual<JsonNotification>({
+        id: expect.any(String) as string,
+        type: "REPLY",
+        actorId: currentUser.id,
+        actorProfilePicture: null,
+        createdAt: expect.any(String) as string,
+        entityId: userBComment.id,
+        message:
+          'test: full name replied to your comment "test: userB comment content"',
+      });
+
+      await utils.cleanupConnection();
+    });
+
+    it("should not send notification when the comment and reply author are the same", async () => {
+      expect.hasAssertions();
+
+      await utils.initiateWebSocketServer();
+      const ws = await utils.connectClient(currentUserToken);
+      const waitForMessage = utils.waitForMessage<SentNotification>(ws);
+
+      await request(app)
+        .post(`/comments/${commentId}/replies`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: reply content", postId: post.id })
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      await expect(waitForMessage).rejects.toThrow(
+        new Error("No message received"),
+      );
+
+      await utils.cleanupConnection();
     });
   });
 });
