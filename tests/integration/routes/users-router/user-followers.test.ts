@@ -8,7 +8,7 @@ import * as userQueries from "#src/queries/user-queries.js";
 import utils from "#test-utils/websocket-utils.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { FollowersResponse, PublicUser } from "#src/types/routes/users.js";
-import type { ServerNotificationFrame } from "#src/types/websocket/data-frames.js";
+import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("/users/:userId/followers path", () => {
   const app = express();
@@ -108,7 +108,7 @@ describe("/users/:userId/followers path", () => {
       const userBToken = issueJwt(userB.id, "10m");
       await utils.initiateWebSocketServer();
       const ws = await utils.connectClient(userBToken);
-      const waitForMessage = utils.waitForMessage<ServerNotificationFrame>(ws);
+      const waitForMessage = utils.waitForMessage<SentNotification>(ws);
 
       await request(app)
         .post(`/users/${userB.id}/followers`)
