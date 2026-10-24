@@ -140,4 +140,28 @@ describe("profile queries", () => {
       expect(profilePicture).toBe("test-image-url");
     });
   });
+
+  describe(profileQueries.getProfileId, () => {
+    it("should return user's profile id", async () => {
+      expect.hasAssertions();
+
+      const user = await prisma.user.create({
+        data: {
+          email: "test-email@test.com",
+          fullName: "test: full name",
+          profile: {
+            create: {},
+          },
+        },
+        select: {
+          id: true,
+          profile: true,
+        },
+      });
+      assert(user.profile);
+      const profileId = await profileQueries.getProfileId(user.id);
+
+      expect(profileId).toBe(user.profile.id);
+    });
+  });
 });

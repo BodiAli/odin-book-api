@@ -59,3 +59,14 @@ export interface CreateProfileArguments {
   imageUrl: string | null;
   description: string | null;
 }
+
+export async function getProfileId(userId: string): Promise<string> {
+  const profile = await prisma.profile.findUnique({
+    where: {
+      userId,
+    },
+  });
+  assert(profile, "Profile not found.");
+
+  return profile.id;
+}
