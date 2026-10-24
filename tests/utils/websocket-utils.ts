@@ -2,6 +2,11 @@ import { createServer, Server } from "node:http";
 import WebSocket from "ws";
 import WebSocketApp from "#src/websocket/index.js";
 import Clients from "#src/websocket/clients.js";
+import type { ServerDataFrame } from "#src/types/websocket/data-frames.js";
+
+interface FrameData<T> extends Omit<ServerDataFrame, "data"> {
+  data: T;
+}
 
 const utils: {
   server: Server | null;
@@ -10,7 +15,7 @@ const utils: {
     token: string,
     isAutoPong?: boolean,
   ): Promise<WebSocket>;
-  waitForMessage<T>(ws: WebSocket, timeout?: number): Promise<T>;
+  waitForMessage<T>(ws: WebSocket, timeout?: number): Promise<FrameData<T>>;
   waitForClose(
     this: void,
     ws: WebSocket,
