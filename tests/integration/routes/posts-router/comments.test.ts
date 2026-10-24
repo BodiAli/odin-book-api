@@ -6,6 +6,7 @@ import * as commentQueries from "#src/queries/comment-queries.js";
 import indexRouter from "#src/routes/index-router.js";
 import issueJwt from "#src/utils/issue-jwt.js";
 import prisma from "#src/db/prisma-client.js";
+import utils from "#test-utils/websocket-utils.js";
 import type { User } from "#src/types/routes/users.js";
 import type {
   CreatePostCommentResponse,
@@ -14,6 +15,7 @@ import type {
 } from "#src/types/routes/posts.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type { Comments } from "#src/types/routes/comments.js";
+import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("/posts/{postId}/comments path", () => {
   const app = express();
@@ -235,6 +237,51 @@ describe("/posts/{postId}/comments path", () => {
       expect(response.body).toStrictEqual<CreatePostCommentResponse>({
         id: expect.any(String) as string,
       });
+    });
+
+    it("should send notification to the post author", async () => {
+      expect.hasAssertions();
+
+      const userB = await userQueries.createUserLocal({
+        email: "test-userB@test.com",
+        fullName: "test: userB",
+        password: "test-userB-password",
+      });
+      const userBPost = await postQueries.createPost({
+        userId: userB.id,
+        title: "test: userB post title",
+        content: "test: userB post content",
+        imageId: null,
+        imageUrl: null,
+      });
+      const userBToken = issueJwt(userB.id);
+      await utils.initiateWebSocketServer();
+      const ws = await utils.connectClient(userBToken);
+      const waitForMessage = utils.waitForMessage<SentNotification>(ws);
+
+      await request(app)
+        .post(`/posts/${userBPost.id}/comments`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: comment content" })
+        .expect("Content-type", /json/)
+        .expect(201);
+      const msg = await waitForMessage;
+      interface JsonNotification extends Omit<SentNotification, "createdAt"> {
+        createdAt: string;
+      }
+
+      expect(msg.data).toStrictEqual<JsonNotification>({
+        id: expect.any(String) as string,
+        type: "COMMENT",
+        actorId: currentUser.id,
+        actorProfilePicture: null,
+        createdAt: expect.any(String) as string,
+        entityId: userBPost.id,
+        message:
+          'test: currentUser commented on your post "test: userB post title"',
+      });
+
+      await utils.cleanupConnection();
     });
   });
 });
