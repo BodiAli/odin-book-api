@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
@@ -280,4 +281,22 @@ export async function deletePost(
     }
     throw error;
   }
+}
+
+export async function getPostAuthorId(postId: string): Promise<string> {
+  const postAuthor = await prisma.post.findUnique({
+    where: {
+      id: postId,
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+  assert(postAuthor, "Post is not found.");
+
+  return postAuthor.user.id;
 }

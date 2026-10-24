@@ -885,4 +885,27 @@ describe("post queries", () => {
       );
     });
   });
+
+  describe(postQueries.getPostAuthorId, () => {
+    it("should return the post author id", async () => {
+      expect.hasAssertions();
+
+      const user = await userQueries.createUserLocal({
+        email: "test-email@test.com",
+        fullName: "test: full name",
+        password: "test-password",
+      });
+      const post = await postQueries.createPost({
+        title: "test: post title",
+        content: "test: post content",
+        imageId: null,
+        imageUrl: null,
+        userId: user.id,
+      });
+
+      const authorId = await postQueries.getPostAuthorId(post.id);
+
+      expect(authorId).toBe(user.id);
+    });
+  });
 });
