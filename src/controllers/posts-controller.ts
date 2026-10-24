@@ -2,8 +2,10 @@ import assert from "node:assert";
 import * as postQueries from "#src/queries/post-queries.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
 import * as likeQueries from "#src/queries/like-queries.js";
+import * as notificationQueries from "#src/queries/notification-queries.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import uploadImage from "#src/services/upload-image.js";
+import AppEmitter from "#src/events/app-emitter.js";
 import type {
   CreatePostCommentResponse,
   CreatePostRequestBody,
@@ -200,6 +202,15 @@ export async function createPostComment(
       postId,
       content,
     });
+    const authorId = await postQueries.getPostAuthorId(postId);
+    const notification = await notificationQueries.createNotification({
+      actorId: req.user.id,
+      notifierId: authorId,
+      type: "COMMENT",
+      entityId: postId,
+    });
+    const appEmitter = AppEmitter.getInstance();
+    appEmitter.emitNotification(authorId, notification.id);
 
     res.status(201).json({ id });
   } catch (error) {
