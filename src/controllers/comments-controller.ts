@@ -2,6 +2,8 @@ import assert from "node:assert";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
 import * as likeQueries from "#src/queries/like-queries.js";
+import * as notificationQueries from "#src/queries/notification-queries.js";
+import AppEmitter from "#src/events/app-emitter.js";
 import type { ClientError } from "#src/types/errors/errors.js";
 import type {
   CreateReplyRequest,
@@ -105,6 +107,18 @@ export async function createReply(
       postId,
       content,
     });
+
+    const commentAuthorId = await commentQueries.getCommentAuthorId(commentId);
+    if (commentAuthorId !== req.user.id) {
+      const notification = await notificationQueries.createNotification({
+        actorId: req.user.id,
+        notifierId: commentAuthorId,
+        type: "REPLY",
+        entityId: commentId,
+      });
+      const appEmitter = AppEmitter.getInstance();
+      appEmitter.emitNotification(commentAuthorId, notification.id);
+    }
 
     res.status(201).json({ id });
   } catch (error) {
