@@ -943,4 +943,42 @@ describe("comment queries", () => {
       expect(deletedComment).toBeNull();
     });
   });
+
+  describe(commentQueries.getCommentAuthorId, () => {
+    it("should return comment author id", async () => {
+      expect.hasAssertions();
+
+      const comment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+
+      const commentAuthorId = await commentQueries.getCommentAuthorId(
+        comment.id,
+      );
+
+      expect(commentAuthorId).toBe(user.id);
+    });
+
+    it("should return reply author id", async () => {
+      expect.hasAssertions();
+
+      const comment = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+      const reply = await commentQueries.createReply({
+        content: "test: reply content",
+        postId: post.id,
+        userId: user.id,
+        parentId: comment.id,
+      });
+
+      const replyAuthorId = await commentQueries.getCommentAuthorId(reply.id);
+
+      expect(replyAuthorId).toBe(user.id);
+    });
+  });
 });

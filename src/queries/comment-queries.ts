@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
@@ -272,4 +273,22 @@ export async function deleteComment(commentId: string): Promise<void> {
     }
     throw error;
   }
+}
+
+export async function getCommentAuthorId(commentId: string): Promise<string> {
+  const commentAuthor = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+  assert(commentAuthor, "Comment is not found.");
+
+  return commentAuthor.user.id;
 }
