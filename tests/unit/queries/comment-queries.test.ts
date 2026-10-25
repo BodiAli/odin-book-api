@@ -2,19 +2,19 @@ import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import * as commentQueries from "#src/queries/comment-queries.js";
 import * as likeQueries from "#src/queries/like-queries.js";
-import type { PostModel, UserModel } from "#src/generated/prisma/models.js";
-import type { Comments } from "#src/types/routes/comments.js";
+import * as userQueries from "#src/queries/user-queries.js";
+import type { PostModel } from "#src/generated/prisma/models.js";
+import type { Comment, Comments } from "#src/types/routes/comments.js";
 
 describe("comment queries", () => {
-  let user: Omit<UserModel, "password">;
+  let user: { id: string };
   let post: PostModel;
 
   beforeEach(async () => {
-    user = await prisma.user.create({
-      data: {
-        email: "test-email@test.com",
-        fullName: "test: full name",
-      },
+    user = await userQueries.createUserLocal({
+      email: "test-email@test.com",
+      fullName: "test: full name",
+      password: "test-password",
     });
     post = await prisma.post.create({
       data: {
@@ -241,9 +241,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -284,9 +284,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -329,9 +329,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -347,9 +347,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -365,9 +365,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -413,9 +413,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -431,9 +431,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -652,9 +652,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -670,9 +670,9 @@ describe("comment queries", () => {
           isLiked: false,
           likes: 0,
           author: {
-            fullName: user.fullName,
+            fullName: "test: full name",
             id: user.id,
-            isOnline: false,
+            isOnline: true,
             lastSeen: expect.any(Date) as Date,
             picture: null,
           },
@@ -1042,6 +1042,46 @@ describe("comment queries", () => {
       const replyAuthorId = await commentQueries.getCommentAuthorId(reply.id);
 
       expect(replyAuthorId).toBe(user.id);
+    });
+  });
+
+  describe(commentQueries.getComment, () => {
+    it("should throw an error when comment is not found", async () => {
+      expect.hasAssertions();
+
+      await expect(
+        commentQueries.getComment(user.id, "non-existing-id"),
+      ).rejects.toThrow(new CustomHttpStatusError(404, "Comment not found."));
+    });
+
+    it("should return comment", async () => {
+      expect.hasAssertions();
+
+      const { id } = await commentQueries.createComment({
+        content: "test: comment content",
+        postId: post.id,
+        userId: user.id,
+      });
+
+      const comment = await commentQueries.getComment(user.id, id);
+
+      expect(comment).toStrictEqual<Comment>({
+        id,
+        content: "test: comment content",
+        createdAt: expect.any(Date) as Date,
+        isLiked: false,
+        likes: 0,
+        parentId: null,
+        postId: post.id,
+        userId: user.id,
+        author: {
+          fullName: "test: full name",
+          id: user.id,
+          isOnline: true,
+          lastSeen: expect.any(Date) as Date,
+          picture: null,
+        },
+      });
     });
   });
 });

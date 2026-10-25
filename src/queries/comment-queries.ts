@@ -2,8 +2,10 @@ import assert from "node:assert";
 import prisma from "#src/db/prisma-client.js";
 import CustomHttpStatusError from "#src/errors/http-status-error.js";
 import { Prisma } from "#src/generated/prisma/client.js";
+import * as userQueries from "#src/queries/user-queries.js";
+import * as likeQueries from "#src/queries/like-queries.js";
 import type { CommentModel } from "#src/generated/prisma/models.js";
-import type { Comments } from "#src/types/routes/comments.js";
+import type { Comment, Comments } from "#src/types/routes/comments.js";
 
 export async function createComment({
   userId,
@@ -311,4 +313,32 @@ export async function getCommentAuthorId(commentId: string): Promise<string> {
   assert(commentAuthor, "Comment is not found.");
 
   return commentAuthor.user.id;
+}
+
+export async function getComment(
+  userId: string,
+  commentId: string,
+): Promise<Comment> {
+  const comment = await prisma.comment.findUnique({
+    where: {
+      id: commentId,
+    },
+  });
+  if (comment === null) {
+    throw new CustomHttpStatusError(404, "Comment not found.");
+  }
+
+  const author = await userQueries.getPublicUser(userId);
+  const commentLikes = await likeQueries.getCommentLikes(commentId);
+  const isCommentLiked = await likeQueries.isCommentLikedByCurrentUser(
+    userId,
+    commentId,
+  );
+
+  return {
+    ...comment,
+    author,
+    isLiked: isCommentLiked,
+    likes: commentLikes,
+  };
 }
