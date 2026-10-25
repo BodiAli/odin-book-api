@@ -48,3 +48,7 @@ export const createReplyRequest = createCommentRequest.extend({
 export const createReplyResponse = z.object({
   id: z.string(),
 });
+
+export const getCommentResponse = z.object({
+  comment,
+});
