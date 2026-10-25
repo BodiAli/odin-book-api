@@ -34,12 +34,11 @@ model User {
 }
 
 model Profile {
-  id            String         @id @default(uuid())
-  description   String?
-  imageUrl      String?
-  user          User           @relation(references: [id], fields: [userId])
-  userId        String         @unique
-  notifications Notification[]
+  id          String  @id @default(uuid())
+  description String?
+  imageUrl    String?
+  user        User    @relation(references: [id], fields: [userId])
+  userId      String  @unique
 }
 
 model UserFollow {
@@ -62,29 +61,24 @@ model Notification {
   actorId    String
   notifierId String
   createdAt  DateTime         @default(now())
-  profileId  String?
-  postId     String?
   commentId  String?
   type       NotificationType
   actor      User             @relation("Actor", references: [id], fields: [actorId])
   notifier   User             @relation("Notifier", references: [id], fields: [notifierId])
-  profile    Profile?         @relation(references: [id], fields: [profileId], onDelete: Cascade)
-  post       Post?            @relation(references: [id], fields: [postId], onDelete: Cascade)
   comment    Comment?         @relation(references: [id], fields: [commentId], onDelete: Cascade)
 }
 
 model Post {
-  id            String         @id @default(uuid())
-  title         String         @db.VarChar(255)
-  content       String
-  imageUrl      String?
-  imageId       String?
-  createdAt     DateTime       @default(now())
-  userId        String
-  user          User           @relation(references: [id], fields: [userId])
-  comments      Comment[]
-  likes         Like[]
-  notifications Notification[]
+  id        String    @id @default(uuid())
+  title     String    @db.VarChar(255)
+  content   String
+  imageUrl  String?
+  imageId   String?
+  createdAt DateTime  @default(now())
+  userId    String
+  user      User      @relation(references: [id], fields: [userId])
+  comments  Comment[]
+  likes     Like[]
 }
 
 model Comment {

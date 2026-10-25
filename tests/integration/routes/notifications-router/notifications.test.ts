@@ -6,6 +6,7 @@ import * as notificationQueries from "#src/queries/notification-queries.js";
 import * as userQueries from "#src/queries/user-queries.js";
 import * as profileQueries from "#src/queries/profile-queries.js";
 import * as postQueries from "#src/queries/post-queries.js";
+import * as commentQueries from "#src/queries/comment-queries.js";
 import type { SentNotification } from "#src/types/routes/notifications.js";
 
 describe("/notifications path", () => {
@@ -48,17 +49,21 @@ describe("/notifications path", () => {
         imageUrl: null,
         userId: userC.id,
       });
+      const userBComment = await commentQueries.createComment({
+        content: "test: userB comment content",
+        userId: userB.id,
+        postId: userCPost.id,
+      });
       await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userC.id,
         type: "FOLLOW",
-        entityId: userAProfileId,
       });
       await notificationQueries.createNotification({
         actorId: userB.id,
         notifierId: userC.id,
         type: "COMMENT",
-        entityId: userCPost.id,
+        commentId: userBComment.id,
       });
       const userCToken = issueJwt(userC.id, "10m");
 
@@ -76,18 +81,23 @@ describe("/notifications path", () => {
             createdAt: expect.any(String) as string,
             message:
               'test: userB commented on your post "test: userC post title"',
-            type: "COMMENT",
-            entityId: userCPost.id,
             actorId: userB.id,
+            target: {
+              type: "COMMENT",
+              postId: userCPost.id,
+              commentId: userBComment.id,
+            },
           },
           {
             id: expect.any(String) as string,
             actorProfilePicture: userB.picture,
             createdAt: expect.any(String) as string,
             message: "test: userA started following you.",
-            type: "FOLLOW",
-            entityId: userAProfileId,
             actorId: userA.id,
+            target: {
+              type: "FOLLOW",
+              profileId: userAProfileId,
+            },
           },
         ],
       });

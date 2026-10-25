@@ -48,7 +48,6 @@ describe("send notification", () => {
       actorId: actor.id,
       notifierId: notifier.id,
       type: "FOLLOW",
-      entityId: actorProfile.id,
     });
     const notifierToken = issueJwt(notifier.id, "10m");
     const ws = await utils.connectClient(notifierToken);
@@ -64,9 +63,11 @@ describe("send notification", () => {
         createdAt: expect.any(String) as string,
         actorProfilePicture: actor.picture,
         message: "test: actor started following you.",
-        type: "FOLLOW",
         actorId: actor.id,
-        entityId: actorProfile.id,
+        target: {
+          type: "FOLLOW",
+          profileId: actorProfile.id,
+        },
       },
     });
   });
@@ -96,7 +97,6 @@ describe("send notification", () => {
       actorId: userA.id,
       notifierId: userB.id,
       type: "FOLLOW",
-      entityId: userAProfile.id,
     });
     const userAToken = issueJwt(userA.id, "10m");
     const userBToken = issueJwt(userB.id, "10m");
@@ -109,6 +109,21 @@ describe("send notification", () => {
     const userCPromise = utils.waitForMessage(wsUserC, 200);
 
     await sendNotification(userB.id, notification.id);
+    const notificationDataFrame: JsonServerFrame = {
+      success: true,
+      type: EventType.NOTIFICATION,
+      data: {
+        id: notification.id,
+        actorProfilePicture: userA.picture,
+        createdAt: expect.any(String) as string,
+        message: "test: userA started following you.",
+        actorId: userA.id,
+        target: {
+          type: "FOLLOW",
+          profileId: userAProfile.id,
+        },
+      },
+    };
 
     await expect(userAPromise).rejects.toStrictEqual(
       new Error("No message received"),
@@ -116,19 +131,7 @@ describe("send notification", () => {
     await expect(userCPromise).rejects.toStrictEqual(
       new Error("No message received"),
     );
-    await expect(userBPromise).resolves.toStrictEqual({
-      type: EventType.NOTIFICATION,
-      success: true,
-      data: {
-        id: notification.id,
-        createdAt: expect.any(String) as string,
-        actorProfilePicture: userA.picture,
-        message: "test: userA started following you.",
-        type: "FOLLOW",
-        actorId: userA.id,
-        entityId: userAProfile.id,
-      },
-    });
+    await expect(userBPromise).resolves.toStrictEqual(notificationDataFrame);
   });
 
   it("should send notification to all clients of target notifier", async () => {
@@ -151,7 +154,6 @@ describe("send notification", () => {
       actorId: actor.id,
       notifierId: notifier.id,
       type: "FOLLOW",
-      entityId: actorProfile.id,
     });
     const notifierToken = issueJwt(notifier.id);
     const ws1Notifier = await utils.connectClient(notifierToken);
@@ -170,12 +172,14 @@ describe("send notification", () => {
       type: EventType.NOTIFICATION,
       data: {
         id: notification.id,
-        type: "FOLLOW",
         actorProfilePicture: actor.picture,
         createdAt: expect.any(String) as string,
         message: "test: actor started following you.",
         actorId: actor.id,
-        entityId: actorProfile.id,
+        target: {
+          type: "FOLLOW",
+          profileId: actorProfile.id,
+        },
       },
     };
 
@@ -197,14 +201,10 @@ describe("send notification", () => {
       fullName: "test: actor",
       password: "test-actor-password",
     });
-    const actorProfile = await prisma.profile.findUniqueOrThrow({
-      where: { userId: actor.id },
-    });
     const notification = await notificationQueries.createNotification({
       actorId: actor.id,
       notifierId: notifier.id,
       type: "FOLLOW",
-      entityId: actorProfile.id,
     });
 
     await sendNotification(notifier.id, notification.id);

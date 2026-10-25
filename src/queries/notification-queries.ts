@@ -4,38 +4,46 @@ import generateNotificationMessage from "#src/utils/generate-notification-messag
 import * as profileQueries from "#src/queries/profile-queries.js";
 import { Prisma } from "#src/generated/prisma/client.js";
 import type {
-  DiscriminatedNotificationType,
-  NotificationEntity,
+  NotificationEntities,
+  NotificationTarget,
   SentNotification,
 } from "#src/types/routes/notifications.js";
 import type { NotificationType } from "#src/generated/prisma/enums.js";
 
-interface CreateNotificationArg {
-  actorId: string;
-  notifierId: string;
-  type: NotificationType;
-  entityId: string;
+interface CreateFollowNotification {
+  type: Extract<NotificationType, "FOLLOW">;
+}
+interface CreateCommentNotification {
+  type: Extract<NotificationType, "COMMENT">;
+  commentId: string;
 }
 
-export async function createNotification({
-  actorId,
-  notifierId,
-  type,
-  entityId,
-}: CreateNotificationArg): Promise<{ id: string }> {
+interface CreateReplyNotification {
+  type: Extract<NotificationType, "REPLY">;
+  commentId: string;
+}
+
+type CreateNotificationArg = {
+  actorId: string;
+  notifierId: string;
+} & (
+  CreateReplyNotification | CreateCommentNotification | CreateFollowNotification
+);
+
+export async function createNotification(
+  param: CreateNotificationArg,
+): Promise<{ id: string }> {
   try {
     const normalizedEntityId =
-      type === "FOLLOW"
-        ? { profileId: entityId }
-        : type === "COMMENT"
-          ? { postId: entityId }
-          : { commentId: entityId };
+      param.type === "COMMENT" || param.type === "REPLY"
+        ? { commentId: param.commentId }
+        : {};
 
     const createdNotification = await prisma.notification.create({
       data: {
-        actorId,
-        notifierId,
-        type,
+        actorId: param.actorId,
+        notifierId: param.notifierId,
+        type: param.type,
         ...normalizedEntityId,
       },
     });
@@ -52,21 +60,37 @@ export async function createNotification({
   }
 }
 
-function getEntityId(notificationEntity: NotificationEntity): string {
-  switch (notificationEntity.type) {
+function getTarget(
+  notificationEntities: NotificationEntities,
+): NotificationTarget {
+  switch (notificationEntities.type) {
     case "FOLLOW":
-      assert(notificationEntity.profile, "Profile missing");
-      return notificationEntity.profile.id;
+      assert(notificationEntities.profile, "Profile not found.");
+      return {
+        type: notificationEntities.type,
+        profileId: notificationEntities.profile.id,
+      };
     case "COMMENT":
-      assert(notificationEntity.post, "Post missing");
-      return notificationEntity.post.id;
+      assert(notificationEntities.post, "Post not found.");
+      assert(notificationEntities.comment, "Comment not found.");
+      return {
+        type: notificationEntities.type,
+        commentId: notificationEntities.comment.id,
+        postId: notificationEntities.post.id,
+      };
     case "REPLY":
-      assert(notificationEntity.comment, "Comment missing");
-      return notificationEntity.comment.id;
-    default: {
-      notificationEntity.type satisfies never;
-      throw new Error("Unknown notification entity type");
-    }
+      assert(notificationEntities.post, "Post not found.");
+      assert(notificationEntities.comment, "Comment not found.");
+      assert(notificationEntities.parentComment, "Parent comment not found.");
+      return {
+        type: notificationEntities.type,
+        postId: notificationEntities.post.id,
+        commentId: notificationEntities.comment.id,
+        parentCommentId: notificationEntities.parentComment.id,
+      };
+    default:
+      notificationEntities.type satisfies never;
+      throw new Error("Unknown notification type.");
   }
 }
 
@@ -87,6 +111,7 @@ export async function getUserNotifications(
           fullName: true,
           profile: {
             select: {
+              id: true,
               imageUrl: true,
             },
           },
@@ -96,17 +121,18 @@ export async function getUserNotifications(
         select: {
           id: true,
           content: true,
-        },
-      },
-      post: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
-      profile: {
-        select: {
-          id: true,
+          post: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          parent: {
+            select: {
+              id: true,
+              content: true,
+            },
+          },
         },
       },
     },
@@ -117,30 +143,29 @@ export async function getUserNotifications(
 
   const notificationsResponse = currentUserNotifications.map<SentNotification>(
     (notification) => {
-      const notificationEntity: NotificationEntity = {
+      const actorProfilePicture = notification.actor.profile
+        ? notification.actor.profile.imageUrl
+        : null;
+      const notificationComment = notification.comment ?? null;
+      const notificationEntities: NotificationEntities = {
         type: notification.type,
-        comment: notification.comment,
-        post: notification.post,
-        profile: notification.profile,
+        comment: notificationComment,
+        parentComment: notificationComment?.parent ?? null,
+        post: notificationComment?.post ?? null,
+        profile: notification.actor.profile,
       };
-      const entityId = getEntityId(notificationEntity);
-      const actorProfilePicture = notification.actor.profile?.imageUrl ?? null;
-      const notificationType = getDiscriminatedNotificationType(
-        notification.type,
-        notification.post,
-        notification.comment,
-      );
+      const target = getTarget(notificationEntities);
       const notificationMessage = generateNotificationMessage({
         actorName: notification.actor.fullName,
-        notificationType,
+        notificationEntities,
       });
+
       return {
         id: notification.id,
         actorProfilePicture,
         createdAt: notification.createdAt,
         actorId: notification.actor.id,
-        type: notification.type,
-        entityId,
+        target,
         message: notificationMessage,
       };
     },
@@ -166,6 +191,7 @@ export async function getSentNotification(
           fullName: true,
           profile: {
             select: {
+              id: true,
               imageUrl: true,
             },
           },
@@ -175,17 +201,18 @@ export async function getSentNotification(
         select: {
           id: true,
           content: true,
-        },
-      },
-      post: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
-      profile: {
-        select: {
-          id: true,
+          post: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          parent: {
+            select: {
+              id: true,
+              content: true,
+            },
+          },
         },
       },
     },
@@ -194,70 +221,29 @@ export async function getSentNotification(
     throw new Error("Notification not found.");
   }
 
-  const notificationEntity: NotificationEntity = {
+  const notificationComment = notification.comment ?? null;
+  const notificationEntities: NotificationEntities = {
     type: notification.type,
-    comment: notification.comment,
-    post: notification.post,
-    profile: notification.profile,
+    comment: notificationComment,
+    parentComment: notificationComment?.parent ?? null,
+    post: notificationComment?.post ?? null,
+    profile: notification.actor.profile,
   };
-  const entityId = getEntityId(notificationEntity);
-
-  const notificationType = getDiscriminatedNotificationType(
-    notification.type,
-    notification.post,
-    notification.comment,
-  );
+  const target = getTarget(notificationEntities);
   const notificationMessage = generateNotificationMessage({
     actorName: notification.actor.fullName,
-    notificationType,
+    notificationEntities,
   });
-
   const actorProfilePicture = await profileQueries.getProfilePicture(
     notification.actor.id,
   );
 
   return {
     id: notification.id,
-    type: notification.type,
     actorId: notification.actor.id,
     actorProfilePicture,
     createdAt: notification.createdAt,
-    entityId,
     message: notificationMessage,
+    target,
   };
-}
-
-function getDiscriminatedNotificationType(
-  type: NotificationType,
-  post: { title: string } | null,
-  comment: { content: string } | null,
-): DiscriminatedNotificationType {
-  switch (type) {
-    case "FOLLOW": {
-      return {
-        type,
-        comment: null,
-        post: null,
-      };
-    }
-    case "COMMENT": {
-      assert(post, "Post not found.");
-      return {
-        type,
-        comment: null,
-        post: { title: post.title },
-      };
-    }
-    case "REPLY": {
-      assert(comment, "Comment not found.");
-      return {
-        type,
-        post: null,
-        comment: { content: comment.content },
-      };
-    }
-    default:
-      (type) satisfies never;
-      throw new Error("Unknown notification type.");
-  }
 }

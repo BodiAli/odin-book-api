@@ -1,8 +1,9 @@
-import type { DiscriminatedNotificationType } from "#src/types/routes/notifications.js";
+import assert from "node:assert";
+import type { NotificationEntities } from "#src/types/routes/notifications.js";
 
 interface GenerateNotification {
   actorName: string;
-  notificationType: DiscriminatedNotificationType;
+  notificationEntities: NotificationEntities;
 }
 
 function trimText(text: string): string {
@@ -14,17 +15,19 @@ function trimText(text: string): string {
 
 export default function generateNotificationMessage({
   actorName,
-  notificationType,
+  notificationEntities,
 }: GenerateNotification): string {
-  switch (notificationType.type) {
+  switch (notificationEntities.type) {
     case "FOLLOW":
       return `${actorName} started following you.`;
     case "COMMENT":
-      return `${actorName} commented on your post "${trimText(notificationType.post.title)}"`;
+      assert(notificationEntities.post, "Post not found.");
+      return `${actorName} commented on your post "${trimText(notificationEntities.post.title)}"`;
     case "REPLY":
-      return `${actorName} replied to your comment "${trimText(notificationType.comment.content)}"`;
+      assert(notificationEntities.parentComment, "Post not found.");
+      return `${actorName} replied to your comment "${trimText(notificationEntities.parentComment.content)}"`;
     default:
-      notificationType satisfies never;
+      notificationEntities.type satisfies never;
       throw new Error("Unknown notification type.");
   }
 }

@@ -2,15 +2,30 @@ import z from "zod";
 import { NotificationType } from "#src/generated/prisma/enums.js";
 import type { NotificationModel } from "#src/generated/prisma/models.js";
 
-export const sentNotification: z.ZodType<
-  Omit<
-    NotificationModel,
-    "notifierId" | "postId" | "commentId" | "profileId"
-  > & {
+const followNotification = z.object({
+  type: z.literal("FOLLOW"),
+  profileId: z.string(),
+});
+const commentNotification = z.object({
+  type: z.literal("COMMENT"),
+  postId: z.string(),
+  commentId: z.string(),
+});
+const replyNotification = z.object({
+  type: z.literal("REPLY"),
+  postId: z.string(),
+  commentId: z.string(),
+  parentCommentId: z.string(),
+});
+const notificationTarget = z.discriminatedUnion("type", [
+  followNotification,
+  commentNotification,
+  replyNotification,
+]);
+const baseNotification: z.ZodType<
+  Omit<NotificationModel, "notifierId" | "commentId" | "type"> & {
     actorProfilePicture: string | null;
     message: string;
-    entityId: string;
-    type: NotificationType;
   }
 > = z.object({
   id: z.string(),
@@ -18,9 +33,12 @@ export const sentNotification: z.ZodType<
   message: z.string(),
   createdAt: z.date(),
   actorId: z.string(),
-  entityId: z.string(),
-  type: z.enum(NotificationType),
 });
+
+export const sentNotification = z.intersection(
+  baseNotification,
+  z.object({ target: notificationTarget }),
+);
 
 export const notificationsResponse = z.object({
   notifications: z.array(sentNotification),

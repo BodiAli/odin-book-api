@@ -15,27 +15,11 @@ export type NotificationModel = z.infer<typeof notificationModel>;
 export type SentNotification = z.infer<typeof sentNotification>;
 export type NotificationsResponse = z.infer<typeof notificationsResponse>;
 
-interface CommentType {
-  type: Extract<NotificationType, "COMMENT">;
-  post: Pick<PostModel, "title">;
-  comment: null;
-}
-interface ReplyType {
-  type: Extract<NotificationType, "REPLY">;
-  comment: Pick<CommentModel, "content">;
-  post: null;
-}
-interface FollowType {
-  type: Extract<NotificationType, "FOLLOW">;
-  comment: null;
-  post: null;
-}
-export type DiscriminatedNotificationType =
-  CommentType | ReplyType | FollowType;
-
-export interface NotificationEntity {
+export interface NotificationEntities {
   type: NotificationType;
-  comment: null | Pick<CommentModel, "id" | "content">;
-  post: null | Pick<PostModel, "id" | "title">;
-  profile: null | Pick<ProfileModel, "id">;
+  profile: Pick<ProfileModel, "id"> | null;
+  post: Pick<PostModel, "title" | "id"> | null;
+  comment: Pick<CommentModel, "content" | "id"> | null;
+  parentComment: Pick<CommentModel, "content" | "id"> | null;
 }
+export type NotificationTarget = SentNotification["target"];

@@ -40,9 +40,11 @@ describe("sending frame", () => {
         createdAt: new Date(),
         id: "test-notification-id",
         message: "test: message",
-        type: "FOLLOW",
         actorId: "test-actor-id",
-        entityId: "test-entity-id",
+        target: {
+          type: "FOLLOW",
+          profileId: "test-profile-id",
+        },
       },
     });
 
@@ -70,9 +72,11 @@ describe("sending frame", () => {
         createdAt: new Date(),
         id: "test-notification-id",
         message: "test: message",
-        type: "FOLLOW",
         actorId: "test-actor-id",
-        entityId: "test-entity-id",
+        target: {
+          type: "FOLLOW",
+          profileId: "test-profile-id",
+        },
       },
     };
 

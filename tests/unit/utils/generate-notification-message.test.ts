@@ -6,9 +6,13 @@ describe(generateNotificationMessage, () => {
 
     const notificationMessage = generateNotificationMessage({
       actorName: "test: userA",
-      notificationType: {
+      notificationEntities: {
         type: "FOLLOW",
+        profile: {
+          id: "test-profile-id",
+        },
         comment: null,
+        parentComment: null,
         post: null,
       },
     });
@@ -21,10 +25,15 @@ describe(generateNotificationMessage, () => {
 
     const notificationMessage = generateNotificationMessage({
       actorName: "test: userA",
-      notificationType: {
+      notificationEntities: {
         type: "COMMENT",
-        post: { title: "test: post title" },
-        comment: null,
+        comment: {
+          id: "test-comment-id",
+          content: "test: comment content",
+        },
+        post: { id: "test-post-id", title: "test: post title" },
+        parentComment: null,
+        profile: null,
       },
     });
 
@@ -38,15 +47,23 @@ describe(generateNotificationMessage, () => {
 
     const notificationMessage = generateNotificationMessage({
       actorName: "test: userA",
-      notificationType: {
+      notificationEntities: {
         type: "REPLY",
-        comment: { content: "test: comment content" },
-        post: null,
+        comment: {
+          id: "test-comment-id",
+          content: "test: comment content",
+        },
+        post: { id: "test-post-id", title: "test: post title" },
+        parentComment: {
+          id: "test-parent-comment-id",
+          content: "test: parent comment content",
+        },
+        profile: null,
       },
     });
 
     expect(notificationMessage).toBe(
-      'test: userA replied to your comment "test: comment content"',
+      'test: userA replied to your comment "test: parent comment content"',
     );
   });
 
@@ -55,10 +72,15 @@ describe(generateNotificationMessage, () => {
 
     const notificationMessage = generateNotificationMessage({
       actorName: "test: userA",
-      notificationType: {
+      notificationEntities: {
         type: "COMMENT",
-        comment: null,
-        post: { title: "test: post title" + "1".repeat(50) },
+        comment: { id: "test-comment-id", content: "test: comment content" },
+        post: {
+          id: "test-post-id",
+          title: "test: post title" + "1".repeat(50),
+        },
+        parentComment: null,
+        profile: null,
       },
     });
 
@@ -72,15 +94,20 @@ describe(generateNotificationMessage, () => {
 
     const notificationMessage = generateNotificationMessage({
       actorName: "test: userA",
-      notificationType: {
+      notificationEntities: {
         type: "REPLY",
-        comment: { content: "test: comment content" + "1".repeat(50) },
-        post: null,
+        parentComment: {
+          id: "test-parent-comment-id",
+          content: "test: parent comment content" + "1".repeat(50),
+        },
+        post: { id: "test-post-id", title: "test: post title" },
+        comment: { id: "test-comment-id", content: "test: comment content" },
+        profile: null,
       },
     });
 
     expect(notificationMessage).toBe(
-      'test: userA replied to your comment "test: comment content11111111111111111111111111..."',
+      'test: userA replied to your comment "test: parent comment content1111111111111111111..."',
     );
   });
 });

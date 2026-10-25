@@ -45,7 +45,6 @@ describe("notification event", () => {
       actorId: userA.id,
       notifierId: userB.id,
       type: "FOLLOW",
-      entityId: userAProfile.id,
     });
     const wsUserB = await utils.connectClient(userBToken);
 
@@ -59,10 +58,12 @@ describe("notification event", () => {
         id: notification.id,
         actorProfilePicture: userA.picture,
         createdAt: expect.any(String) as string,
-        type: "FOLLOW",
         message: "test: userA started following you.",
         actorId: userA.id,
-        entityId: userAProfile.id,
+        target: {
+          type: "FOLLOW",
+          profileId: userAProfile.id,
+        },
       },
     });
   });

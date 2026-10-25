@@ -38,20 +38,13 @@ describe("notification queries", () => {
   });
 
   describe(notificationQueries.createNotification, () => {
-    it("should assign entity id to profile id when notification type is 'FOLLOW'", async () => {
+    it("should set commentId to null when type is 'FOLLOW'", async () => {
       expect.hasAssertions();
-
-      const userAProfile = await prisma.profile.findUniqueOrThrow({
-        where: {
-          userId: userA.id,
-        },
-      });
 
       const { id } = await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userB.id,
         type: "FOLLOW",
-        entityId: userAProfile.id,
       });
       const notification = await prisma.notification.findUniqueOrThrow({
         where: {
@@ -59,12 +52,10 @@ describe("notification queries", () => {
         },
       });
 
-      expect(notification.profileId).toBe(userAProfile.id);
       expect(notification.commentId).toBeNull();
-      expect(notification.postId).toBeNull();
     });
 
-    it("should assign entity id to post id when notification type is 'COMMENT'", async () => {
+    it("should set commentId when type is 'COMMENT'", async () => {
       expect.hasAssertions();
 
       const userBPost = await prisma.post.create({
@@ -74,12 +65,19 @@ describe("notification queries", () => {
           userId: userB.id,
         },
       });
+      const comment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          userId: userA.id,
+          postId: userBPost.id,
+        },
+      });
 
       const { id } = await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userB.id,
         type: "COMMENT",
-        entityId: userBPost.id,
+        commentId: comment.id,
       });
       const notification = await prisma.notification.findUniqueOrThrow({
         where: {
@@ -87,12 +85,10 @@ describe("notification queries", () => {
         },
       });
 
-      expect(notification.postId).toBe(userBPost.id);
-      expect(notification.profileId).toBeNull();
-      expect(notification.commentId).toBeNull();
+      expect(notification.commentId).toBe(comment.id);
     });
 
-    it("should assign entity id to comment id when notification type is 'REPLY'", async () => {
+    it("should set commentId when type is 'REPLY'", async () => {
       expect.hasAssertions();
 
       const userAPost = await prisma.post.create({
@@ -109,12 +105,20 @@ describe("notification queries", () => {
           content: "test: comment content",
         },
       });
+      const userAReply = await prisma.comment.create({
+        data: {
+          userId: userA.id,
+          postId: userAPost.id,
+          content: "test: reply content",
+          parentId: userBComment.id,
+        },
+      });
 
       const { id } = await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userB.id,
         type: "REPLY",
-        entityId: userBComment.id,
+        commentId: userAReply.id,
       });
       const notification = await prisma.notification.findUniqueOrThrow({
         where: {
@@ -122,25 +126,16 @@ describe("notification queries", () => {
         },
       });
 
-      expect(notification.commentId).toBe(userBComment.id);
-      expect(notification.profileId).toBeNull();
-      expect(notification.postId).toBeNull();
+      expect(notification.commentId).toBe(userAReply.id);
     });
 
     it("should create a notification", async () => {
       expect.hasAssertions();
 
-      const userAProfile = await prisma.profile.findUniqueOrThrow({
-        where: {
-          userId: userA.id,
-        },
-      });
-
       const createdNotification = await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userB.id,
         type: "FOLLOW",
-        entityId: userAProfile.id,
       });
       const notification = await prisma.notification.findUnique({
         where: {
@@ -154,27 +149,19 @@ describe("notification queries", () => {
         createdAt: expect.any(Date) as Date,
         id: createdNotification.id,
         commentId: null,
-        postId: null,
-        profileId: userAProfile.id,
         type: "FOLLOW",
       });
     });
 
-    it("should throw an error when passing an entity id that does not match the type", async () => {
+    it("should throw an error when passing comment id that violates a foreign key constraint", async () => {
       expect.hasAssertions();
-
-      const userAProfile = await prisma.profile.findUniqueOrThrow({
-        where: {
-          userId: userA.id,
-        },
-      });
 
       await expect(
         notificationQueries.createNotification({
           actorId: userA.id,
           notifierId: userB.id,
-          entityId: userAProfile.id,
           type: "COMMENT",
+          commentId: "non-existing-id",
         }),
       ).rejects.toThrow(new Error("Foreign key constraint failed."));
     });
@@ -196,19 +183,25 @@ describe("notification queries", () => {
           userId: userC.id,
         },
       });
+      const userBComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userCPost.id,
+          userId: userB.id,
+        },
+      });
       const notificationCreatedByUserA =
         await notificationQueries.createNotification({
           actorId: userA.id,
           notifierId: userC.id,
           type: "FOLLOW",
-          entityId: userAProfile.id,
         });
       const notificationCreatedByUserB =
         await notificationQueries.createNotification({
           actorId: userB.id,
           notifierId: userC.id,
           type: "COMMENT",
-          entityId: userCPost.id,
+          commentId: userBComment.id,
         });
 
       const userANotifications = await notificationQueries.getUserNotifications(
@@ -228,19 +221,217 @@ describe("notification queries", () => {
           id: notificationCreatedByUserB.id,
           actorProfilePicture: userBImageUrl,
           message: 'test: userB commented on your post "test: post title"',
-          type: "COMMENT",
           createdAt: expect.any(Date) as Date,
           actorId: userB.id,
-          entityId: userCPost.id,
+          target: {
+            type: "COMMENT",
+            commentId: userBComment.id,
+            postId: userCPost.id,
+          },
         },
         {
           id: notificationCreatedByUserA.id,
           actorProfilePicture: userAImageUrl,
           message: "test: userA started following you.",
-          type: "FOLLOW",
           createdAt: expect.any(Date) as Date,
           actorId: userA.id,
-          entityId: userAProfile.id,
+          target: {
+            type: "FOLLOW",
+            profileId: userAProfile.id,
+          },
+        },
+      ]);
+    });
+
+    it("should return notification with target including actor's profile id when type is 'FOLLOW'", async () => {
+      expect.hasAssertions();
+
+      const userAProfile = await prisma.profile.findFirstOrThrow({
+        where: {
+          userId: userA.id,
+        },
+      });
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        type: "FOLLOW",
+      });
+
+      const userBNotifications = await notificationQueries.getUserNotifications(
+        userB.id,
+      );
+
+      expect(userBNotifications).toStrictEqual<SentNotification[]>([
+        {
+          id,
+          actorId: userA.id,
+          actorProfilePicture: userAImageUrl,
+          createdAt: expect.any(Date) as Date,
+          message: "test: userA started following you.",
+          target: {
+            profileId: userAProfile.id,
+            type: "FOLLOW",
+          },
+        },
+      ]);
+    });
+
+    it("should return notifications with target including post id and comment id when type is 'COMMENT'", async () => {
+      expect.hasAssertions();
+
+      const userBPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userB.id,
+        },
+      });
+      const userAComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userBPost.id,
+          userId: userA.id,
+        },
+      });
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        type: "COMMENT",
+        commentId: userAComment.id,
+      });
+
+      const userBNotifications = await notificationQueries.getUserNotifications(
+        userB.id,
+      );
+
+      expect(userBNotifications).toStrictEqual<SentNotification[]>([
+        {
+          id,
+          actorId: userA.id,
+          actorProfilePicture: userAImageUrl,
+          createdAt: expect.any(Date) as Date,
+          message: 'test: userA commented on your post "test: post title"',
+          target: {
+            commentId: userAComment.id,
+            postId: userBPost.id,
+            type: "COMMENT",
+          },
+        },
+      ]);
+    });
+
+    it("should return notifications with target including post id, comment id, and parent comment id when type is 'REPLY'", async () => {
+      expect.hasAssertions();
+
+      const userBPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userB.id,
+        },
+      });
+      const userCComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userBPost.id,
+          userId: userC.id,
+        },
+      });
+      const userAReply = await prisma.comment.create({
+        data: {
+          content: "test: reply content",
+          postId: userBPost.id,
+          userId: userA.id,
+          parentId: userCComment.id,
+        },
+      });
+
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userC.id,
+        type: "REPLY",
+        commentId: userAReply.id,
+      });
+
+      const userCNotifications = await notificationQueries.getUserNotifications(
+        userC.id,
+      );
+
+      expect(userCNotifications).toStrictEqual<SentNotification[]>([
+        {
+          id,
+          actorId: userA.id,
+          actorProfilePicture: userAImageUrl,
+          createdAt: expect.any(Date) as Date,
+          message:
+            'test: userA replied to your comment "test: comment content"',
+          target: {
+            commentId: userAReply.id,
+            parentCommentId: userCComment.id,
+            postId: userBPost.id,
+            type: "REPLY",
+          },
+        },
+      ]);
+    });
+
+    it("should return notifications when replying to a reply", async () => {
+      expect.hasAssertions();
+
+      const userBPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userB.id,
+        },
+      });
+      const userCComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userBPost.id,
+          userId: userC.id,
+        },
+      });
+      const userBReply = await prisma.comment.create({
+        data: {
+          content: "test: reply1 content",
+          postId: userBPost.id,
+          userId: userB.id,
+          parentId: userCComment.id,
+        },
+      });
+      const userAReply = await prisma.comment.create({
+        data: {
+          content: "test: reply2 content",
+          postId: userBPost.id,
+          userId: userA.id,
+          parentId: userBReply.id,
+        },
+      });
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        type: "REPLY",
+        commentId: userAReply.id,
+      });
+
+      const userBNotifications = await notificationQueries.getUserNotifications(
+        userB.id,
+      );
+
+      expect(userBNotifications).toStrictEqual<SentNotification[]>([
+        {
+          id,
+          actorId: userA.id,
+          actorProfilePicture: userAImageUrl,
+          createdAt: expect.any(Date) as Date,
+          message: 'test: userA replied to your comment "test: reply1 content"',
+          target: {
+            commentId: userAReply.id,
+            parentCommentId: userBReply.id,
+            postId: userBPost.id,
+            type: "REPLY",
+          },
         },
       ]);
     });
@@ -255,7 +446,7 @@ describe("notification queries", () => {
       ).rejects.toThrow(new Error("Notification not found."));
     });
 
-    it("should return the structure of notification sent to the end user", async () => {
+    it("should return notification with target including actor's profile id when type is 'FOLLOW'", async () => {
       expect.hasAssertions();
 
       const userAProfile = await prisma.profile.findFirstOrThrow({
@@ -266,7 +457,6 @@ describe("notification queries", () => {
       const { id } = await notificationQueries.createNotification({
         actorId: userA.id,
         notifierId: userB.id,
-        entityId: userAProfile.id,
         type: "FOLLOW",
       });
 
@@ -276,11 +466,164 @@ describe("notification queries", () => {
       expect(sentNotification).toStrictEqual<SentNotification>({
         id,
         actorId: userA.id,
-        type: "FOLLOW",
         actorProfilePicture: userAImageUrl,
         createdAt: expect.any(Date) as Date,
-        entityId: userAProfile.id,
         message: "test: userA started following you.",
+        target: {
+          profileId: userAProfile.id,
+          type: "FOLLOW",
+        },
+      });
+    });
+
+    it("should return notification with target including post id and comment id when type is 'COMMENT'", async () => {
+      expect.hasAssertions();
+
+      const userBPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userB.id,
+        },
+      });
+      const userAComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userBPost.id,
+          userId: userA.id,
+        },
+      });
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        type: "COMMENT",
+        commentId: userAComment.id,
+      });
+
+      const sentNotification =
+        await notificationQueries.getSentNotification(id);
+
+      expect(sentNotification).toStrictEqual<SentNotification>({
+        id,
+        actorId: userA.id,
+        actorProfilePicture: userAImageUrl,
+        createdAt: expect.any(Date) as Date,
+        message: 'test: userA commented on your post "test: post title"',
+        target: {
+          commentId: userAComment.id,
+          postId: userBPost.id,
+          type: "COMMENT",
+        },
+      });
+    });
+
+    it("should return notification with target including post id, comment id, and parent comment id when type is 'REPLY'", async () => {
+      expect.hasAssertions();
+
+      const userBPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userB.id,
+        },
+      });
+      const userCComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userBPost.id,
+          userId: userC.id,
+        },
+      });
+      const userAReply = await prisma.comment.create({
+        data: {
+          content: "test: reply content",
+          postId: userBPost.id,
+          userId: userA.id,
+          parentId: userCComment.id,
+        },
+      });
+
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        type: "REPLY",
+        commentId: userAReply.id,
+      });
+
+      const sentNotification =
+        await notificationQueries.getSentNotification(id);
+
+      expect(sentNotification).toStrictEqual<SentNotification>({
+        id,
+        actorId: userA.id,
+        actorProfilePicture: userAImageUrl,
+        createdAt: expect.any(Date) as Date,
+        message: 'test: userA replied to your comment "test: comment content"',
+        target: {
+          commentId: userAReply.id,
+          parentCommentId: userCComment.id,
+          postId: userBPost.id,
+          type: "REPLY",
+        },
+      });
+    });
+
+    it("should return notification when replying to a reply", async () => {
+      expect.hasAssertions();
+
+      const userBPost = await prisma.post.create({
+        data: {
+          title: "test: post title",
+          content: "test: post content",
+          userId: userB.id,
+        },
+      });
+      const userCComment = await prisma.comment.create({
+        data: {
+          content: "test: comment content",
+          postId: userBPost.id,
+          userId: userC.id,
+        },
+      });
+      const userBReply = await prisma.comment.create({
+        data: {
+          content: "test: reply1 content",
+          postId: userBPost.id,
+          userId: userB.id,
+          parentId: userCComment.id,
+        },
+      });
+      const userAReply = await prisma.comment.create({
+        data: {
+          content: "test: reply2 content",
+          postId: userBPost.id,
+          userId: userA.id,
+          parentId: userBReply.id,
+        },
+      });
+
+      const { id } = await notificationQueries.createNotification({
+        actorId: userA.id,
+        notifierId: userB.id,
+        type: "REPLY",
+        commentId: userAReply.id,
+      });
+
+      const sentNotification =
+        await notificationQueries.getSentNotification(id);
+
+      expect(sentNotification).toStrictEqual<SentNotification>({
+        id,
+        actorId: userA.id,
+        actorProfilePicture: userAImageUrl,
+        createdAt: expect.any(Date) as Date,
+        message: 'test: userA replied to your comment "test: reply1 content"',
+        target: {
+          commentId: userAReply.id,
+          parentCommentId: userBReply.id,
+          postId: userBPost.id,
+          type: "REPLY",
+        },
       });
     });
   });

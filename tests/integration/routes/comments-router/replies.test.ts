@@ -52,8 +52,13 @@ describe("/comments/{commentId}/replies path", () => {
     currentUserToken = issueJwt(currentUser.id);
   });
 
-  type JsonReplies = (Omit<Comments[number], "createdAt"> & {
+  type Author = Comments[number]["author"];
+  interface JsonAuthor extends Omit<Author, "lastSeen"> {
+    lastSeen: string;
+  }
+  type JsonReplies = (Omit<Comments[number], "createdAt" | "author"> & {
     createdAt: string;
+    author: JsonAuthor;
   })[];
 
   describe("get comment replies GET", () => {
@@ -99,6 +104,13 @@ describe("/comments/{commentId}/replies path", () => {
           userId: currentUser.id,
           isLiked: false,
           likes: 0,
+          author: {
+            id: currentUser.id,
+            fullName: currentUser.fullName,
+            isOnline: currentUser.isOnline,
+            lastSeen: expect.any(String) as string,
+            picture: currentUser.picture,
+          },
         },
       ]);
     });
@@ -287,12 +299,13 @@ describe("/comments/{commentId}/replies path", () => {
       const ws = await utils.connectClient(userBToken);
       const waitForMessage = utils.waitForMessage<SentNotification>(ws);
 
-      await request(app)
+      const response = await request(app)
         .post(`/comments/${userBComment.id}/replies`)
         .auth(currentUserToken, { type: "bearer" })
         .send({ content: "test: reply content", postId: post.id })
         .expect("Content-type", /json/)
         .expect(201);
+      const typedBody = response.body as CreateReplyResponse;
       const msg = await waitForMessage;
       interface JsonNotification extends Omit<SentNotification, "createdAt"> {
         createdAt: string;
@@ -300,13 +313,17 @@ describe("/comments/{commentId}/replies path", () => {
 
       expect(msg.data).toStrictEqual<JsonNotification>({
         id: expect.any(String) as string,
-        type: "REPLY",
         actorId: currentUser.id,
         actorProfilePicture: null,
         createdAt: expect.any(String) as string,
-        entityId: userBComment.id,
         message:
           'test: full name replied to your comment "test: userB comment content"',
+        target: {
+          type: "REPLY",
+          parentCommentId: userBComment.id,
+          postId: post.id,
+          commentId: typedBody.id,
+        },
       });
 
       await utils.cleanupConnection();

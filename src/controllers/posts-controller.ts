@@ -209,7 +209,7 @@ export async function createPostComment(
         actorId: req.user.id,
         notifierId: authorId,
         type: "COMMENT",
-        entityId: postId,
+        commentId: id,
       });
       const appEmitter = AppEmitter.getInstance();
       appEmitter.emitNotification(authorId, notification.id);

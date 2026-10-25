@@ -44,8 +44,13 @@ describe("/posts/{postId}/comments path", () => {
     currentUserToken = issueJwt(currentUser.id);
   });
 
-  type JsonComments = (Omit<Comments[number], "createdAt"> & {
+  type Author = Comments[number]["author"];
+  interface JsonAuthor extends Omit<Author, "lastSeen"> {
+    lastSeen: string;
+  }
+  type JsonComments = (Omit<Comments[number], "createdAt" | "author"> & {
     createdAt: string;
+    author: JsonAuthor;
   })[];
 
   describe("get post comments GET", () => {
@@ -90,6 +95,13 @@ describe("/posts/{postId}/comments path", () => {
           userId: currentUser.id,
           isLiked: false,
           likes: 0,
+          author: {
+            id: currentUser.id,
+            fullName: currentUser.fullName,
+            isOnline: currentUser.isOnline,
+            lastSeen: expect.any(String) as string,
+            picture: currentUser.picture,
+          },
         },
       ]);
     });
@@ -259,12 +271,13 @@ describe("/posts/{postId}/comments path", () => {
       const ws = await utils.connectClient(userBToken);
       const waitForMessage = utils.waitForMessage<SentNotification>(ws);
 
-      await request(app)
+      const response = await request(app)
         .post(`/posts/${userBPost.id}/comments`)
         .auth(currentUserToken, { type: "bearer" })
         .send({ content: "test: comment content" })
         .expect("Content-type", /json/)
         .expect(201);
+      const typedBody = response.body as CreatePostCommentResponse;
       const msg = await waitForMessage;
       interface JsonNotification extends Omit<SentNotification, "createdAt"> {
         createdAt: string;
@@ -272,13 +285,16 @@ describe("/posts/{postId}/comments path", () => {
 
       expect(msg.data).toStrictEqual<JsonNotification>({
         id: expect.any(String) as string,
-        type: "COMMENT",
         actorId: currentUser.id,
         actorProfilePicture: null,
         createdAt: expect.any(String) as string,
-        entityId: userBPost.id,
         message:
           'test: currentUser commented on your post "test: userB post title"',
+        target: {
+          type: "COMMENT",
+          commentId: typedBody.id,
+          postId: userBPost.id,
+        },
       });
 
       await utils.cleanupConnection();

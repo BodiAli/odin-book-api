@@ -115,7 +115,7 @@ export async function createReply(
         actorId: req.user.id,
         notifierId: commentAuthorId,
         type: "REPLY",
-        entityId: commentId,
+        commentId: id,
       });
       const appEmitter = AppEmitter.getInstance();
       appEmitter.emitNotification(commentAuthorId, notification.id);
