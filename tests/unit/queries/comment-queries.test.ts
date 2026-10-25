@@ -240,6 +240,13 @@ describe("comment queries", () => {
           hasReplies: false,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
       ]);
     });
@@ -276,6 +283,13 @@ describe("comment queries", () => {
           hasReplies: true,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
       ]);
     });
@@ -314,6 +328,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
         {
           content: "test: comment content 1",
@@ -325,6 +346,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
         {
           content: "test: comment content 0",
@@ -336,6 +364,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
       ]);
     });
@@ -377,6 +412,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
         {
           content: "test: parentComment1 content",
@@ -388,6 +430,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
       ]);
     });
@@ -602,6 +651,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
         {
           content: "test: parentReply1 content",
@@ -613,6 +669,13 @@ describe("comment queries", () => {
           userId: user.id,
           isLiked: false,
           likes: 0,
+          author: {
+            fullName: user.fullName,
+            id: user.id,
+            isOnline: false,
+            lastSeen: expect.any(Date) as Date,
+            picture: null,
+          },
         },
       ]);
     });

@@ -1,5 +1,7 @@
 import z from "zod";
+import { publicUser } from "./users.js";
 import type { CommentModel } from "#src/generated/prisma/models.js";
+import type { PublicUser } from "#src/types/routes/users.js";
 
 export const comment = z.object({
   id: z.uuid(),
@@ -10,7 +12,10 @@ export const comment = z.object({
   createdAt: z.date(),
   likes: z.number(),
   isLiked: z.boolean(),
-}) satisfies z.ZodType<CommentModel & { likes: number; isLiked: boolean }>;
+  author: publicUser,
+}) satisfies z.ZodType<
+  CommentModel & { likes: number; isLiked: boolean; author: PublicUser }
+>;
 
 export const comments = z.array(
   comment.extend({

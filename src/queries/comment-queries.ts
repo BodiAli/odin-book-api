@@ -188,6 +188,15 @@ export async function getCommentsInPost(param: CommentsQuery): Promise<{
           userId: param.userId,
         },
       },
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          isOnline: true,
+          lastSeen: true,
+          profile: true,
+        },
+      },
     },
     take: 10,
     orderBy: {
@@ -217,12 +226,23 @@ export async function getCommentsInPost(param: CommentsQuery): Promise<{
   const nextCursorIdResult = await nextCursorId(cursorArgs);
 
   const result = comments.map((value) => {
-    const { _count, likes, ...comment } = value;
+    const {
+      _count,
+      likes,
+      user: { profile, ...user },
+      ...comment
+    } = value;
+    const picture = profile ? profile.imageUrl : null;
+
     return {
       ...comment,
       hasReplies: _count.replies > 0,
       likes: _count.likes,
       isLiked: likes.length > 0,
+      author: {
+        ...user,
+        picture,
+      },
     };
   });
   return {
