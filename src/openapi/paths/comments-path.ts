@@ -2,6 +2,7 @@ import z from "zod";
 import {
   createReplyRequest,
   getCommentRepliesResponse,
+  getCommentResponse,
   updateCommentRequest,
 } from "#src/schemas/routes/comments.js";
 import { clientError } from "#src/schemas/errors/errors.js";
@@ -67,11 +68,45 @@ registry.registerPath({
   responses: {
     204: {
       summary: "No content",
-      description: "Comment deleted successfully",
+      description: "Comment deleted successfully.",
     },
     400: invalidInputsResponse,
     401: unauthorizedResponse,
     403: InsufficientPermissionResponse,
+    404: {
+      summary: "Not found",
+      description: "Comment not found.",
+      content: {
+        "application/json": {
+          schema: clientError,
+        },
+      },
+    },
+    500: serverErrorResponse,
+  },
+});
+
+registry.registerPath({
+  path: "/comments/{commentId}",
+  method: "get",
+  description: "Get a single comment resource.",
+  security,
+  request: {
+    params: z.object({
+      commentId: z.string(),
+    }),
+  },
+  responses: {
+    200: {
+      summary: "OK",
+      description: "Comment fetched successfully.",
+      content: {
+        "application/json": {
+          schema: getCommentResponse,
+        },
+      },
+    },
+    401: unauthorizedResponse,
     404: {
       summary: "Not found",
       description: "Comment not found.",

@@ -11,7 +11,8 @@ const commentsRouter = Router();
 commentsRouter
   .route("/:commentId")
   .patch(validateBody(updateCommentRequest), commentsController.updateComment)
-  .delete(commentsController.deleteComment);
+  .delete(commentsController.deleteComment)
+  .get(commentsController.getComment);
 
 commentsRouter
   .route("/:commentId/replies")

@@ -9,6 +9,7 @@ import type {
   CreateReplyRequest,
   CreateReplyResponse,
   GetCommentRepliesResponse,
+  GetCommentResponse,
   UpdateCommentRequest,
 } from "#src/types/routes/comments.js";
 import type { NextFunction, Request, Response } from "express";
@@ -165,6 +166,28 @@ export async function deleteCommentLike(
     await likeQueries.deleteCommentLike(req.user.id, commentId);
 
     res.sendStatus(204);
+  } catch (error) {
+    if (error instanceof CustomHttpStatusError) {
+      res.status(error.code).json({ errors: [{ message: error.message }] });
+      return;
+    }
+    next(error);
+  }
+}
+
+export async function getComment(
+  req: Request<{ commentId: string }>,
+  res: Response<ClientError | GetCommentResponse>,
+  next: NextFunction,
+): Promise<void> {
+  assert(req.user, "User not found.");
+
+  const { commentId } = req.params;
+
+  try {
+    const comment = await commentQueries.getComment(req.user.id, commentId);
+
+    res.json({ comment });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
       res.status(error.code).json({ errors: [{ message: error.message }] });
