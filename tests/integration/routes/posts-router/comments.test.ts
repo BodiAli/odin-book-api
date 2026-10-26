@@ -236,7 +236,7 @@ describe("/posts/{postId}/comments path", () => {
       });
     });
 
-    it("should 201 status with comment id", async () => {
+    it("should return 201 status with comment id", async () => {
       expect.hasAssertions();
 
       const response = await request(app)
@@ -249,6 +249,19 @@ describe("/posts/{postId}/comments path", () => {
       expect(response.body).toStrictEqual<CreatePostCommentResponse>({
         id: expect.any(String) as string,
       });
+    });
+
+    it("should set location header", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: comment content" })
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      expect(response.headers["location"]).toMatch(/^\/comments\/.+$/);
     });
 
     it("should send notification to the post author", async () => {

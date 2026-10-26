@@ -281,6 +281,19 @@ describe("/comments/{commentId}/replies path", () => {
       });
     });
 
+    it("should return location header", async () => {
+      expect.hasAssertions();
+
+      const response = await request(app)
+        .post(`/comments/${commentId}/replies`)
+        .auth(currentUserToken, { type: "bearer" })
+        .send({ content: "test: reply content", postId: post.id })
+        .expect("Content-type", /json/)
+        .expect(201);
+
+      expect(response.headers["location"]).toMatch(/^\/comments\/.+$/);
+    });
+
     it("should send notification to the comment author", async () => {
       expect.hasAssertions();
 

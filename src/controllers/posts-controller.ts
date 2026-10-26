@@ -215,6 +215,7 @@ export async function createPostComment(
       appEmitter.emitNotification(authorId, notification.id);
     }
 
+    res.location(`/comments/${id}`);
     res.status(201).json({ id });
   } catch (error) {
     if (error instanceof CustomHttpStatusError) {
